@@ -17,30 +17,30 @@ struct Register {
 	Register(const Register&) = delete;
 	Register(Register&&) = delete;
 		
-	[[gnu::always_inline]] inline void on() volatile {
+	inline void on() volatile {
 		reg = static_cast<mem_width>(0xffffffffffffffffULL);
 	}
 	
-	[[gnu::always_inline]] inline void off() volatile {
+	inline void off() volatile {
 		reg = static_cast<mem_width>(0ULL);
 	}
 	
 	template<typename... ARGS>
-	[[gnu::always_inline]] inline void on(const ARGS... pins) volatile {
+	inline void on(const ARGS... pins) volatile {
 		reg |= (static_cast<mem_width>(pins) | ...);
 	}
 			
-	[[gnu::always_inline]] inline void invert() volatile  {
+	inline void invert() volatile  {
 		reg ^= reg;
 	}
 				
 	template<typename... ARGS>
-	[[gnu::always_inline]] inline void off(const ARGS... pins) volatile {
+	inline void off(const ARGS... pins) volatile {
 		reg &= ~(static_cast<mem_width>(pins) | ...);
 	}
 
 	template<typename... ARGS>
-	[[gnu::always_inline]] inline void invert(const ARGS... pins) volatile {
+	inline void invert(const ARGS... pins) volatile {
 		reg ^= (static_cast<mem_width>(pins) | ...);
 	}
 
@@ -48,21 +48,21 @@ struct Register {
 	[[nodiscard]] bool areSet() volatile;
 
 	template<typename... ARGS>
-	[[gnu::always_inline]] [[nodiscard]] inline bool areSet(const ARGS...pins) const volatile {
+	[[nodiscard]] inline bool areSet(const ARGS...pins) const volatile {
 		return ((static_cast<mem_width>(pins) | ...) & reg) == (static_cast<mem_width>(pins) | ...);			
 	}
 	
-	[[gnu::always_inline]] [[nodiscard]] volatile mem_width& raw() volatile {
+	[[nodiscard]] volatile mem_width& raw() volatile {
 		return reg;
 	}
 
-	[[gnu::always_inline]] [[nodiscard]] volatile mem_width raw() const volatile {
+	[[nodiscard]] volatile mem_width raw() const volatile {
 		return reg;
 	}
 	/*
 	function to cast the structs to Register
 	*/
-	[[gnu::always_inline]] [[nodiscard]] static inline volatile Register& getRegister(volatile mem_width& reg) {
+	[[nodiscard]] static inline volatile Register& getRegister(volatile mem_width& reg) {
 		return reinterpret_cast<volatile Register&>(reg);
 	}
 }__attribute__((packed));
@@ -74,21 +74,21 @@ struct Register<mem_width, ReadOnly> {
 	Register(const Register&) = delete;
 	Register(Register&&) = delete;
 	
-	[[gnu::always_inline]] [[nodiscard]] volatile mem_width raw() const volatile {
+	[[nodiscard]] volatile mem_width raw() const volatile {
 		return reg;
 	}
 	
-		//SFINAE
-		[[nodiscard]] bool areSet() volatile;
+	//SFINAE
+	[[nodiscard]] bool areSet() volatile;
 
-		template<typename... ARGS>
-		[[gnu::always_inline]] [[nodiscard]] inline bool areSet(const ARGS...pins) const volatile {
-			return ((static_cast<mem_width>(pins) | ...) & reg) == (static_cast<mem_width>(pins) | ...);
-		}
+	template<typename... ARGS>
+	[[nodiscard]] inline bool areSet(const ARGS...pins) const volatile {
+		return ((static_cast<mem_width>(pins) | ...) & reg) == (static_cast<mem_width>(pins) | ...);
+	}
 	/*
 	function to cast the structs to Register
 	*/
-	[[gnu::always_inline]] [[nodiscard]] static inline volatile Register& getRegister(volatile mem_width& reg) {
+	[[nodiscard]] static inline volatile Register& getRegister(volatile mem_width& reg) {
 		return reinterpret_cast<volatile Register&>(reg);
 	}
 }__attribute__((packed));
