@@ -7,7 +7,6 @@
 
 #pragma once
 #include "Register.hpp"
-#include "Eventsystem.hpp"
 #include "utils.h"
 
 namespace port {
@@ -25,21 +24,21 @@ namespace port {
 			public:
 
 			[[nodiscard]] static inline auto& getDir() {
-				return Register<mem_width>::getRegister(port.DIR);
+				return Register<>::getRegister(port.DIR);
 			};
 
 			[[nodiscard]] static inline auto& getIn() {
-				return Register<mem_width, ReadOnly>::getRegister(port.IN);
+				return Register<ReadOnly>::getRegister(port.IN);
 			};
 
 			[[nodiscard]] static inline auto& getOut() {
-				return Register<mem_width>::getRegister(port.OUT);
+				return Register<>::getRegister(port.OUT);
 			};
 				
 		}__attribute__((packed));
 	}
 }
-	
+//legacy
 namespace {
 	enum PortRegisters : mem_width {
 		DIR = 0,  /* Data Direction */

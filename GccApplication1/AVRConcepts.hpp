@@ -19,10 +19,24 @@ concept bool isRegister() {
 	};
 }
 
-template <class T>
+template <typename T, typename memWidth>
+concept bool isEventSystemUser() {
+	return requires(T a) {
+		{a.listener} -> volatile memWidth&;
+	};
+}
+
+template <typename T, typename memWidth>
+concept bool isIntegralConstant() {
+	return requires(T a) {
+		{a.value} -> memWidth;
+	};
+}
+
+template <class T, typename memWidth>
 concept bool isPin() {
 	return requires(T a) {
-		{a.pinValue} -> uint8_t;
+		{a.pinValue} -> memWidth;
 		
 	};
 }

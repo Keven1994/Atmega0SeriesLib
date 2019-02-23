@@ -10,7 +10,7 @@
 #include "Pin.hpp"
 
 struct RW {}; struct ReadOnly {};
-template<typename mem_width = uint8_t, typename Access = RW>
+template<typename Access = RW>
 struct Register {
 	volatile mem_width reg;
 	Register() = delete;
@@ -67,8 +67,8 @@ struct Register {
 	}
 }__attribute__((packed));
 
-template<typename mem_width>
-struct Register<mem_width, ReadOnly> {
+template<>
+struct Register<ReadOnly> {
 	const volatile mem_width reg;
 	Register() = delete;
 	Register(const Register&) = delete;

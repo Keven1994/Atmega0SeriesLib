@@ -11,19 +11,21 @@
 
 #include <avr/interrupt.h>
 
-#include "Pin.hpp"
-#include "Register.hpp"
 #include "Atmega4809.hpp"
-#include "Eventsystem.hpp"
-#include "AVRConcepts.hpp"
+
 
 	
 using namespace mega4809; //specify used mmcu
-using ch1 = typename mega4809::eventsystem::Channel<1>;
+//using ch1 = typename mega4809::eventsystem::Channel<1>;
 
 int main( ) {
 	using portf = Atmega4809::Ports::portf;
 	using porta = Atmega4809::Ports::porta;
+	
+	using ch1 = Atmega4809::EventSystem::ch1;
+	
+	ch1::setGenerator<ch1::generators::PortAGenerator<0>::portAPin>();
+	ch1::registerListener<ch1::users::evportf>();
 	
 	//configure ports for use
 	portf::getDir().on(); // every pin in Register dir will be 1 (0xff) == output
@@ -37,7 +39,7 @@ int main( ) {
     {	
 		portf::getOut().off();
 		auto isPin5Set = porta::getIn().areSet(pin5); // test e specific pin
-		//auto fullRegVal = porta::getIn().getRegister(); get full register value
+		//auto fullRegVal = porta::getIn().getRegister().raw(); get full register value
 		if(isPin5Set){
 			for(uint8_t i = 2; i < 6;i++){
 				Pin<mem_width> p(i);
