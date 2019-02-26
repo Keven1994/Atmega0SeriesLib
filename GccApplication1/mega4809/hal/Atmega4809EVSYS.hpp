@@ -146,6 +146,7 @@ namespace {
 	template<>
 	struct generatorChannel<0> {
 	
+		static inline auto& value = EVSYS.CHANNEL0;
 		using generals = generalGenerators;
 		using RTCDivGenerator = type1RTC;
 		
@@ -161,12 +162,12 @@ namespace {
 			using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
 		};
 
-
 	};
 	
 	template<>
 	struct generatorChannel<1> {
 	
+		static inline auto& value = EVSYS.CHANNEL1;
 		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type2RTC;
@@ -188,6 +189,7 @@ namespace {
 	template<>
 	struct generatorChannel<2> {
 	
+		static inline auto& value = EVSYS.CHANNEL2;
 		using generals = generalGenerators;
 		using RTCDivGenerator = type1RTC;
 		
@@ -208,6 +210,7 @@ namespace {
 	template<>
 	struct generatorChannel<3> {
 	
+	static inline auto& value = EVSYS.CHANNEL3;
 		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type2RTC;
@@ -228,6 +231,7 @@ namespace {
 	template<>
 	struct generatorChannel<4> {
 	
+	static inline auto& value = EVSYS.CHANNEL4;
 		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type1RTC;
@@ -248,6 +252,7 @@ namespace {
 	template<>
 	struct generatorChannel<5> {
 	
+	static inline auto& value = EVSYS.CHANNEL5;
 		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type2RTC;
@@ -268,38 +273,24 @@ namespace {
 	template<>
 	struct generatorChannel<6> {
 	
+	static inline auto& value = EVSYS.CHANNEL6;
 		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type1RTC;
-		
-		template<typename generator>
-		static inline void setGenerator(){
-			Register<mem_width>::getRegister(EVSYS.CHANNEL6).raw() = static_cast<mem_width>(generator::value);
-		}
 	};
 	
 	template<>
 	struct generatorChannel<7> {
 	
+	static inline auto& value = EVSYS.CHANNEL7;
 		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type2RTC;
 		
-		template<uint8_t pinNumber>
-		struct PortCGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portAPin = utils::integralConstant<mem_width,(0x40+pinNumber)>;
-		};
-		
-		template<uint8_t pinNumber>
-		struct PortDGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
-		};
 	};
 
 	template<mem_width number>
-	using channel = eventsystem::Channel<0,mega4809::generatorChannel<number>,mega4809::users>;
+	using channel = eventsystem::Channel<mega4809::generatorChannel<number>,number,mega4809::generatorChannel<number>,mega4809::users>;
 	
 	}
 }

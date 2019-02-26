@@ -31,7 +31,7 @@ struct Register {
 	}
 			
 	inline void invert() volatile  {
-		reg ^= reg;
+		reg ^= static_cast<mem_width>(0xffffffffffffffffULL);
 	}
 				
 	template<typename... ARGS>

@@ -14,9 +14,8 @@
 
 	namespace eventsystem {
 				
-			template<uint8_t channelNumber,typename Generators, typename Users>
+			template<typename channel, uint8_t number,typename Generators, typename Users>
 			struct Channel {
-				static inline constexpr uint8_t chNumber = channelNumber;
 				
 				using generators = Generators;
 				using users = Users;
@@ -27,13 +26,13 @@
 				
 				template<typename generator>
 				static inline void setGenerator(){
-					Register<mem_width>::getRegister(*(&EVSYS.CHANNEL0+channelNumber)).raw() = static_cast<mem_width>(generator::value);
+					Register<mem_width>::getRegister(channel::value).raw() = static_cast<mem_width>(generator::value);
 				}
 				
 				template<typename user>
 				static inline void registerListener(){
 					static_assert(isEventSystemUser<user,mem_width>(),"this type does not meet requirements of eventsystemusable");
-					user::listener = 1 << channelNumber;
+					user::listener = 1 << number;
 				}
 				
 			};

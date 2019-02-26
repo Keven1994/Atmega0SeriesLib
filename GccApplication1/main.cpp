@@ -9,18 +9,26 @@
 #include <stddef.h>
 #include <util/delay.h>
 #include <avr/io.h>
-#include "mega4809/Atmega4809.hpp"
+#define MEGA4808
 
-
+#ifdef MEGA4808
+	#include "mega4808/Atmega4808.hpp"
 	
-using namespace mega4809; //specify used mmcu
-//using ch1 = typename mega4809::eventsystem::Channel<1>;
-	static inline auto& testvar = PORTF;
-int main( ) {
+	using namespace mega4808; //specify used mmcu
+	using portf = Atmega4808::Ports::portf; 
+	using porta = Atmega4808::Ports::porta;
+	using ch1 = Atmega4808::EventSystem::ch1;
+#elif defined(MEGA4809)
+	#include "mega4808/Atmega4809.hpp"
+	
+	using namespace mega4809; //specify used mmcu
 	using portf = Atmega4809::Ports::portf;
 	using porta = Atmega4809::Ports::porta;
-	
 	using ch1 = Atmega4809::EventSystem::ch1;
+#endif
+	
+int main( ) {
+
 	
 	//eventsystem example
 	ch1::setGenerator<ch1::generators::PortAGenerator<0>::portAPin>(); //sets the generator for channel1

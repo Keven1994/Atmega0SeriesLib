@@ -1,9 +1,17 @@
+
+/*
+ * Atmega4808Port.hpp
+ *
+ * Created: 26.02.2019 22:16:26
+ *  Author: keven
+ */ 
+
 #pragma once
 #include "../../hw_abstractions/Port.hpp"
 
-namespace mega4809 {
+namespace mega4808 {
 	
-	namespace {	
+	namespace {
 		enum PortRegisters : mem_width {
 			DIR = 0,  /* Data Direction */
 			DIRSET = 1,  /* Data Direction Set */
@@ -28,7 +36,7 @@ namespace mega4809 {
 		
 		struct ports{
 			struct A{
-				static inline auto& value = PORTA;	
+				static inline auto& value = PORTA;
 			};
 			
 			struct B{
@@ -50,7 +58,7 @@ namespace mega4809 {
 			struct F{
 				static inline auto& value = PORTF;
 			};
-																
+			
 		};
 		
 		template<typename P>
