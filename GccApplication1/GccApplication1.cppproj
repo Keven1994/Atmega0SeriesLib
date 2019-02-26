@@ -170,33 +170,42 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Atmega4809.hpp">
+    <Compile Include="hw_abstractions\Eventsystem.hpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Atmega4809EVSYS.hpp">
+    <Compile Include="hw_abstractions\Pin.hpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Atmega4809Port.hpp">
+    <Compile Include="hw_abstractions\Port.hpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AVRConcepts.hpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Eventsystem.hpp">
+    <Compile Include="hw_abstractions\Register.hpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Pin.hpp">
+    <Compile Include="mega4809\Atmega4809.hpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Port.hpp">
+    <Compile Include="mega4809\hal\Atmega4809EVSYS.hpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Register.hpp">
+    <Compile Include="mega4809\hal\Atmega4809Port.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="tools\AVRConcepts.hpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="tools\utils.h">
+      <SubType>compile</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="mega4809" />
+    <Folder Include="mega4809\hal" />
+    <Folder Include="hw_abstractions" />
+    <Folder Include="tools" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>

@@ -1,7 +1,7 @@
 #pragma once
-#include "utils.h"
-#include "Register.hpp"
-#include "Eventsystem.hpp"
+#include "../../tools/utils.h"
+#include "../../hw_abstractions/Register.hpp"
+#include "../../hw_abstractions/Eventsystem.hpp"
 
 namespace mega4809 {
 	
@@ -105,7 +105,7 @@ struct users {
 };
 	
 namespace {
-	struct _generalGenerators {
+	struct generalGenerators {
 		
 		#define ic(x) typename utils::integralConstant<mem_width,x>
 		
@@ -146,7 +146,7 @@ namespace {
 	template<>
 	struct generatorChannel<0> {
 	
-		using generals = _generalGenerators;
+		using generals = generalGenerators;
 		using RTCDivGenerator = type1RTC;
 		
 		template<uint8_t pinNumber>
@@ -167,7 +167,7 @@ namespace {
 	template<>
 	struct generatorChannel<1> {
 	
-		using generals = _generalGenerators;
+		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type2RTC;
 		
@@ -188,7 +188,7 @@ namespace {
 	template<>
 	struct generatorChannel<2> {
 	
-		using generals = _generalGenerators;
+		using generals = generalGenerators;
 		using RTCDivGenerator = type1RTC;
 		
 		template<uint8_t pinNumber>
@@ -208,7 +208,7 @@ namespace {
 	template<>
 	struct generatorChannel<3> {
 	
-		using generals = _generalGenerators;
+		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type2RTC;
 		
@@ -228,7 +228,7 @@ namespace {
 	template<>
 	struct generatorChannel<4> {
 	
-		using generals = _generalGenerators;
+		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type1RTC;
 		
@@ -248,7 +248,7 @@ namespace {
 	template<>
 	struct generatorChannel<5> {
 	
-		using generals = _generalGenerators;
+		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type2RTC;
 		
@@ -268,7 +268,7 @@ namespace {
 	template<>
 	struct generatorChannel<6> {
 	
-		using generals = _generalGenerators;
+		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type1RTC;
 		
@@ -281,7 +281,7 @@ namespace {
 	template<>
 	struct generatorChannel<7> {
 	
-		using generals = _generalGenerators;
+		using generals = generalGenerators;
 		
 		using RTCDivGenerator = type2RTC;
 		

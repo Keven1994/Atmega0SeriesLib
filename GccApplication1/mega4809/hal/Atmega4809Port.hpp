@@ -1,5 +1,5 @@
 #pragma once
-#include "Port.hpp"
+#include "../../hw_abstractions/Port.hpp"
 
 namespace mega4809 {
 	
@@ -27,17 +27,35 @@ namespace mega4809 {
 			PIN6CTRL = 22,  /* Pin 6 Control */
 			PIN7CTRL = 23  /* Pin 7 Control */
 		};
-						
-		enum ports : mem_width {
-			A = 0,
-			B = 1*sizeof(PORT_t),
-			C = 2*sizeof(PORT_t),
-			D = 3*sizeof(PORT_t),
-			E = 4*sizeof(PORT_t),
-			F = 5*sizeof(PORT_t)
+		
+		struct ports{
+			struct A{
+				static inline auto& value = PORTA;	
+			};
+			
+			struct B{
+				static inline auto& value = PORTB;
+			};
+			
+			struct C{
+				static inline auto& value = PORTC;
+			};
+			
+			struct D{
+				static inline auto& value = PORTD;
+			};
+			
+			struct E{
+				static inline auto& value = PORTE;
+			};
+			
+			struct F{
+				static inline auto& value = PORTF;
+			};
+																
 		};
 		
-		template<mem_width offset>
-		using port = port::Port<PortBaseAddress,offset,PortRegisters>;
+		template<typename P>
+		using port = port::Port<P,PortRegisters>;
 	}
 }

@@ -6,16 +6,16 @@
  */ 
 
 #pragma once
-#include "Register.hpp"
-#include "utils.h"
+#include "../hw_abstractions/Register.hpp"
+#include "../tools/utils.h"
 
 namespace port {
 
 	namespace {
-		template<ptr_t baseAddress,auto offset, typename regEnum>
+		template<typename P, typename regEnum>
 		class Port {
 
-			static inline auto& port = *((PORT_t*)(baseAddress + static_cast<mem_width>(offset)));
+			static inline auto& port = P::value;
 
 			public:
 			
@@ -27,7 +27,7 @@ namespace port {
 
 			template<registers reg>
 			[[nodiscard]] static inline auto& getMember(){
-				auto* tmp = (mem_width*)&port;
+				auto* tmp = reinterpret_cast<mem_width*>(&port);
 				return Register<>::getRegister(*( tmp + reg));
 			}
 

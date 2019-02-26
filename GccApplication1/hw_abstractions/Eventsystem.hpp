@@ -8,8 +8,8 @@
 
 #pragma once
 #include "Register.hpp"
-#include "utils.h"
-#include "AVRConcepts.hpp"
+#include "../tools/utils.h"
+#include "../tools/AVRConcepts.hpp"
 
 
 	namespace eventsystem {
