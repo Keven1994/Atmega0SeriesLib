@@ -18,10 +18,18 @@ namespace port {
 			static inline auto& port = *((PORT_t*)(baseAddress + static_cast<mem_width>(offset)));
 
 			public:
-			using registerEnum = regEnum;
+			
+			using registers = regEnum;
+			
 			Port() = delete;
 			Port(const Port&) = delete;
 			Port(Port&&) = delete;
+
+			template<registers reg>
+			[[nodiscard]] static inline auto& getMember(){
+				auto* tmp = (mem_width*)&port;
+				return Register<>::getRegister(*( tmp + reg));
+			}
 
 			[[nodiscard]] static inline auto& getDir() {
 				return Register<>::getRegister(port.DIR);

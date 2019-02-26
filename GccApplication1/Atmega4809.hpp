@@ -12,8 +12,6 @@
 using mem_width = uint8_t;
 using ptr_t = uintptr_t;
 //hw includes
-#include "Port.hpp"
-#include "Eventsystem.hpp"
 #include "Atmega4809EVSYS.hpp"
 #include "Atmega4809Port.hpp"
 

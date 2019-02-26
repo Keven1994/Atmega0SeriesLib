@@ -40,7 +40,7 @@ int main( ) {
 		if(isPin5Set){
 			for(uint8_t i = 2; i < 6;i++){
 				Pin p(i);
-				portf::getOut().on(p);
+				portf::getMember<portf::registers::OUT>().on(p); //alternative way to get a member register of portx
 			}
 		}		
 
