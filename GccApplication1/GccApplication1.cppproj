@@ -176,6 +176,9 @@
     <Compile Include="Atmega4809EVSYS.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Atmega4809Port.hpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="AVRConcepts.hpp">
       <SubType>compile</SubType>
     </Compile>

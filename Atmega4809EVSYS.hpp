@@ -1,4 +1,7 @@
+#pragma once
+
 namespace mega4809 {
+	
 struct users {
 		
 	struct evporta {

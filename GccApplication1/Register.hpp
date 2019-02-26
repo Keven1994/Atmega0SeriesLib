@@ -26,7 +26,7 @@ struct Register {
 	}
 	
 	template<typename... ARGS>
-	inline void on(const ARGS... pins) volatile {
+	[[gnu::always_inline]] inline void on(const ARGS... pins) volatile {
 		reg |= (static_cast<mem_width>(pins) | ...);
 	}
 			

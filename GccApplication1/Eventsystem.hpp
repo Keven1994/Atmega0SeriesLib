@@ -11,8 +11,7 @@
 #include "utils.h"
 #include "AVRConcepts.hpp"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsubobject-linkage"
+
 	namespace eventsystem {
 				
 			template<uint8_t channelNumber,typename Generators, typename Users>
@@ -40,4 +39,3 @@
 			};
 		
 }
-#pragma GCC diagnostic pop
