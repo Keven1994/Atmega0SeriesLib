@@ -18,7 +18,7 @@ namespace port {
 			static inline auto& port = P::value;
 
 			public:
-			
+			using pins = typename P::pins;
 			using registers = regEnum;
 			
 			Port() = delete;

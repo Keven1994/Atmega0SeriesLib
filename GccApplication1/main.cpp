@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <util/delay.h>
 #include <avr/io.h>
+
 #define MEGA4808
 
 #ifdef MEGA4808
@@ -29,26 +30,28 @@
 	
 int main( ) {
 
-	
 	//eventsystem example
 	ch1::setGenerator<ch1::generators::PortAGenerator<0>::portAPin>(); //sets the generator for channel1
 	ch1::registerListener<ch1::users::evportf>();					   //register listener portf for channel1
 	
 	//configure ports for use
 	portf::getDir().on(); // every pin in Register dir will be 1 (0xff) == output
-	constexpr Pin pin5(5); // pin5 variable for general usage
 	porta::getDir().on();
-	porta::getDir().off(pin5); // sets pin5 to off == input
+	
+	//get a pin from the port --> this is safe, the pin will be available
+	constexpr auto pa5Pin = porta::pins::pin5;
+	
+	porta::getDir().off(pa5Pin); // sets pin5 to off == input
 
     while (true)  //hello world mic
     {	
 		portf::getOut().off();
-		auto isPin5Set = porta::getIn().areSet(pin5); // test e specific pin
+		auto isPin5Set = porta::getIn().areSet(pa5Pin); // test e specific pin
 		//auto fullRegVal = porta::getIn().getRegister().raw(); get full register value
 		if(isPin5Set){
 			for(uint8_t i = 2; i < 6;i++){
-				Pin p(i);
-				portf::getMember<portf::registers::OUT>().on(p); //alternative way to get a member register of portx
+				Pin p(i); //unsafe usage --> pins should be accessed from the class to ensure they can be used
+				portf::getMember<portf::registers::OUT>().on(p); //alternative way to get a member register of portf
 			}
 		}		
 
