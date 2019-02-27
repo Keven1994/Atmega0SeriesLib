@@ -14,6 +14,7 @@ using ptr_t = uintptr_t;
 //hw includes
 #include "hal/Atmega4808EVSYS.hpp"
 #include "hal/Atmega4808Port.hpp"
+#include "hal/Atmega4808SPI.hpp"
 
 
 namespace mega4808 {
@@ -45,6 +46,14 @@ namespace mega4808 {
 			using ch3 = channel<3>;
 			using ch4 = channel<4>;
 			using ch5 = channel<5>;
+		};
+		
+		struct SPI {
+			struct Master { static inline constexpr bool value = true; };
+			struct Slave { static inline constexpr bool value = false; };
+				
+			template<typename Mode>
+			using Spi = _SPI<Mode::value>;
 		};
 	};
 }
