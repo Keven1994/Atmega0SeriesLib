@@ -50,6 +50,7 @@ namespace spi {
 		static inline void init(){
 			auto& ctra = Register<>::getRegister(SPI0.CTRLA);
 			auto& ctrb = Register<>::getRegister(SPI0.CTRLB);
+			
 			ctra.raw() = master; 
 			port::getDir().on(Mosipin, Clkpin);
 			port::getDir().off(Misopin);
@@ -73,6 +74,14 @@ namespace spi {
 			auto& datareg = Register<>::getRegister(SPI0.DATA);
 			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
 			datareg.raw() = data;
+			while(! ints.areSet(interruptFlag));
+			return datareg.raw();
+		}
+		
+		[[nodiscard]] static inline mem_width singleTransmit() {
+			auto& datareg = Register<>::getRegister(SPI0.DATA);
+			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+
 			while(! ints.areSet(interruptFlag));
 			return datareg.raw();
 		}
@@ -101,12 +110,58 @@ namespace spi {
 
 	template<typename port, auto& sspin,auto& Mosipin, auto& Misopin, auto& Clkpin,bool MSB = true, TransferMode transfermode = TransferMode::Mode0, BufferMode buffermode = BufferMode::unbuffered>
 	struct SPISlave {
+
 		static inline void init(){
-			SPI0.CTRLA = 0x00;
-			SPI0.CTRLB = static_cast<mem_width>(transfermode);
+			auto& ctra = Register<>::getRegister(SPI0.CTRLA);
+			auto& ctrb = Register<>::getRegister(SPI0.CTRLB);
+			ctra.raw() = 0x00; //operate in slave mode
+			port::getDir().off(Mosipin, Clkpin);
+			port::getDir().on(Misopin);
+			
+			ctrb.raw() = static_cast<mem_width>(transfermode);
 			if constexpr(!MSB)
-				SPI0.CTRLA |= lsb;
-			SPI0.CTRLB |= static_cast<mem_width>(buffermode);
+				ctra.on(lsb);
+				
+			port::getDir().off(sspin); //ss as input
+			
+			ctrb.on(buffermode);
+			ctra.on(enable);
+		}
+
+		[[nodiscard]] static inline mem_width singleTransmit(mem_width data) {
+			auto& datareg = Register<>::getRegister(SPI0.DATA);
+			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			datareg.raw() = data;
+			while(! ints.areSet(interruptFlag));
+			return datareg.raw();
+		}
+		
+		[[nodiscard]] static inline mem_width singleTransmit() {
+			auto& datareg = Register<>::getRegister(SPI0.DATA);
+			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+
+			while(! ints.areSet(interruptFlag));
+			return datareg.raw();
+		}
+
+		static inline void singleTransfer(mem_width data) {
+			auto& datareg = Register<>::getRegister(SPI0.DATA);
+			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			datareg.raw() = data;
+			while(! ints.areSet(interruptFlag));
+		}
+
+		[[nodiscard]] static inline mem_width* Transmit(mem_width* data, mem_width size) {
+			for(mem_width i = 0; i < size; i++){
+				data[i] = singleTransmit(data[i]);
+			}
+			return data;
+		}
+
+		static inline void Transfer(mem_width* data, mem_width size) {
+			for(mem_width i = 0; i < size; i++){
+				data[i] = singleTransmit(data[i]);
+			}
 		}
 	};
 }
