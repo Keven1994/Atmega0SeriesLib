@@ -78,7 +78,7 @@ namespace spi {
 			return datareg.raw();
 		}
 		
-		[[nodiscard]] static inline mem_width singleTransmit() {
+		[[nodiscard]] static inline mem_width singleReceive() {
 			auto& datareg = Register<>::getRegister(SPI0.DATA);
 			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
 
@@ -100,9 +100,16 @@ namespace spi {
 			return data;
 		}
 		
+		[[nodiscard]] static inline mem_width* Receive(mem_width* data, mem_width size) {
+			for(mem_width i = 0; i < size; i++){
+				data[i] = singleReceive();
+			}
+			return data;
+		}
+		
 		static inline void Transfer(mem_width* data, mem_width size) {
 			for(mem_width i = 0; i < size; i++){
-				data[i] = singleTransmit(data[i]);
+				singleTransmit(data[i]);
 			}
 		}
 		
@@ -135,8 +142,15 @@ namespace spi {
 			while(! ints.areSet(interruptFlag));
 			return datareg.raw();
 		}
+
+		static inline void singleTransfer(mem_width data) {
+			auto& datareg = Register<>::getRegister(SPI0.DATA);
+			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			datareg.raw() = data;
+			while(! ints.areSet(interruptFlag));
+		}
 		
-		[[nodiscard]] static inline mem_width singleTransmit() {
+		[[nodiscard]] static inline mem_width singleReceive() {
 			auto& datareg = Register<>::getRegister(SPI0.DATA);
 			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
 
@@ -144,11 +158,11 @@ namespace spi {
 			return datareg.raw();
 		}
 
-		static inline void singleTransfer(mem_width data) {
-			auto& datareg = Register<>::getRegister(SPI0.DATA);
-			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
-			datareg.raw() = data;
-			while(! ints.areSet(interruptFlag));
+		[[nodiscard]] static inline mem_width* Receive(mem_width* data, mem_width size) {
+			for(mem_width i = 0; i < size; i++){
+				data[i] = singleReceive();
+			}
+			return data;
 		}
 
 		[[nodiscard]] static inline mem_width* Transmit(mem_width* data, mem_width size) {
@@ -160,7 +174,7 @@ namespace spi {
 
 		static inline void Transfer(mem_width* data, mem_width size) {
 			for(mem_width i = 0; i < size; i++){
-				data[i] = singleTransmit(data[i]);
+				singleTransmit(data[i]);
 			}
 		}
 	};

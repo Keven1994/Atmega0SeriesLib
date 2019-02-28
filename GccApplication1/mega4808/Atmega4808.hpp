@@ -31,10 +31,8 @@ namespace mega4808 {
 			Ports(Ports&&) = delete;
 			
 			using porta = port<ports::A>;
-			//using portb = port<ports::B>; not available ?
 			using portc = port<ports::C>;
 			using portd = port<ports::D>;
-			//using porte = port<ports::E>; not available ? 
 			using portf = port<ports::F>;
 		};
 		

@@ -42,15 +42,7 @@ namespace mega4808 {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
 			};
-			
-			/* not available ?
-			struct B{
-				static inline auto& value = PORTB;
-				struct pins {
-					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
-				};
-			};*/
-			
+		
 			struct C{
 				static inline auto& value = PORTC;
 				struct pins {
@@ -64,15 +56,7 @@ namespace mega4808 {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
 			};
-			
-			/* not available ?
-			struct E{
-				static inline auto& value = PORTE;
-				struct pins {
-					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
-				};
-			};*/
-			
+		
 			struct F{
 				static inline auto& value = PORTF;
 				struct pins {
