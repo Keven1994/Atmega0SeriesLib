@@ -1,6 +1,5 @@
 #pragma once
 #include "../../tools/utils.h"
-#include "../../hw_abstractions/Register.hpp"
 #include "../../hw_abstractions/Eventsystem.hpp"
 
 namespace mega4808 {
@@ -99,7 +98,7 @@ namespace mega4808 {
 			using ccl_lut0 = ic(0x10); using ccl_lut1 = ic(0x11); using ccl_lut2 = ic(0x12); using ccl_lut3 = ic(0x13);
 			using ac0_out = ic(0x20); using adc0_comp = ic(0x24);
 			using usart0_xck0 = ic(0x60); using usart0_xck1 = ic(0x61); using usart1_xck0 = ic(0x62); using usart1_xck1 = ic(0x63);
-			using usart2_xck0 = ic(0x64); using usart2_xck1 = ic(0x65); 
+			using usart2_xck0 = ic(0x64); using usart2_xck1 = ic(0x65);
 			using spi0_sck = ic(0x68);
 			using tca0_ovf = ic(0x80); using tca0_err = ic(0x81);
 			using tca0_cmp0 = ic(0x84); using tca0_cmp1 = ic(0x85); using tca0_cmp2 = ic(0x86);
@@ -124,7 +123,7 @@ namespace mega4808 {
 			using div8192 = utils::integralConstant<mem_width,0x0B>;
 		};
 		
-		template<uint8_t number>
+		template<mem_width number>
 		struct generatorChannel;
 		
 		template<>
@@ -134,10 +133,10 @@ namespace mega4808 {
 			using generals = generalGenerators;
 			using RTCDivGenerator = type1RTC;
 			
-			template<uint8_t pinNumber>
+			template<auto& pin>
 			struct PortAGenerator {
-				static_assert(pinNumber < 8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x40+pinNumber;
+				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
+				static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pin);
 			};
 
 		};
@@ -150,10 +149,10 @@ namespace mega4808 {
 			
 			using RTCDivGenerator = type2RTC;
 			
-			template<uint8_t pinNumber>
+			template<auto& pin>
 			struct PortAGenerator {
-				static_assert(pinNumber < 8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x40+pinNumber;
+				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
+				static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pin);
 			};
 
 		};
@@ -165,16 +164,16 @@ namespace mega4808 {
 			using generals = generalGenerators;
 			using RTCDivGenerator = type1RTC;
 			
-			template<uint8_t pinNumber>
+			template<auto& pin>
 			struct PortCGenerator {
-				static_assert(pinNumber < 8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x40+pinNumber;
+				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
+				static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pin);
 			};
 			
-			template<uint8_t pinNumber>
+			template<auto& pin>
 			struct PortDGenerator {
-				static_assert(pinNumber < 8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x48+pinNumber;
+				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
+				static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pin);
 			};
 
 		};
@@ -187,16 +186,16 @@ namespace mega4808 {
 			
 			using RTCDivGenerator = type2RTC;
 			
-			template<uint8_t pinNumber>
+			template<auto& pin>
 			struct PortCGenerator {
-				static_assert(pinNumber < 8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x40+pinNumber;
+				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
+				static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pin);
 			};
 			
-			template<uint8_t pinNumber>
+			template<auto& pin>
 			struct PortDGenerator {
-				static_assert(pinNumber < 8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x48+pinNumber;
+				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
+				static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pin);
 			};
 		};
 
@@ -208,10 +207,10 @@ namespace mega4808 {
 			
 			using RTCDivGenerator = type1RTC;
 			
-			template<uint8_t pinNumber>
+			template<auto& pin>
 			struct PortFGenerator {
-				static_assert(pinNumber < 8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x48+pinNumber;
+				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
+				static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pin);
 			};
 		};
 		
@@ -223,15 +222,15 @@ namespace mega4808 {
 			
 			using RTCDivGenerator = type2RTC;
 			
-			template<uint8_t pinNumber>
+			template<auto& pin>
 			struct PortFGenerator {
-				static_assert(pinNumber < 8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x48+pinNumber;
+				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
+				static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pin);
 			};
 		};
 
 		template<mem_width number>
-		using channel = eventsystem::Channel<mega4808::generatorChannel<number>,number,mega4808::generatorChannel<number>,mega4808::users>;
+		using channel = eventsystem::Channel<mega4808::generatorChannel<number>, number, mega4808::generatorChannel<number>,mega4808::users>;
 		
 	}
 }

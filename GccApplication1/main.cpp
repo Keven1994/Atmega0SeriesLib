@@ -34,7 +34,7 @@
 	
 int main( ) {
 	//eventsystem example
-	ch1::setGenerator<ch1::generators::PortAGenerator<0>>(); //sets the generator for channel1
+	ch1::setGenerator<ch1::generators::PortAGenerator<porta::pins::pin0>>(); //sets the generator for channel1
 	ch1::registerListener<ch1::users::evportf>();					   //register listener portf for channel1
 	
 	//configure ports for use

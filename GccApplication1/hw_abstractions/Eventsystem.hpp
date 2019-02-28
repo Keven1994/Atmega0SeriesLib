@@ -14,7 +14,7 @@
 
 	namespace eventsystem {
 				
-			template<typename channel, uint8_t number,typename Generators, typename Users>
+			template<typename channel, mem_width number, typename Generators, typename Users>
 			struct Channel {
 				
 				using generators = Generators;

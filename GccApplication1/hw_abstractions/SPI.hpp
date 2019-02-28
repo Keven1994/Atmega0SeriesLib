@@ -64,7 +64,7 @@ namespace spi {
 			if constexpr(SlaveSelectDisable){
 				ctrb.on(ssd);
 			} else {
-				port::getDir().off(sspin);
+				port::getDir().off(sspin); // sspin as input for multi-master
 			}
 			ctrb.on(buffermode);
 			ctra.on(enable);
@@ -122,14 +122,12 @@ namespace spi {
 			auto& ctra = Register<>::getRegister(SPI0.CTRLA);
 			auto& ctrb = Register<>::getRegister(SPI0.CTRLB);
 			ctra.raw() = 0x00; //operate in slave mode
-			port::getDir().off(Mosipin, Clkpin);
+			port::getDir().off(Mosipin, Clkpin, sspin);
 			port::getDir().on(Misopin);
 			
 			ctrb.raw() = static_cast<mem_width>(transfermode);
 			if constexpr(!MSB)
 				ctra.on(lsb);
-				
-			port::getDir().off(sspin); //ss as input
 			
 			ctrb.on(buffermode);
 			ctra.on(enable);
