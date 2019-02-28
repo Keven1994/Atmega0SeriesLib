@@ -13,6 +13,10 @@
 #define MEGA4808
 
 #ifdef MEGA4808
+	//fix unavailable ports
+	#undef PORTB
+	#undef PORTE
+	///////////////////////
 	#include "mega4808/Atmega4808.hpp"
 	
 	using namespace mega4808; //specify used mmcu
@@ -29,7 +33,6 @@
 #endif
 	
 int main( ) {
-
 	//eventsystem example
 	ch1::setGenerator<ch1::generators::PortAGenerator<0>>(); //sets the generator for channel1
 	ch1::registerListener<ch1::users::evportf>();					   //register listener portf for channel1

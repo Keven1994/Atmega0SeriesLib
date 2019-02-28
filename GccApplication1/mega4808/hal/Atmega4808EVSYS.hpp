@@ -10,20 +10,12 @@ namespace mega4808 {
 			static inline auto& listener = EVSYS.USEREVOUTA;
 		};
 		
-		struct evportb {
-			static inline auto& listener = EVSYS.USEREVOUTB;
-		};
-		
 		struct evportc {
 			static inline auto& listener = EVSYS.USEREVOUTC;
 		};
 		
 		struct evportd {
 			static inline auto& listener = EVSYS.USEREVOUTD;
-		};
-		
-		struct evporte {
-			static inline auto& listener = EVSYS.USEREVOUTE;
 		};
 		
 		struct evportf {
@@ -46,10 +38,6 @@ namespace mega4808 {
 			static inline auto& listener = EVSYS.USERTCB2;
 		};
 		
-		struct evtcb3 {
-			static inline auto& listener = EVSYS.USERTCB3;
-		};
-		
 		struct evusart0 {
 			static inline auto& listener = EVSYS.USERUSART0;
 		};
@@ -60,10 +48,6 @@ namespace mega4808 {
 		
 		struct evusart2 {
 			static inline auto& listener = EVSYS.USERUSART2;
-		};
-		
-		struct evusart3 {
-			static inline auto& listener = EVSYS.USERUSART3;
 		};
 		
 		struct evccllut0a {
@@ -171,7 +155,7 @@ namespace mega4808 {
 				static_assert(pinNumber < 8, "only pins [0,7] allowed");
 				static inline constexpr mem_width value = 0x40+pinNumber;
 			};
-			
+
 		};
 		
 		template<>
