@@ -24,7 +24,7 @@ namespace port {
 			
 			using _port = P;
 			#define port P::value
-					
+
 			public:
 			using pins = typename P::pins;
 			using portPins = typename P::template portPins<Port>;
@@ -74,7 +74,9 @@ namespace port {
 		class PortPin{
 			#define port P::_port::value
 			public:
+			
 			NoConstructors(PortPin);
+			
 			static inline constexpr mem_width pinValue = 1 << number;
 			
 			static inline void off(){
