@@ -1,10 +1,10 @@
 
 /*
- * Atmega4808Port.hpp
- *
- * Created: 26.02.2019 22:16:26
- *  Author: keven
- */ 
+* Atmega4808Port.hpp
+*
+* Created: 26.02.2019 22:16:26
+*  Author: keven
+*/
 
 #pragma once
 #include "../../hw_abstractions/Port.hpp"
@@ -35,18 +35,28 @@ namespace mega4808 {
 			PIN7CTRL = 23  /* Pin 7 Control */
 		};
 		
+		#define pp(number) using pin ## number = port::PortPin<P,number>
+		
 		struct ports{
 			struct A{
 				static inline auto& value = PORTA;
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
+				template<typename P>
+				struct portPins{
+					pp(0); pp(1); pp(2); pp(3); pp(4); pp(5); pp(6); pp(7);
+				};
 			};
-		
+			
 			struct C{
 				static inline auto& value = PORTC;
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3};
+				};
+				template<typename P>
+				struct portPins{
+					pp(0); pp(1); pp(2); pp(3);
 				};
 			};
 			
@@ -55,15 +65,24 @@ namespace mega4808 {
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
+				template<typename P>
+				struct portPins{
+					pp(0); pp(1); pp(2); pp(3); pp(4); pp(5); pp(6); pp(7);
+				};
 			};
-		
+			
 			struct F{
 				static inline auto& value = PORTF;
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6};
 				};
+				template<typename P>
+				struct portPins{
+					pp(0); pp(1); pp(2); pp(3); pp(4); pp(5); pp(6);
+				};
 			};
 			
+			#undef pp
 		};
 		
 		template<typename P>

@@ -47,7 +47,7 @@
     <com_atmel_avrdbg_tool_nedbg>
       <ToolOptions>
         <InterfaceProperties>
-          <UpdiClock>1200000</UpdiClock>
+          <UpdiClock>750000</UpdiClock>
         </InterfaceProperties>
         <InterfaceName>UPDI</InterfaceName>
       </ToolOptions>
@@ -55,7 +55,29 @@
       <ToolNumber>ATML3203071800001152</ToolNumber>
       <ToolName>nEDBG</ToolName>
     </com_atmel_avrdbg_tool_nedbg>
-    <avrtoolinterfaceclock>1200000</avrtoolinterfaceclock>
+    <avrtoolinterfaceclock>750000</avrtoolinterfaceclock>
+    <com_atmel_avrdbg_tool_simulator>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+        </InterfaceProperties>
+        <InterfaceName>UPDI</InterfaceName>
+      </ToolOptions>
+      <ToolType xmlns="">com.atmel.avrdbg.tool.simulator</ToolType>
+      <ToolNumber xmlns="">
+      </ToolNumber>
+      <ToolName xmlns="">Simulator</ToolName>
+    </com_atmel_avrdbg_tool_simulator>
+    <custom>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+        </InterfaceProperties>
+        <InterfaceName>UPDI</InterfaceName>
+      </ToolOptions>
+      <ToolType xmlns="">custom</ToolType>
+      <ToolNumber xmlns="">
+      </ToolNumber>
+      <ToolName xmlns="">Custom Programming Tool</ToolName>
+    </custom>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -207,6 +229,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="mega4809\hal\Atmega4809Port.hpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="mega4809\hal\Atmega4809SPI.hpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="tools\AVRConcepts.hpp">

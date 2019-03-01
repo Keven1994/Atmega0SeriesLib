@@ -24,7 +24,7 @@
 	using porta = Atmega4808::Ports::porta;
 	using ch1 = Atmega4808::EventSystem::ch1;
 #elif defined(MEGA4809)
-	#include "mega4808/Atmega4809.hpp"
+	#include "mega4809/Atmega4809.hpp"
 	
 	using namespace mega4809; //specify used mmcu
 	using portf = Atmega4809::Ports::portf;
@@ -34,27 +34,31 @@
 	
 int main( ) {
 	//eventsystem example
-	ch1::setGenerator<ch1::generators::PortAGenerator<porta::pins::pin0>>(); //sets the generator for channel1
-	ch1::registerListener<ch1::users::evportf>();					   //register listener portf for channel1
-	
+	//ch1::setGenerator<ch1::generators::PortAGenerator<porta::pins::pin0>>(); //sets the generator for channel1
+	//ch1::registerListener<ch1::users::evportf>();					   //register listener portf for channel1
+
 	//configure ports for use
-	portf::getDir().on(); // every pin in Register dir will be 1 (0xff) == output
-	porta::getDir().on();
+	//portf::setOutput(); // every pin in Register dir will be 1 (0xff) == output
+	//porta::setOutput();
 	
 	//get a pin from the port --> this is safe, the pin will be available
-	constexpr auto pa5Pin = porta::pins::pin5;
+	//constexpr auto pa5Pin = porta::pins::pin5;
 	
-	porta::getDir().off(pa5Pin); // sets pin5 to off == input
+	porta::setOutput(1<<5); // sets pin5 to input
+	//porta::portPins::pin5::on();
+	//PORTA.DIR |= (1 << 5);
+	//PORTA.OUT |= 1 <<5;
 
     while (true)  //hello world mic
     {	
-		portf::getOut().off();
-		auto isPin5Set = porta::getIn().areSet(pa5Pin); // test e specific pin
+		//portf::getOutput().off();
+		//auto isPin5Set = porta::getInput().areSet(pa5Pin); // test e specific pin
 		//auto fullRegVal = porta::getIn().getRegister().raw(); get full register value
-		if(isPin5Set){
+		if(true){
 			for(uint8_t i = 2; i < 6;i++){
-				Pin p(i); //unsafe usage --> pins should be accessed from the class to ensure they can be used
-				portf::getMember<portf::registers::OUT>().on(p); //alternative way to get a member register of portf
+				//Pin p(i); //unsafe usage --> pins should be accessed from the class to ensure they can be used
+				//portf::getMember<portf::registers::OUT>().on(p); //alternative way to get a member register of portf
+				porta::portPins::pin5::on();
 			}
 		}		
 

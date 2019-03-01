@@ -47,6 +47,8 @@ namespace spi {
 	TransferMode transfermode = TransferMode::Mode0, BufferMode buffermode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
 	struct SPIMaster {
 
+		NoConstructors(SPIMaster);
+
 		static inline void init(){
 			auto& ctra = Register<>::getRegister(SPI0.CTRLA);
 			auto& ctrb = Register<>::getRegister(SPI0.CTRLB);
@@ -117,6 +119,8 @@ namespace spi {
 
 	template<typename port, auto& sspin,auto& Mosipin, auto& Misopin, auto& Clkpin,bool MSB = true, TransferMode transfermode = TransferMode::Mode0, BufferMode buffermode = BufferMode::unbuffered>
 	struct SPISlave {
+
+		NoConstructors(SPISlave);
 
 		static inline void init(){
 			auto& ctra = Register<>::getRegister(SPI0.CTRLA);

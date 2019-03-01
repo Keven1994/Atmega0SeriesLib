@@ -13,6 +13,7 @@
 #include "../../src/CustomDataTypes/Percentage.h"
 #endif
 
+#define NoConstructors(x) x() = delete; x(const x&) = delete; x(x&&) = delete
 
 namespace utils {
 

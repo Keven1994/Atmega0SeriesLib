@@ -150,16 +150,16 @@ namespace {
 		using generals = generalGenerators;
 		using RTCDivGenerator = type1RTC;
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortAGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portAPin = utils::integralConstant<mem_width,(0x40+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pinNumber);
 		};
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortBGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pinNumber);
 		};
 
 	};
@@ -172,16 +172,16 @@ namespace {
 		
 		using RTCDivGenerator = type2RTC;
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortAGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portAPin = utils::integralConstant<mem_width,(0x40+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pinNumber);
 		};
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortBGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pinNumber);
 		};
 		
 	};
@@ -193,16 +193,16 @@ namespace {
 		using generals = generalGenerators;
 		using RTCDivGenerator = type1RTC;
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortCGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portAPin = utils::integralConstant<mem_width,(0x40+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pinNumber);
 		};
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortDGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pinNumber);
 		};
 
 	};
@@ -215,16 +215,16 @@ namespace {
 		
 		using RTCDivGenerator = type2RTC;
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortCGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portAPin = utils::integralConstant<mem_width,(0x40+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pinNumber);
 		};
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortDGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pinNumber);
 		};
 	};
 
@@ -236,16 +236,16 @@ namespace {
 		
 		using RTCDivGenerator = type1RTC;
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortEGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portAPin = utils::integralConstant<mem_width,(0x40+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pinNumber);
 		};
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortFGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pinNumber);
 		};
 	};
 	
@@ -257,16 +257,16 @@ namespace {
 		
 		using RTCDivGenerator = type2RTC;
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortEGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portAPin = utils::integralConstant<mem_width,(0x40+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pinNumber);
 		};
 		
-		template<uint8_t pinNumber>
+		template<auto& pinNumber>
 		struct PortFGenerator {
-			static_assert(pinNumber < 8, "only pins [0,7] allowed");
-			using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
+			static_assert(static_cast<mem_width>(pinNumber) < 8, "only pins [0,7] allowed");
+			static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pinNumber);
 		};
 	};
 	

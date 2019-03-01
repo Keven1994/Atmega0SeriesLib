@@ -20,9 +20,7 @@
 				using generators = Generators;
 				using users = Users;
 				
-				Channel() = delete;
-				Channel(const Channel&) = delete;
-				Channel(Channel&&) = delete;
+				NoConstructors(Channel);
 				
 				template<typename generator>
 				static inline void setGenerator(){
