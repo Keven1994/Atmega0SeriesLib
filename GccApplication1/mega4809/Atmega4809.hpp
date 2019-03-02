@@ -14,6 +14,7 @@ using ptr_t = uintptr_t;
 //hw includes
 #include "hal/Atmega4809EVSYS.hpp"
 #include "hal/Atmega4809Port.hpp"
+#include "hal/Atmega4809SPI.hpp"
 
 
 namespace mega4809 {	
@@ -43,6 +44,18 @@ namespace mega4809 {
 			using ch5 = channel<5>;
 			using ch6 = channel<6>;
 			using ch7 = channel<7>;
+		};
+		
+		struct SPI {
+			using TransferMode = spi::TransferMode;
+			using BufferMode = spi::BufferMode;
+			using Prescaler = spi::Prescaler;
+			
+			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0, BufferMode bmode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
+			using SpiMaster = spiMaster<msb,clockDouble, slaveSelectDisable,tmode,bmode,prescaler>;
+			
+			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0, BufferMode bmode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
+			using SpiSlave = spiSlave<msb,tmode,bmode>;
 		};
 	};
 }
