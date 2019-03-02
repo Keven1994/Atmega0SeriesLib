@@ -1,9 +1,9 @@
 /*
- * Pin.h
- *
- * Created: 27.01.2019 19:29:16
- *  Author: Keven
- */ 
+* Pin.h
+*
+* Created: 27.01.2019 19:29:16
+*  Author: Keven
+*/
 
 
 #pragma once

@@ -1,10 +1,10 @@
 
 /*
- * Atmega4808.hpp
- *
- * Created: 26.02.2019 22:15:24
- *  Author: keven
- */ 
+* Atmega4808.hpp
+*
+* Created: 26.02.2019 22:15:24
+*  Author: keven
+*/
 
 #pragma once
 
@@ -47,11 +47,15 @@ namespace mega4808 {
 		};
 		
 		struct SPI {
-			struct Master { static inline constexpr bool value = true; };
-			struct Slave { static inline constexpr bool value = false; };
-				
-			template<typename Mode>
-			using Spi = _SPI<Mode::value>;
+			using TransferMode = spi::TransferMode;
+			using BufferMode = spi::BufferMode;
+			using Prescaler = spi::Prescaler;
+			
+			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0, BufferMode bmode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
+			using SpiMaster = spiMaster<msb,clockDouble, slaveSelectDisable,tmode,bmode,prescaler>;
+			
+			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0, BufferMode bmode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
+			using SpiSlave = spiSlave<msb,tmode,bmode>;
 		};
 	};
 }

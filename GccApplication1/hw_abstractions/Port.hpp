@@ -72,7 +72,9 @@ namespace port {
 
 		template<typename P, mem_width number>
 		class PortPin{
+			
 			#define port P::_port::value
+			
 			public:
 			
 			NoConstructors(PortPin);
@@ -98,6 +100,7 @@ namespace port {
 			static inline void setInput() {
 				port.DIR &= ~pinValue;
 			}
+			
 			#undef port
 		};
 	}
