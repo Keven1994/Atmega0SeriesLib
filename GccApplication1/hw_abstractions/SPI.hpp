@@ -50,8 +50,8 @@ namespace spi {
 		NoConstructors(SPIMaster);
 
 		[[gnu::always_inline]] static inline void init(){
-			auto& ctra = Register<>::getRegister(SPI0.CTRLA);
-			auto& ctrb = Register<>::getRegister(SPI0.CTRLB);
+			auto& ctra = reg::Register<>::getRegister(SPI0.CTRLA);
+			auto& ctrb = reg::Register<>::getRegister(SPI0.CTRLB);
 			
 			ctra.raw() = master;
 			port::getDir().on(Mosipin, Clkpin);
@@ -73,24 +73,24 @@ namespace spi {
 		}
 		
 		[[nodiscard]] static inline mem_width singleTransmit(mem_width data) {
-			auto& datareg = Register<>::getRegister(SPI0.DATA);
-			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
+			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
 			datareg.raw() = data;
 			while(! ints.areSet(interruptFlag));
 			return datareg.raw();
 		}
 		
 		[[nodiscard]] static inline mem_width singleReceive() {
-			auto& datareg = Register<>::getRegister(SPI0.DATA);
-			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
+			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
 
 			while(! ints.areSet(interruptFlag));
 			return datareg.raw();
 		}
 		
 		static inline void singleTransfer(mem_width data) {
-			auto& datareg = Register<>::getRegister(SPI0.DATA);
-			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
+			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
 			datareg.raw() = data;
 			while(! ints.areSet(interruptFlag));
 		}
@@ -123,8 +123,8 @@ namespace spi {
 		NoConstructors(SPISlave);
 
 		static inline void init(){
-			auto& ctra = Register<>::getRegister(SPI0.CTRLA);
-			auto& ctrb = Register<>::getRegister(SPI0.CTRLB);
+			auto& ctra = reg::Register<>::getRegister(SPI0.CTRLA);
+			auto& ctrb = reg::Register<>::getRegister(SPI0.CTRLB);
 			ctra.raw() = 0x00; //operate in slave mode
 			port::getDir().off(Mosipin, Clkpin, sspin);
 			port::getDir().on(Misopin);
@@ -138,23 +138,23 @@ namespace spi {
 		}
 
 		[[nodiscard]] static inline mem_width singleTransmit(mem_width data) {
-			auto& datareg = Register<>::getRegister(SPI0.DATA);
-			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
+			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
 			datareg.raw() = data;
 			while(! ints.areSet(interruptFlag));
 			return datareg.raw();
 		}
 
 		static inline void singleTransfer(mem_width data) {
-			auto& datareg = Register<>::getRegister(SPI0.DATA);
-			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
+			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
 			datareg.raw() = data;
 			while(! ints.areSet(interruptFlag));
 		}
 		
 		[[nodiscard]] static inline mem_width singleReceive() {
-			auto& datareg = Register<>::getRegister(SPI0.DATA);
-			auto& ints = Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
+			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
 
 			while(! ints.areSet(interruptFlag));
 			return datareg.raw();

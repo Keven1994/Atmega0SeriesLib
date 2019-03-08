@@ -24,7 +24,7 @@
 				
 				template<typename generator>
 				static inline void setGenerator(){
-					Register<mem_width>::getRegister(channel::value).raw() = static_cast<mem_width>(generator::value);
+					reg::Register<>::getRegister(channel::value).raw() = static_cast<mem_width>(generator::value);
 				}
 				
 				template<typename user>

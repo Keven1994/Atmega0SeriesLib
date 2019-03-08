@@ -32,33 +32,14 @@
 	using ch1 = Atmega4809::EventSystem::ch1;
 #endif
 	
+	enum class testEnum : mem_width {
+		ab = 1 << 1,
+		ac = 1 << 3
+		};
+	
 int main( ) {
-	//eventsystem example
-	ch1::setGenerator<ch1::generators::PortAGenerator<porta::pins::pin0>>(); //sets the generator for channel1
-	ch1::registerListener<ch1::users::evportf>();					   //register listener portf for channel1
-
-	//configure ports for use
-	portf::setOutput(); // every pin in Register dir will be 1 (0xff) == output
-	porta::setOutput();
-	
-	//get a pin from the port --> this is safe, the pin will be available
-	constexpr auto pa5Pin = porta::pins::pin5;
-	
-	porta::setOutput(1<<5); // sets pin5 to input
-
-    while (true)  //hello world mic
-    {	
-		portf::getOutput().off();
-		auto isPin5Set = porta::getInput().areSet(pa5Pin); // test e specific pin
-		//auto fullRegVal = porta::getIn().getRegister().raw(); get full register value
-		if(isPin5Set){
-			for(uint8_t i = 2; i < 6;i++){
-				Pin p(i); //unsafe usage --> pins should be accessed from the class to ensure they can be used
-				portf::getMember<portf::registers::OUT>().on(p); //alternative way to get a member register of portf
-			}
-		}		
-
-    }
+	portf::get<portf::registers::out>().on();
+	//PORTF.OUT = 0xff;
 }
 
 	//ch1::setGenerator<ch1::PortAGenerator<0>::portAPin>();

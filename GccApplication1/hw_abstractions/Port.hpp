@@ -13,10 +13,16 @@ namespace port {
 	
 	namespace {
 		
+		template<typename Reg, auto offset>
+		struct RegisterPair {
+			static inline constexpr auto Off = offset;
+			using reg = Reg;
+		};
+		
 		template<typename P, mem_width number>
 		class PortPin;
 		
-		template<typename P, typename regEnum>
+		template<typename P, typename regs>
 		class Port {
 			
 			template<typename p, mem_width number>
@@ -28,26 +34,25 @@ namespace port {
 			public:
 			using pins = typename P::pins;
 			using portPins = typename P::template portPins<Port>;
-			using registers = regEnum;
+			using registers = regs;
 			
 			NoConstructors(Port);
-
-			template<registers reg>
-			[[nodiscard]] static inline auto& getMember(){
-				auto* tmp = reinterpret_cast<mem_width*>(&port);
-				return Register<>::getRegister(*( tmp + reg));
+			
+			template<typename reg>
+			static inline auto& get(){
+				return reg::reg::getRegister(*((typename reg::reg::regSize*)&port + reg::Off));
 			}
 
 			[[nodiscard]] static inline auto& getDir() {
-				return Register<>::getRegister(port.DIR);
+				return reg::Register<>::getRegister(port.DIR);
 			};
 
 			[[nodiscard]] static inline auto& getInput() {
-				return Register<ReadOnly>::getRegister(port.IN);
+				return reg::Register<reg::accessmode::ReadOnly>::getRegister(port.IN);
 			};
 
 			[[nodiscard]] static inline auto& getOutput() {
-				return Register<>::getRegister(port.OUT);
+				return reg::Register<>::getRegister(port.OUT);
 			};
 			
 			template<typename... PINS>
