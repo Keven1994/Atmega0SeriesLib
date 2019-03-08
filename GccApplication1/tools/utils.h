@@ -257,10 +257,10 @@ namespace utils {
 	}
 	
 			
-	template<typename Reg, auto val>
+	template<typename T, auto val>
 	struct Pair {
 		static inline constexpr auto value = val;
-		using reg = Reg;
+		using type = T;
 	};
 	
 	template<typename searched, typename first, typename ... pack>

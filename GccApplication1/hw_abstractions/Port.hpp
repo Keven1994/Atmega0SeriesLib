@@ -34,7 +34,7 @@ namespace port {
 			
 			template<typename reg>
 			static inline auto& get(){
-				using reg_t = typename reg::reg;
+				using reg_t = typename reg::type;
 				return reg_t::getRegister(*((typename reg_t::regSize*)&port + reg::value));
 			}
 
