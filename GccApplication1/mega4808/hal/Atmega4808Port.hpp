@@ -29,22 +29,22 @@ namespace mega4808 {
 				Pullupenable = PORT_PULLUPEN_bm
 			};
 			
-			using dir = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x00>;
-			using dirset = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x01>;
-			using dirclear = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x02> ;
-			using dirtoggle = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x03>;
-			using out = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x04>;
-			using outset = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x05>;
-			using outclear = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x06>;
-			using outtoggle = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x07>;
+			using dir = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x00>;
+			using dirset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x01>;
+			using dirclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x02> ;
+			using dirtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x03>;
+			using out = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x04>;
+			using outset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x05>;
+			using outclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x06>;
+			using outtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x07>;
 			//Input port declared as RW ?
-			using in = port::RegisterPair<reg::Register<reg::accessmode::ReadOnly,reg::specialization::Data>,0x08>;
-			using intflags = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Control,intFlagMasks>,0x09> ;
-			using portctrl = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Control, portCtrlMasks>,0x0A>;
+			using in = utils::Pair<reg::Register<reg::accessmode::ReadOnly,reg::specialization::Data>,0x08>;
+			using intflags = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,intFlagMasks>,0x09> ;
+			using portctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, portCtrlMasks>,0x0A>;
 			
 			template<auto num>
 			requires(num < 8 && num >= 0)
-			using pinctrl = port::RegisterPair<reg::Register<reg::accessmode::RW,reg::specialization::Control, pinMasks>,0x10+num>;
+			using pinctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, pinMasks>,0x10+num>;
 		};
 		
 		//legacy

@@ -13,12 +13,6 @@ namespace port {
 	
 	namespace {
 		
-		template<typename Reg, auto offset>
-		struct RegisterPair {
-			static inline constexpr auto Off = offset;
-			using reg = Reg;
-		};
-		
 		template<typename P, mem_width number>
 		class PortPin;
 		
@@ -40,7 +34,8 @@ namespace port {
 			
 			template<typename reg>
 			static inline auto& get(){
-				return reg::reg::getRegister(*((typename reg::reg::regSize*)&port + reg::Off));
+				using reg_t = typename reg::reg;
+				return reg_t::getRegister(*((typename reg_t::regSize*)&port + reg::value));
 			}
 
 			[[nodiscard]] static inline auto& getDir() {

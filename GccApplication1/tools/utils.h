@@ -256,6 +256,13 @@ namespace utils {
 	
 	}
 	
+			
+	template<typename Reg, auto val>
+	struct Pair {
+		static inline constexpr auto value = val;
+		using reg = Reg;
+	};
+	
 	template<typename searched, typename first, typename ... pack>
 	struct contains {
 		static inline constexpr bool value = isEqual<searched,first>::value ? true : contains<searched,pack...>::value;
