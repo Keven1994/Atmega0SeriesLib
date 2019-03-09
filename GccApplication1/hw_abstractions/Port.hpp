@@ -22,9 +22,7 @@ namespace port {
 			template<typename p, mem_width number>
 			friend class PortPin;
 			
-			using _port = P;
-			#define port P::value
-
+			static inline auto& port = P::value;
 			public:
 			using pins = typename P::pins;
 			using portPins = typename P::template portPins<Port>;
@@ -35,19 +33,19 @@ namespace port {
 			template<typename reg>
 			static inline auto& get(){
 				using reg_t = typename reg::type;
-				return reg_t::getRegister(*((typename reg_t::regSize*)&port + reg::value));
+				return reg_t::getRegister(*((typename reg_t::regSize*)&port() + reg::value));
 			}
 
 			[[nodiscard]] static inline auto& getDir() {
-				return reg::Register<>::getRegister(port.DIR);
+				return reg::Register<>::getRegister(port().DIR);
 			};
 
 			[[nodiscard]] static inline auto& getInput() {
-				return reg::Register<reg::accessmode::ReadOnly>::getRegister(port.IN);
+				return reg::Register<reg::accessmode::ReadOnly>::getRegister(port().IN);
 			};
 
 			[[nodiscard]] static inline auto& getOutput() {
-				return reg::Register<>::getRegister(port.OUT);
+				return reg::Register<>::getRegister(port().OUT);
 			};
 			
 			template<typename... PINS>
@@ -67,13 +65,12 @@ namespace port {
 					getDir().raw() |= (static_cast<mem_width>(args) | ...);
 				}
 			}
-			#undef port
 		};
 
 		template<typename P, mem_width number>
 		class PortPin{
 			
-			#define port P::_port::value
+			static inline auto& port = P::port;
 			
 			public:
 			
@@ -82,26 +79,25 @@ namespace port {
 			static inline constexpr mem_width pinValue = 1 << number;
 			
 			static inline void off(){
-				port.OUT &= ~pinValue; // declare static inline variable produces more code ?
+				port().OUT &= ~pinValue;
 			}
 			
 			static inline void on(){
-				port.OUT |= pinValue;
+				port().OUT |= pinValue;
 			}
 			
 			static inline void invert(){
-				port.OUT ^= pinValue;
+				port().OUT ^= pinValue;
 			}
 			
 			static inline void setOutput(){ //no option to write as template -> parse error in template argument list, bug?
-				port.DIR |= pinValue;
+				port().DIR |= pinValue;
 			}
 			
 			static inline void setInput() {
-				port.DIR &= ~pinValue;
+				port().DIR &= ~pinValue;
 			}
 			
-			#undef port
 		};
 	}
 }

@@ -73,8 +73,10 @@ namespace mega4808 {
 		#define pp(number) using pin ## number = port::PortPin<P,number>
 		
 		struct ports{
+			NoConstructors(ports);
 			struct A{
-				static inline auto& value = PORTA;
+				NoConstructors(A);
+				[[gnu::always_inline]] static inline auto& value() { return PORTA; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
@@ -85,7 +87,8 @@ namespace mega4808 {
 			};
 			
 			struct C{
-				static inline auto& value = PORTC;
+				NoConstructors(C);
+				[[gnu::always_inline]] static inline auto& value() { return PORTC; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3};
 				};
@@ -96,7 +99,8 @@ namespace mega4808 {
 			};
 			
 			struct D{
-				static inline auto& value = PORTD;
+				NoConstructors(D);
+				[[gnu::always_inline]] static inline auto& value() { return PORTD; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
@@ -107,7 +111,8 @@ namespace mega4808 {
 			};
 			
 			struct F{
-				static inline auto& value = PORTF;
+				NoConstructors(F);
+				[[gnu::always_inline]] static inline auto& value() { return PORTF; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6};
 				};
