@@ -1,9 +1,44 @@
 #pragma once
 #include "../../hw_abstractions/Port.hpp"
+#include "../../hw_abstractions/Pin.hpp"
 
 namespace mega4809 {
 	
 	namespace {
+		struct portpairs {
+					
+			enum intFlagMasks : mem_width { pinInterrupt = 0xff};
+			enum portCtrlMasks : mem_width { slewRateEnable = 0x1};
+			enum pinMasks : mem_width {
+				InvertedIOEnable = PORT_INVEN_bm,
+				InputSenseConfiguration = PORT_ISC_gm,
+				ISCFallingEdge = PORT_ISC_enum::PORT_ISC_FALLING_gc,
+				ISCRisingEdge = PORT_ISC_enum::PORT_ISC_RISING_gc,
+				ISCBothEdges = PORT_ISC_enum::PORT_ISC_BOTHEDGES_gc,
+				ISCInputDisable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
+				ISCInterruptDisable = PORT_ISC_enum::PORT_ISC_INTDISABLE_gc,
+				Pullupenable = PORT_PULLUPEN_bm
+			};
+					
+			using dir = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x00>;
+			using dirset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x01>;
+			using dirclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x02> ;
+			using dirtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x03>;
+			using out = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x04>;
+			using outset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x05>;
+			using outclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x06>;
+			using outtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x07>;
+			//Input port declared as RW ?
+			using in = utils::Pair<reg::Register<reg::accessmode::ReadOnly,reg::specialization::Data>,0x08>;
+			using intflags = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, intFlagMasks>,0x09> ;
+			using portctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, portCtrlMasks>,0x0A>;
+					
+			template<auto num>
+			requires(num < 8 && num >= 0)
+			using pinctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, pinMasks>,0x10+num>;
+		};
+		
+		//legacy
 		enum PortRegisters : mem_width {
 			DIR = 0,  /* Data Direction */
 			DIRSET = 1,  /* Data Direction Set */
@@ -30,7 +65,7 @@ namespace mega4809 {
 		
 		struct ports{
 			struct A{
-				static inline auto& value = PORTA;
+				[[gnu::always_inline]] static inline auto& value(){ return PORTA;}
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
@@ -41,7 +76,7 @@ namespace mega4809 {
 			};
 			
 			struct B{
-				static inline auto& value = PORTB;
+				[[gnu::always_inline]] static inline auto& value(){ return  PORTB; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
@@ -52,7 +87,7 @@ namespace mega4809 {
 			};
 			
 			struct C{
-				static inline auto& value = PORTC;
+				[[gnu::always_inline]] static inline auto& value(){ return PORTC; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
@@ -63,7 +98,7 @@ namespace mega4809 {
 			};
 			
 			struct D{
-				static inline auto& value = PORTD;
+				[[gnu::always_inline]] static inline auto& value(){ return PORTD; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
@@ -74,7 +109,7 @@ namespace mega4809 {
 			};
 			
 			struct E{
-				static inline auto& value = PORTE;
+				[[gnu::always_inline]] static inline auto& value(){ return PORTE; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
@@ -85,7 +120,7 @@ namespace mega4809 {
 			};
 			
 			struct F{
-				static inline auto& value = PORTF;
+				[[gnu::always_inline]] static inline auto& value(){ return PORTF; }
 				struct pins {
 					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7};
 				};
@@ -100,6 +135,6 @@ namespace mega4809 {
 		};
 		
 		template<typename P>
-		using port = port::Port<P,PortRegisters>;
+		using port = port::Port<P,portpairs>;
 	}
 }

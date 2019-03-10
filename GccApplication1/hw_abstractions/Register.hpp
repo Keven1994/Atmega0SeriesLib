@@ -166,6 +166,9 @@ namespace reg {
 		}
 	}__attribute__((packed));
 	
+	template<typename Bits, typename size>
+	class Register<accessmode::ReadOnly,specialization::Control,Bits,size>;
+	
 	template<typename size>
 	class Register<accessmode::RW,specialization::Toggle,void,size> {
 
@@ -204,4 +207,7 @@ namespace reg {
 			return reinterpret_cast<volatile Register&>(reg);
 		}
 	}__attribute__((packed));
+	
+	template<typename size>
+	class Register<accessmode::ReadOnly,specialization::Toggle,void,size>;
 }
