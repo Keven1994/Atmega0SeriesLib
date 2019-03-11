@@ -27,46 +27,27 @@ namespace mega4808 {
 			Pullupenable = PORT_PULLUPEN_bm
 		};
 		
-		using dir = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x00>;
-		using dirset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x01>;
-		using dirclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x02> ;
-		using dirtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x03>;
-		using out = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x04>;
-		using outset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x05>;
-		using outclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x06>;
-		using outtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x07>;
-		//Input port declared as RW ?
-		using in = utils::Pair<reg::Register<reg::accessmode::ReadOnly,reg::specialization::Data>,0x08>;
-		using intflags = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,intFlagMasks>,0x09> ;
-		using portctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, portCtrlMasks>,0x0A>;
+		struct registers{
+			using dir = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x00>;
+			using dirset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x01>;
+			using dirclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x02> ;
+			using dirtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x03>;
+			using out = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x04>;
+			using outset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x05>;
+			using outclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x06>;
+			using outtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x07>;
+			//Input port declared as RW ?
+			using in = utils::Pair<reg::Register<reg::accessmode::ReadOnly,reg::specialization::Data>,0x08>;
+			using intflags = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,intFlagMasks>,0x09> ;
+			using portctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, portCtrlMasks>,0x0A>;
 		
-		template<auto num>
-		requires(num < 8 && num >= 0)
-		using pinctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, pinMasks>,0x10+num>;
+			template<auto num>
+			requires(num < 8 && num >= 0)
+			using pinctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, pinMasks>,0x10+num>;
+		};
 	};
 	
-	//legacy
-	enum PortRegisters : mem_width {
-		DIR = 0,  /* Data Direction */
-		DIRSET = 1,  /* Data Direction Set */
-		DIRCLR = 2,  /* Data Direction Clear */
-		DIRTGL = 3,  /* Data Direction Toggle */
-		OUT = 4,  /* Output Value */
-		OUTSET = 5,  /* Output Value Set */
-		OUTCLR = 6,  /* Output Value Clear */
-		OUTTGL = 7,  /* Output Value Toggle */
-		IN = 8,  /* Input Value */
-		INTFLAGS = 9,  /* Interrupt Flags */
-		PORTCTRL = 10,  /* Port Control */
-		PIN0CTRL = 16,  /* Pin 0 Control */
-		PIN1CTRL = 17,  /* Pin 1 Control */
-		PIN2CTRL = 18,  /* Pin 2 Control */
-		PIN3CTRL = 19,  /* Pin 3 Control */
-		PIN4CTRL = 20,  /* Pin 4 Control */
-		PIN5CTRL = 21,  /* Pin 5 Control */
-		PIN6CTRL = 22,  /* Pin 6 Control */
-		PIN7CTRL = 23  /* Pin 7 Control */
-	};
+	using PortRegisters = typename portComponent::registers;
 	
 	#define pp(number) using pin ## number = port::PortPin<P,number>
 	

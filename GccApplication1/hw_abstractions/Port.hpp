@@ -26,7 +26,7 @@ namespace port {
 			public:
 			using pins = typename P::pins;
 			using portPins = typename P::template portPins<Port>;
-			using registers = regs;
+			using registers = typename regs::registers;
 			
 			NoConstructors(Port);
 			

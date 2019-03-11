@@ -36,7 +36,7 @@
 #endif
 	
 int main( ) {
-	portf::get<portf::registers::out>().on();
+	portf::get<PortRegisters::out>().on();
 	//PORTF.OUT = 0xff;
 }
 

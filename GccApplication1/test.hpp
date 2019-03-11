@@ -1,2 +1,2 @@
-#define TEST
+//#define TEST
 #define SPIMASTER
