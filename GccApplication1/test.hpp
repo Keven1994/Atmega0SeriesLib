@@ -1,0 +1,2 @@
+#define TEST
+#define SPIMASTER

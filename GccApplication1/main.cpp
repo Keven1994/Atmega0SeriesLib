@@ -4,6 +4,9 @@
  * Created: 26.01.2019 16:32:01
  * Author : Keven
  */ 
+#include "test.hpp"
+#ifndef TEST
+
 #define F_CPU 4000000UL
 
 #include <stddef.h>
@@ -32,16 +35,12 @@
 	using ch1 = Atmega4809::EventSystem::ch1;
 #endif
 	
-	enum class testEnum : mem_width {
-		ab = 1 << 1,
-		ac = 1 << 3
-		};
-	
 int main( ) {
 	portf::get<portf::registers::out>().on();
 	//PORTF.OUT = 0xff;
 }
 
+#endif
 	//ch1::setGenerator<ch1::PortAGenerator<0>::portAPin>();
 	//EVSYS.USEREVOUTF = 1 << 1; //user pf listen to ch 1 ->
 	//eventsystem::EventSystem::listenToChannel<1,eventsystem::EventSystem::portf>();

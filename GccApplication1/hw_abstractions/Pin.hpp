@@ -1,5 +1,5 @@
 /*
-* Pin.h
+* Pin.hpp
 *
 * Created: 27.01.2019 19:29:16
 *  Author: Keven

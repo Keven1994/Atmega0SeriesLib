@@ -52,10 +52,10 @@ namespace mega4809 {
 			using Prescaler = spi::Prescaler;
 			
 			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0, BufferMode bmode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
-			using SpiMaster = spiMaster<msb,clockDouble, slaveSelectDisable,tmode,bmode,prescaler>;
+			using SpiMaster = typename spiMaster<msb,clockDouble, slaveSelectDisable,tmode,bmode,prescaler>::SPI;
 			
 			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0, BufferMode bmode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
-			using SpiSlave = spiSlave<msb,tmode,bmode>;
+			using SpiSlave = typename spiSlave<msb,tmode,bmode>::SPI;
 		};
 	};
 }

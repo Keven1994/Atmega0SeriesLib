@@ -18,6 +18,7 @@ using ptr_t = uintptr_t;
 
 
 namespace mega4808 {
+
 	struct Atmega4808 {
 		
 		Atmega4808() = delete;
@@ -47,15 +48,14 @@ namespace mega4808 {
 		};
 		
 		struct SPI {
-			using TransferMode = spi::TransferMode;
-			using BufferMode = spi::BufferMode;
-			using Prescaler = spi::Prescaler;
+			using TransferMode = mega4808::TransferMode;
+			using Prescaler = mega4808::Prescaler;
+			//template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, bool waitForReceive, Prescaler prescaler>
+			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, uint8_t alternative = 0>
+			using SpiMaster = typename spiMaster<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative>::SPI;
 			
-			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0, BufferMode bmode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
-			using SpiMaster = spiMaster<msb,clockDouble, slaveSelectDisable,tmode,bmode,prescaler>;
-			
-			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0, BufferMode bmode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
-			using SpiSlave = spiSlave<msb,tmode,bmode>;
+			template<bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0>
+			using SPISlave = typename spiSlave<msb,tmode,buffered,waitForReceive,alternative>::SPI;
 		};
 	};
 }

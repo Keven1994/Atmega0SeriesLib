@@ -18,7 +18,7 @@ namespace reg {
 	
 	namespace specialization {
 		//data and flag equal
-		struct Data{}; struct Control {}; struct Toggle{};
+		struct Data{}; struct Control {}; struct Toggle{}; struct Flag{};
 	}
 	
 	template<typename Access = accessmode::RW, typename Specialization = specialization::Data, typename Bits = void, typename size = mem_width>
@@ -38,6 +38,13 @@ namespace reg {
 				reg = static_cast<size>(-1);
 			} else
 			reg |= (static_cast<size>(bits) | ...);
+		}
+		
+		inline void set();
+		
+		template<typename... ARGS>
+		inline void set(const ARGS... bits) volatile {
+			reg = (static_cast<size>(bits) | ...);
 		}
 		
 		template<typename... ARGS>
@@ -124,6 +131,13 @@ namespace reg {
 			reg |= (static_cast<size>(bits) | ...);
 		}
 		
+		inline void set();
+		
+		template<typename... ARGS>
+		inline void set(const ARGS... bits) volatile {
+			reg = (static_cast<size>(bits) | ...);
+		}
+		
 		template<typename... ARGS>
 		inline void off(const ARGS... bits) volatile {
 			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
@@ -168,6 +182,39 @@ namespace reg {
 	
 	template<typename Bits, typename size>
 	class Register<accessmode::ReadOnly,specialization::Control,Bits,size>;
+	
+	template<typename size, typename Bits>
+	class Register<accessmode::ReadOnly,specialization::Flag,Bits,size> {
+		
+		const volatile size reg;
+		
+		public:
+		
+		NoConstructors(Register);
+		
+		using regSize = size;
+		
+		using special_bit = Bits;
+		
+		[[nodiscard]] volatile mem_width raw() const volatile {
+			return reg;
+		}
+		
+		//SFINAE
+		[[nodiscard]] bool areSet() volatile;
+
+		template<typename... ARGS>
+		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
+			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
+			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
+		}
+		/*
+		function to cast the structs to Register
+		*/
+		[[nodiscard]] static inline volatile Register& getRegister(volatile size& reg) {
+			return reinterpret_cast<volatile Register&>(reg);
+		}
+	}__attribute__((packed));
 	
 	template<typename size>
 	class Register<accessmode::RW,specialization::Toggle,void,size> {

@@ -10,89 +10,51 @@
 
 namespace spi {
 	
-	namespace{
-		static inline constexpr mem_width interruptFlag = 1 << 7;
-		static inline constexpr mem_width lsb = 1 << 6;
-		static inline constexpr mem_width master = 1 << 5;
-		static inline constexpr mem_width clk2x = 1 << 4;
-		static inline constexpr mem_width ssd = 1 << 2;
-		static inline constexpr mem_width enable = 1 << 0;
-	}
-	
-	enum class TransferMode : mem_width {
-		//Leading edge: Rising, sample - Trailing edge: Falling, setup
-		Mode0 = 0b00,
-		//Leading edge: Rising, setup - Trailing edge: Falling, sample
-		Mode1 = 0b01,
-		//Leading edge: Falling, sample - Trailing edge: Rising, setup
-		Mode2 = 0b10,
-		//Leading edge: Falling, setup - Trailing edge: Rising, sample
-		Mode3 = 0b11
-	};
-	
-	enum class BufferMode : mem_width {
-		unbuffered = 0b10 << 6,
-		bufferedFirstDummy = 0b01 << 6,
-		bufferedDirectWrite = 0b11 << 6
-	};
-	
-	enum class Prescaler : mem_width {
-		Div4 = 0b00,
-		Div16 = 0b01 << 1,
-		Div64 = 0b10 << 1,
-		Div128 = 0b11 << 1
-	};
-	
-	template<typename port, auto& sspin,auto& Mosipin, auto& Misopin, auto& Clkpin, bool MSB = true,  bool ClockDoubled = true, bool SlaveSelectDisable = true,
-	TransferMode transfermode = TransferMode::Mode0, BufferMode buffermode = BufferMode::unbuffered, Prescaler prescaler = Prescaler::Div4>
+	template<typename SPIComponent, typename spiInf, auto order,  auto clockDoubled, auto slaveSelectDisable,
+	auto transferMode, auto buffered, auto waitForReceive, auto prescaler>
 	struct SPIMaster {
 
 		NoConstructors(SPIMaster);
-
+		using ControlA = typename SPIComponent::ControlA::type;
+		using ControlB = typename SPIComponent::ControlB::type;
+		using Data = typename SPIComponent::Data::type;
+		using InterruptFlags = typename SPIComponent::InterruptFlags::type;
+		
 		[[gnu::always_inline]] static inline void init(){
-			auto& ctra = reg::Register<>::getRegister(SPI0.CTRLA);
-			auto& ctrb = reg::Register<>::getRegister(SPI0.CTRLB);
-			
-			ctra.raw() = master;
-			port::getDir().on(Mosipin, Clkpin);
-			port::getDir().off(Misopin);
-			if constexpr(prescaler != Prescaler::Div4)
-			ctra.on(prescaler);
-			if constexpr(ClockDoubled)
-			ctra.on(clk2x);
-			ctrb.raw() = static_cast<mem_width>(transfermode);
-			if constexpr(!MSB)
-			ctra.on(lsb);
-			if constexpr(SlaveSelectDisable){
-				ctrb.on(ssd);
-				} else {
-				port::getDir().off(sspin); // sspin as input for multi-master
-			}
-			ctrb.on(buffermode);
-			ctra.on(enable);
+			constexpr typename ControlA::regSize mBit = 1 << 5;
+
+			auto& ctra = ControlA::getRegister(spiInf::value().CTRLA);
+			auto& ctrb = ControlB::getRegister(spiInf::value().CTRLB);
+
+			spiInf::mport::getDir().on(spiInf::pins::mosi,spiInf::pins::sck);
+			spiInf::mport::getDir().off(spiInf::pins::miso);
+
+			ctra.set(prescaler, clockDoubled, order, mBit);
+			ctrb.set(transferMode, buffered, waitForReceive,slaveSelectDisable);
+			ctra.on(ControlA::special_bit::SPIEnable);
 		}
 		
 		[[nodiscard]] static inline mem_width singleTransmit(mem_width data) {
-			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
-			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = Data::getRegister(spiInf::value().DATA);
+			auto& ints = InterruptFlags::getRegister(spiInf::value().INTFLAGS);
 			datareg.raw() = data;
-			while(! ints.areSet(interruptFlag));
+			while(! ints.areSet(InterruptFlags::special_bit::ReceiveComplete));
 			return datareg.raw();
 		}
 		
 		[[nodiscard]] static inline mem_width singleReceive() {
-			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
-			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = Data::getRegister(spiInf::value().DATA);
+			auto& ints = InterruptFlags::getRegister(spiInf::value().INTFLAGS);
 
-			while(! ints.areSet(interruptFlag));
+			while(! ints.areSet(InterruptFlags::special_bit::ReceiveComplete));
 			return datareg.raw();
 		}
 		
 		static inline void singleTransfer(mem_width data) {
-			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
-			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = Data::getRegister(spiInf::value().DATA);
+			auto& ints = InterruptFlags::getRegister(spiInf::value().INTFLAGS);
 			datareg.raw() = data;
-			while(! ints.areSet(interruptFlag));
+			while(! ints.areSet(InterruptFlags::special_bit::ReceiveComplete));
 		}
 		
 		[[nodiscard]] static inline mem_width* Transmit(mem_width* data, mem_width size) {
@@ -117,46 +79,47 @@ namespace spi {
 		
 	};
 
-	template<typename port, auto& sspin,auto& Mosipin, auto& Misopin, auto& Clkpin,bool MSB = true, TransferMode transfermode = TransferMode::Mode0, BufferMode buffermode = BufferMode::unbuffered>
+	template<typename SPIComponent, typename spiInf, auto order,
+	auto transferMode, auto buffered, auto waitForReceive>
 	struct SPISlave {
-
+		using ControlA = typename SPIComponent::ControlA::type;
+		using ControlB = typename SPIComponent::ControlB::type;
+		using Data = typename SPIComponent::Data::type;
+		using InterruptFlags = typename SPIComponent::InterruptFlags::type;
 		NoConstructors(SPISlave);
 
 		static inline void init(){
-			auto& ctra = reg::Register<>::getRegister(SPI0.CTRLA);
-			auto& ctrb = reg::Register<>::getRegister(SPI0.CTRLB);
-			ctra.raw() = 0x00; //operate in slave mode
-			port::getDir().off(Mosipin, Clkpin, sspin);
-			port::getDir().on(Misopin);
+
+			auto& ctra = reg::Register<>::getRegister(spiInf::value().CTRLA);
+			auto& ctrb = reg::Register<>::getRegister(spiInf::value().CTRLB);
 			
-			ctrb.raw() = static_cast<mem_width>(transfermode);
-			if constexpr(!MSB)
-			ctra.on(lsb);
-			
-			ctrb.on(buffermode);
-			ctra.on(enable);
+			spiInf::mport::getDir().on(spiInf::pins::mosi,spiInf::pins::sck);
+			spiInf::mport::getDir().off(spiInf::pins::miso);
+			ctra.set(order);
+			ctrb.set(transferMode, buffered, waitForReceive);
+			ctra.on(ControlA::special_bit::SPIEnable);
 		}
 
 		[[nodiscard]] static inline mem_width singleTransmit(mem_width data) {
-			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
-			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = Data::getRegister(spiInf::value().DATA);
+			auto& ints = InterruptFlags::getRegister(spiInf::value().INTFLAGS);
 			datareg.raw() = data;
-			while(! ints.areSet(interruptFlag));
+			while(! ints.areSet(InterruptFlags::special_bit::ReceiveComplete));
 			return datareg.raw();
 		}
 
 		static inline void singleTransfer(mem_width data) {
-			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
-			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = Data::getRegister(spiInf::value().DATA);
+			auto& ints = InterruptFlags::getRegister(spiInf::value().INTFLAGS);
 			datareg.raw() = data;
-			while(! ints.areSet(interruptFlag));
+			while(! ints.areSet(InterruptFlags::special_bit::ReceiveComplete));
 		}
 		
 		[[nodiscard]] static inline mem_width singleReceive() {
-			auto& datareg = reg::Register<>::getRegister(SPI0.DATA);
-			auto& ints = reg::Register<>::getRegister(SPI0.INTFLAGS);
+			auto& datareg = Data::getRegister(spiInf::value().DATA);
+			auto& ints = InterruptFlags::getRegister(spiInf::value().INTFLAGS);
 
-			while(! ints.areSet(interruptFlag));
+			while(! ints.areSet(InterruptFlags::special_bit::ReceiveComplete));
 			return datareg.raw();
 		}
 
