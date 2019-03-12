@@ -22,10 +22,9 @@
 	///////////////////////
 	#include "mega4808/Atmega4808.hpp"
 	
-	using namespace mega4808; //specify used mmcu
-	using portf = Atmega4808::Ports::portf; 
-	using porta = Atmega4808::Ports::porta;
-	using ch1 = Atmega4808::EventSystem::ch1;
+	using portf = mega4808::Atmega4808::Ports::portf; 
+	using porta = mega4808::Atmega4808::Ports::porta;
+	using ch1 = mega4808::Atmega4808::EventSystem::ch1;
 #elif defined(MEGA4809)
 	#include "mega4809/Atmega4809.hpp"
 	
@@ -35,12 +34,22 @@
 	using ch1 = Atmega4809::EventSystem::ch1;
 #endif
 	
+using PortF = AVR::port::Port<AVR::port::F>;
+using PortC = AVR::port::Port<AVR::port::C>;
+
+using led1 = AVR::port::Pin<PortF, 1>;
+using led2 = AVR::port::Pin<PortF, 2>;
+	
 int main( ) {
-	portf::get<PortRegisters::out>().on();
-	//PORTF.OUT = 0xff;
+	PortF::get<AVR::port::Port_Registers<>::dir>().on();
+	PortF::getOutput().on(led1::pinValue, led2::pinValue);
+	
+	while(true){
+		led1::invert();
+		_delay_ms(500);
+		led2::invert();
+		_delay_ms(500);
+	}
 }
 
 #endif
-	//ch1::setGenerator<ch1::PortAGenerator<0>::portAPin>();
-	//EVSYS.USEREVOUTF = 1 << 1; //user pf listen to ch 1 ->
-	//eventsystem::EventSystem::listenToChannel<1,eventsystem::EventSystem::portf>();

@@ -11,6 +11,7 @@
 //type informations for the templates in the hw includes
 using mem_width = uint8_t;
 using ptr_t = uintptr_t;
+
 //hw includes
 #include "hal/Atmega4808EVSYS.hpp"
 #include "hal/Atmega4808Port.hpp"
@@ -18,23 +19,35 @@ using ptr_t = uintptr_t;
 
 
 namespace mega4808 {
-
+using namespace utils;
 	struct Atmega4808 {
 		
-		Atmega4808() = delete;
-		Atmega4808(const Atmega4808&) = delete;
-		Atmega4808(Atmega4808&&) = delete;
+		NoConstructors(Atmega4808);
 		
 		struct Ports {
 
-			Ports() = delete;
-			Ports(const Ports&) = delete;
-			Ports(Ports&&) = delete;
+			NoConstructors(Ports);
 			
 			using porta = port<ports::A>;
 			using portc = port<ports::C>;
 			using portd = port<ports::D>;
 			using portf = port<ports::F>;
+		};
+		
+		using port_registers = typename mega4808::portComponent::registers;
+		
+		template<typename p>
+		struct testports {
+			using portX = typename condEqual<AVR::port::A,p, port<ports::A>, 
+							typename condEqual<AVR::port::C,p, port<ports::C>,
+								typename condEqual<AVR::port::D,p, port<ports::D>,
+									typename condEqual<AVR::port::F,p, port<ports::F>,void
+									>::type
+								>::type
+							>::type
+						 >::type; 	
+						 
+			static_assert(! isEqual<portX,void>::value,"port not available");
 		};
 		
 		struct EventSystem {

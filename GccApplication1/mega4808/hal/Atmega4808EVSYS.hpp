@@ -90,7 +90,7 @@ namespace mega4808 {
 	namespace {
 		
 		struct generalGenerators {
-			
+
 			#define ic(x) typename utils::integralConstant<mem_width,x>
 			
 			using pdi = ic(0x01);

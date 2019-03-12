@@ -8,10 +8,12 @@
 #pragma once
 #include "../hw_abstractions/Register.hpp"
 #include "../tools/utils.h"
+#include "../MCUSelect.hpp"
 
+namespace AVR{
 namespace port {
 	
-	namespace {
+	namespace details {
 		
 		template<typename P, mem_width number>
 		class PortPin;
@@ -76,7 +78,7 @@ namespace port {
 			
 			NoConstructors(PortPin);
 			
-			static inline constexpr mem_width pinValue = 1 << number;
+			static inline constexpr auto pinValue = Pin(number);
 			
 			static inline void off(){
 				port().OUT &= ~pinValue;
@@ -99,5 +101,17 @@ namespace port {
 			}
 			
 		};
+		}
+
+		struct A{};struct B{};struct C{};struct D{};struct E{};struct F{};
+		
+		template<typename p, typename DefaultMCU = DEFAULT_MCU>
+		using Port = typename DefaultMCU::template testports<p>::portX;
+		
+		template<typename DefaultMCU = DEFAULT_MCU>
+		using Port_Registers = typename DefaultMCU::port_registers;
+		
+		template<typename p, mem_width number>
+		using Pin = details::PortPin<p,number>;
 	}
 }

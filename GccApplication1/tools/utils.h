@@ -256,6 +256,10 @@ namespace utils {
 	
 	}
 	
+	template<typename t1, typename t2, typename T, typename E>
+	struct condEqual {
+		using type = typename conditional<isEqual<t1,t2>::value,T,E>::type;
+	};
 			
 	template<typename T, auto val>
 	struct Pair {

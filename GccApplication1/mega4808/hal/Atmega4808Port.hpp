@@ -36,7 +36,6 @@ namespace mega4808 {
 			using outset = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x05>;
 			using outclear = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x06>;
 			using outtoggle = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Toggle>,0x07>;
-			//Input port declared as RW ?
 			using in = utils::Pair<reg::Register<reg::accessmode::ReadOnly,reg::specialization::Data>,0x08>;
 			using intflags = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,intFlagMasks>,0x09> ;
 			using portctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control, portCtrlMasks>,0x0A>;
@@ -47,9 +46,7 @@ namespace mega4808 {
 		};
 	};
 	
-	using PortRegisters = typename portComponent::registers;
-	
-	#define pp(number) using pin ## number = port::PortPin<P,number>
+	#define pp(number) using pin ## number = AVR::port::details::PortPin<P,number>
 	
 	struct ports{
 		NoConstructors(ports);
@@ -104,7 +101,6 @@ namespace mega4808 {
 		#undef pp
 	};
 	
-	using namespace port;
 	template<typename P>
-	using port = port::Port<P,portComponent>;
+	using port = AVR::port::details::Port<P,portComponent>;
 }
