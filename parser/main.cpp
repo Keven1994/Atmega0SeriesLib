@@ -52,7 +52,7 @@ int main(int argc, const char** argv) {
     pugi::xml_parse_result result;
     if(argc > 1)
         result = doc.load_file(argv[1]);
-    else result = doc.load_file("ATmega4809.atdf");
+    else result = doc.load_file("../ATmega4809.atdf");
 
     if (!result)
         return -1;
@@ -60,6 +60,7 @@ int main(int argc, const char** argv) {
     std::string devname = doc.select_nodes("/devices/device").begin()->node().attribute("name").as_string();
     auto module = doc.select_nodes("/modules/module");
     auto reg = doc.select_nodes("/modules/module/register-group/register");
+    auto peripherals = doc.select_nodes("/devices/device/peripherals/module");
     std::string path;
 #ifdef __linux__
     if(argc > 2) path = argv[2]+("/"+devname);
@@ -139,11 +140,17 @@ int main(int argc, const char** argv) {
             mbuilder.addRegister(std::move(reg_name), std::move(reg_prot), std::move(reg_off), std::move(reg_size),
                                  std::move(reg_enum), reg_t);
         }
+
+        for(auto node1 : peripherals){
+            if(node1.node().attribute("name").as_string() == modName){
+                for(auto node2 : node1.node().children())
+                    mbuilder.addInstance(node2.attribute("name").as_string());
+            }
+        }
+
         mbuilder.parse();
     }
 
     std::cout << "Hello, World!" << std::endl;
-    int z;
-    std::cin >> z;
     return 0;
 }
