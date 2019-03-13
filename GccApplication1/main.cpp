@@ -12,7 +12,6 @@
 #include <stddef.h>
 #include <util/delay.h>
 #include <avr/io.h>
-#include <util/twi.h>
 
 #define MEGA4808
 
