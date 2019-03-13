@@ -3,6 +3,7 @@
 #include <ostream>
 #include <vector>
 #include <fstream>
+#include <bitset>
 #include "pugixml.hpp"
 #include "MCUStructureBuilder.h"
 
@@ -55,7 +56,7 @@ int main(int argc, const char** argv) {
 
     if (!result)
         return -1;
-    std::cout << "input file: " << argv[1] << '\n';
+
     std::string devname = doc.select_nodes("/devices/device").begin()->node().attribute("name").as_string();
     auto module = doc.select_nodes("/modules/module");
     auto reg = doc.select_nodes("/modules/module/register-group/register");
@@ -106,8 +107,9 @@ int main(int argc, const char** argv) {
                     entryGenerated = true;
                 }
                 if (tempstr.empty()) {
-                    if(node2.attribute("mask").as_string() == std::string("0xff")){
-                        for(uint32_t i = 0; i < sizeof(biter)*8; i++){
+                    auto bs = std::bitset<32>(node2.attribute("mask").as_int());
+                    if(bs.count() > 1){
+                        for(uint32_t i = 0; bs.test(i) && i < 32; i++){
                             mbuilder.addEnumEntry(utils::toCamelCase(node2.attribute("name").as_string()),
                                                   modName + "_" + node2.attribute("name").as_string()+ std::to_string(i) + "_bm");
                         }
