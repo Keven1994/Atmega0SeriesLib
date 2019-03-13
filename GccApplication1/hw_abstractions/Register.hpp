@@ -21,7 +21,7 @@ namespace reg {
 		struct Data{}; struct Control {}; struct Toggle{}; struct Flag{};
 	}
 	
-	template<typename Access = accessmode::RW, typename Specialization = specialization::Data, typename Bits = void, typename size = mem_width>
+	template<typename Access = accessmode::RW, typename Specialization = specialization::Data, typename Bits = void, typename size = uint8_t>
 	class Register;
 	
 	template<typename size>
