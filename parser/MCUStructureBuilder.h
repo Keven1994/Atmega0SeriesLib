@@ -93,6 +93,8 @@ namespace details {
         }
 
     public:
+
+
         Reg(std::string &&name, std::string &&protection, std::string &&offset, std::string &&size,
             std::string &&values, special spec) noexcept :
                 name(name), protection((protection == "R" ? R_str : RW_str)), offset(offset),
@@ -105,9 +107,12 @@ namespace details {
             }
         }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
         void style(std::string& val) noexcept override {
 
         }
+#pragma GCC diagnostic pop
 
         [[nodiscard]] std::string generate() noexcept override {
             std::string tmp = "using " + utils::toLowerCase(name) + " = " + reg_str + protection + "," + specStr;
@@ -245,9 +250,10 @@ namespace details {
 class MCUStructureBuilder {
     static inline constexpr auto header = "#pragma once\n #include \"../../hw_abstractions/Port.hpp\"\n #include \"../../hw_abstractions/Pin.hpp\"\n\n";
     static inline auto f = details::Function("[[nodiscard,gnu::always_inline]] static inline","auto&","value","","","" );
-    std::string compname;
+
     std::string deviceName;
-    details::Struct compStruct, regs{"registers"};
+    std::string compname;
+    details::Struct compStruct, regs;
     details::Namespace nameSpace;
     std::vector<details::Enum> enums;
     std::vector<details::Struct> instances;
@@ -256,8 +262,8 @@ public:
     using reg_type = details::special;
 
     explicit MCUStructureBuilder(std::string &&deviceName, std::string &&ComponentName)
-    noexcept : deviceName(deviceName), compname(ComponentName), compStruct(utils::toLowerCase(compname) + "Component"),
-               nameSpace(deviceName.substr(2)) {}
+    noexcept : deviceName(deviceName), compname(ComponentName), compStruct(utils::toLowerCase(compname) + "Component"),regs("registers"),
+               nameSpace(deviceName.substr(2)), enums(),instances() {}
 
     void addRegister(std::string &&name, std::string &&protection, std::string &&offset, std::string &&size,
                      std::string &&values, reg_type type) noexcept {

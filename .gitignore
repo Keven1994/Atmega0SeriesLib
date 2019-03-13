@@ -334,3 +334,9 @@ ASALocalRun/
 *.cppproj
 
 *.xml
+
+*.d
+
+*.o
+
+*.exe

@@ -42,24 +42,38 @@ struct stringtuple {
     std::string str1, str2;
 };
 
-int main() {
+int main(int argc, const char** argv) {
     using biter = uint8_t;
     using reg_type = typename MCUStructureBuilder::reg_type;
     auto map = std::unordered_map<std::string, MCUStructureBuilder>();
     pugi::xml_document doc;
 
-    pugi::xml_parse_result result = doc.load_file("../ATmega4809.atdf");
+    pugi::xml_parse_result result;
+    if(argc > 1)
+        result = doc.load_file(argv[1]);
+    else result = doc.load_file("ATmega4809.atdf");
+
     if (!result)
         return -1;
-
+    std::cout << "input file: " << argv[1] << '\n';
     std::string devname = doc.select_nodes("/devices/device").begin()->node().attribute("name").as_string();
     auto module = doc.select_nodes("/modules/module");
     auto reg = doc.select_nodes("/modules/module/register-group/register");
+    std::string path;
+#ifdef __linux__
+    if(argc > 2) path = argv[2]+("/"+devname);
+#elif _WIN32
+    if(argc > 2) path = argv[2]+("\\"+devname);
+#else
+    static_assert(false,"OS not supported");
+#endif
+    else path = devname;
+    std::cout << "output: " << path << '\n';
     for (auto node: module) {
         pugi::xml_node tool = node.node();
         std::string modName = tool.attribute("name").as_string();
         std::cout << "Module Name " << modName << "\n";
-        MCUStructureBuilder mbuilder(std::move(devname), tool.attribute("name").as_string());
+        MCUStructureBuilder mbuilder = MCUStructureBuilder(path+"", tool.attribute("name").as_string());
         for (auto node1: tool.child("register-group").children("register")) {
             std::string reg_name = node1.attribute("name").as_string();
             std::string reg_off = node1.attribute("offset").as_string();
@@ -98,8 +112,8 @@ int main() {
                                                   modName + "_" + node2.attribute("name").as_string()+ std::to_string(i) + "_bm");
                         }
                     } else
-                    mbuilder.addEnumEntry(utils::toCamelCase(node2.attribute("name").as_string()),
-                                          modName + "_" + node2.attribute("name").as_string() + "_bm");
+                        mbuilder.addEnumEntry(utils::toCamelCase(node2.attribute("name").as_string()),
+                                              modName + "_" + node2.attribute("name").as_string() + "_bm");
                 } else {
                     val_group.push_back(stringtuple{tempstr, node2.attribute("name").as_string()});
                 }
@@ -127,5 +141,7 @@ int main() {
     }
 
     std::cout << "Hello, World!" << std::endl;
+    int z;
+    std::cin >> z;
     return 0;
 }
