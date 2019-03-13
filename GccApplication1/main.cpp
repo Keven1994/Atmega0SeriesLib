@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <util/delay.h>
 #include <avr/io.h>
+#include <util/twi.h>
 
 #define MEGA4808
 
@@ -39,6 +40,7 @@ using PortC = AVR::port::Port<AVR::port::C>;
 
 using led1 = AVR::port::Pin<PortF, 1>;
 using led2 = AVR::port::Pin<PortF, 2>;
+	
 	
 int main( ) {
 	PortF::get<AVR::port::Port_Registers<>::dir>().on();

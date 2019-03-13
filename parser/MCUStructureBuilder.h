@@ -14,13 +14,23 @@
 
 namespace utils {
 
-    static inline std::string toLowerCase(std::string trans) {
+    [[nodiscard]] static inline bool contains(const std::string& container,const char* sub){
+        return container.find(sub) != std::string::npos;
+    }
+
+    [[nodiscard]] static inline std::string toLowerCase(std::string trans) {
         std::transform(std::begin(trans), std::end(trans), std::begin(trans), tolower);
         return trans;
     }
 
-    static inline std::string toHigherCase(std::string trans) {
-        std::transform(std::begin(trans), std::end(trans), std::begin(trans), tolower);
+    [[nodiscard]] static inline std::string toHigherCase(std::string trans) {
+        std::transform(std::begin(trans), std::end(trans), std::begin(trans), toupper);
+        return trans;
+    }
+
+    [[nodiscard]] static inline std::string toCamelCase(std::string trans) {
+        trans = toLowerCase(trans);
+        std::transform(std::begin(trans), ++std::begin(trans), std::begin(trans), toupper);
         return trans;
     }
 }
@@ -30,7 +40,9 @@ namespace details {
     struct generatable {
 
         virtual std::string generate() noexcept = 0;
-
+        virtual void style(std::string& val) noexcept {
+            val += '\n';
+        }
         virtual ~generatable() = default;
     };
 
@@ -93,6 +105,10 @@ namespace details {
             }
         }
 
+        void style(std::string& val) noexcept override {
+
+        }
+
         [[nodiscard]] std::string generate() noexcept override {
             std::string tmp = "using " + utils::toLowerCase(name) + " = " + reg_str + protection + "," + specStr;
             std::string size_str = resolveString(size);
@@ -147,15 +163,10 @@ namespace details {
 
         void addEntry(const std::string &name, const std::string &value) noexcept {
 
-            try {
-                std::stoi(value);
-                if (!entrys.empty())
-                    entrys += ",\n";
-                entrys += "    " + name;
-                entrys += " = " + value;
-            } catch (std::exception &e) {
-                std::cerr << __PRETTY_FUNCTION__ << " exception: " << e.what() << '\n';
-            }
+            if (!entrys.empty())
+                entrys += ",\n";
+            entrys += "    " + name;
+            entrys += " = " + value;
         }
 
         [[nodiscard]] std::string generate() noexcept override {
@@ -200,7 +211,7 @@ namespace details {
                 if (tmp[i] == '\n')
                     tmp.insert(i + 1, "    ");
             }
-            tmp += '\n';
+            gen.style(tmp);
             mentrys += tmp;
         }
 
@@ -245,7 +256,7 @@ public:
     using reg_type = details::special;
 
     explicit MCUStructureBuilder(std::string &&deviceName, std::string &&ComponentName)
-    noexcept : deviceName(deviceName), compname(ComponentName), compStruct(ComponentName + "component"),
+    noexcept : deviceName(deviceName), compname(ComponentName), compStruct(utils::toLowerCase(compname) + "Component"),
                nameSpace(deviceName.substr(2)) {}
 
     void addRegister(std::string &&name, std::string &&protection, std::string &&offset, std::string &&size,
