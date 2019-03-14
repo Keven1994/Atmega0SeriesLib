@@ -92,7 +92,7 @@ namespace mega4808 {
 			struct _pins {
 				static inline constexpr Pin mosi{n0}, miso{n1}, sck{n2}, ss{n3};
 			};
-			
+
 			using mport = typename utils::conditional<alternative == 0, port<ports::A>, port<ports::C>>::type;
 			
 			using pins = typename utils::conditional<alternative == 0, _pins<4,5,6,7>, _pins<0,1,2,3>>::type;

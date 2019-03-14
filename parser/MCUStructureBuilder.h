@@ -18,6 +18,19 @@ namespace utils {
         return container.find(sub) != std::string::npos;
     }
 
+    template<typename T1 = std::string, typename T2 = std::string>
+    struct tuple {
+        T1 str1;
+        T2 str2;
+    };
+
+    template<typename T1 = std::string, typename T2 = std::string, typename T3 = std::string>
+    struct triple {
+        T1 str1;
+        T2 str2;
+        T3 str3;
+    };
+
     [[nodiscard]] static inline std::string toLowerCase(std::string trans) {
         std::transform(std::begin(trans), std::end(trans), std::begin(trans), tolower);
         return trans;
@@ -34,6 +47,7 @@ namespace utils {
         return trans;
     }
 }
+
 
 namespace details {
 
@@ -136,6 +150,30 @@ namespace details {
 
     };
 
+    class TypePin : public generatable {
+
+        std::string port, number;
+
+    public:
+
+        TypePin(std::string &&port, std::string &&number) noexcept : port(utils::toHigherCase(port)), number(number) {
+
+        }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+        void style(std::string& val) noexcept override {
+
+        }
+#pragma GCC diagnostic pop
+        //using pin ## number = AVR::port::details::PortPin<P,number>
+        [[nodiscard]] std::string generate() noexcept override {
+            std::string tmp = "using pin" + number + " = AVR::port::details::PortPin<AVR::port::"+port+","+number+">;";
+            return tmp;
+        }
+
+    };
+
     class Function : public generatable {
         std::string attributes, returnType, name, params, cvQualifier, content;
     public:
@@ -183,6 +221,7 @@ namespace details {
     };
 
     class Struct : public generatable {
+
         std::string mname;
         std::string mentrys{};
 
@@ -227,9 +266,9 @@ namespace details {
             return tmp;
         }
 
-        [[nodiscard]] inline std::string &name() noexcept { return mname; }
+        [[nodiscard]] inline const std::string & name() const noexcept { return mname; }
 
-        [[nodiscard]] inline std::string &entrys() noexcept { return mentrys; }
+        [[nodiscard]] inline const std::string &entrys() const noexcept { return mentrys; }
     };
 
     class Namespace : public Struct {
@@ -258,6 +297,44 @@ class MCUStructureBuilder {
     std::vector<details::Enum> enums;
     std::vector<details::Struct> instances;
 
+    [[nodiscard]] int find(const std::vector<details::Struct>& container, std::string str){
+        for(int i = 0; i < container.size(); i++){
+            if(utils::toLowerCase(container[i].name()) == utils::toLowerCase(str)) return i;
+        }
+        return -1;
+    }
+
+    [[nodiscard]] int find(const std::vector<std::string>& container, std::string str){
+        for(int i = 0; i < container.size(); i++){
+            if(utils::toLowerCase(container[i]) == utils::toLowerCase(str)) return i;
+        }
+        return -1;
+    }
+
+    [[nodiscard]] bool contains(const std::vector<std::string>& container, std::string str){
+        return find(container,str) >= 0;
+    }
+
+    [[nodiscard]] int countDistinct(const std::vector<utils::triple<>>& container){
+        int tmp = 0;
+        std::vector<std::string> processed{};
+        for (const auto &elem : container) {
+            auto& search = elem.str1;
+            if(!contains(processed,search)) {
+                tmp++;
+                processed.push_back(search);
+            }
+        }
+        return tmp;
+    }
+
+    [[nodiscard]] bool sameRow(const std::vector<utils::triple<>>& fgps, const std::string& str,const std::string& str2){
+        for(auto& elem: fgps){
+            if(utils::toLowerCase(elem.str1) == utils::toLowerCase(str) && utils::toLowerCase(elem.str2) == utils::toLowerCase(str2)) return true;
+        }
+        return false;
+    }
+
 public:
     using reg_type = details::special;
 
@@ -274,7 +351,7 @@ public:
 
     void addInstance(std::string &&name) {
         f.changeContent("return "+name+";");
-        auto tmp = details::Struct(std::move(utils::toLowerCase(name)));
+        auto tmp = details::Struct(utils::toLowerCase(name));
         tmp.addMember(f);
         instances.push_back(tmp);
     }
@@ -286,6 +363,76 @@ public:
 
     void addEnumEntry(std::string &&name, std::string &&value) {
         enums.back().addEntry(name, value);
+    }
+
+    void addSignal(std::vector<utils::triple<>>& fgps, std::string&& modName) noexcept {
+        std::vector<utils::tuple<std::string,std::vector<std::string>>> groups;
+        {
+            std::vector<std::string> processed;
+            //sorting pads in groups
+            for (auto &ele : fgps) {
+                const auto &search = ele.str2;
+                if (!contains(processed, search)) {
+                    processed.push_back(search);
+                    std::vector<std::string> temp{};
+                    for (auto &elem : fgps) {
+                        if (elem.str2 == search)
+                            temp.push_back(elem.str3);
+                    }
+                    groups.push_back(utils::tuple<std::string, std::vector<std::string>>{search, temp});
+                }
+            }
+        }
+
+        std::vector<details::Struct> toAdd{};
+        for(auto& elem : groups){
+            details::Struct temp = details::Struct(utils::toCamelCase(elem.str1));
+            for(auto& ele : elem.str2){
+                auto tmp = details::TypePin(std::string{ele[1]},std::string{ele[2]});
+                temp.addMember(tmp);
+            }
+            toAdd.push_back(temp);
+        }
+
+        auto funcctr = countDistinct(fgps);
+        if(funcctr == 1){ //special case when there is only 1 function (e.g. ports)
+
+            for(auto& elem: toAdd){
+                auto i = find(instances,modName);
+                if(i >= 0) {
+                    instances[i].addMember(elem);
+                }
+            }
+        } else if(funcctr > 1){
+
+            std::vector<std::string> processed;
+            //sorting pads in groups
+            std::vector<std::string> temp{};
+            std::vector<details::Struct> funcs{};
+            for (auto &ele : fgps) {
+                const auto &search = ele.str1;
+                if (!contains(processed, search)) {
+                    processed.push_back(search);
+                    funcs.emplace_back(utils::toCamelCase(search+""));
+                }
+            }
+            for(auto& func : funcs) {
+                for (auto &elem : toAdd) {
+
+                    if (sameRow(fgps,func.name(),elem.name())) {
+                        auto i = find(instances, (modName));
+                        if (i >= 0) {
+                            func.addMember(elem);
+                        }
+                    }
+                }
+                auto i = find(instances,modName);
+                if(i >= 0) {
+                    instances[i].addMember(func);
+                }
+            }
+
+        } else std::cerr << "no function found, sth went wrong\n";
     }
 
     void parse() noexcept {

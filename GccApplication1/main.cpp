@@ -42,6 +42,7 @@ using led2 = AVR::port::Pin<PortF, 2>;
 	
 	
 int main( ) {
+	
 	PortF::get<AVR::port::Port_Registers<>::dir>().on();
 	PortF::getOutput().on(led1::pinValue, led2::pinValue);
 	
@@ -51,6 +52,7 @@ int main( ) {
 		led2::invert();
 		_delay_ms(500);
 	}
+	
 }
 
 #endif

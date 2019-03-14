@@ -39,12 +39,9 @@ std::string generateStaticVariable(std::string &&name, std::string &&type, std::
 
 #include <unordered_map>
 
-struct stringtuple {
-    std::string str1, str2;
-};
+using namespace utils;
 
 int main(int argc, const char** argv) {
-    using biter = uint8_t;
     using reg_type = typename MCUStructureBuilder::reg_type;
     auto map = std::unordered_map<std::string, MCUStructureBuilder>();
     pugi::xml_document doc;
@@ -78,21 +75,22 @@ int main(int argc, const char** argv) {
         MCUStructureBuilder mbuilder = MCUStructureBuilder(path+"", tool.attribute("name").as_string());
         for (auto node1: tool.child("register-group").children("register")) {
             std::string reg_name = node1.attribute("name").as_string();
+            std::string reg_caption = node1.attribute("caption").as_string();
             std::string reg_off = node1.attribute("offset").as_string();
             std::string reg_prot = node1.attribute("rw").as_string();
             std::string reg_size = node1.attribute("size").as_string();
             std::string reg_enum = reg_name + "Masks";
             reg_type reg_t;
-            if (utils::contains(reg_name, "TGL")) {
+            if (utils::contains(reg_name, "TGL") || utils::contains(reg_caption,"Toggle")) {
                 reg_t = reg_type::Toggle;
-            } else if (utils::contains(reg_name, "CTRL")) {
+            } else if (utils::contains(reg_name, "CTRL")|| utils::contains(reg_caption,"Select") || utils::contains(reg_caption,"Control")) {
                 reg_t = reg_type::Control;
-            } else if (utils::contains(reg_name, "FLAGS") || utils::contains(node1.attribute("caption").as_string(), "Status")) {
+            } else if (utils::contains(reg_name, "FLAGS") || utils::contains(reg_caption, "Status")) {
                 reg_t = reg_type::Flag;
             } else {
                 reg_t = reg_type::Data;
             }
-            std::vector<stringtuple> val_group{};
+            std::vector<tuple<>> val_group{};
             bool entryGenerated = false;
             for (auto node2 : node1.children("bitfield")) {
                 if(reg_t == reg_type::Data){
@@ -118,7 +116,7 @@ int main(int argc, const char** argv) {
                         mbuilder.addEnumEntry(utils::toCamelCase(node2.attribute("name").as_string()),
                                               modName + "_" + node2.attribute("name").as_string() + "_bm");
                 } else {
-                    val_group.push_back(stringtuple{tempstr, node2.attribute("name").as_string()});
+                    val_group.push_back(tuple<>{tempstr, node2.attribute("name").as_string()});
                 }
             }
 
@@ -143,8 +141,28 @@ int main(int argc, const char** argv) {
 
         for(auto node1 : peripherals){
             if(node1.node().attribute("name").as_string() == modName){
-                for(auto node2 : node1.node().children())
+                for(auto node2 : node1.node().children()) {
                     mbuilder.addInstance(node2.attribute("name").as_string());
+
+                    std::vector<utils::triple<>> tmp;
+                    std::string instName;
+                    for (auto node3 :node2.child("signals").children()) {
+
+                        std::string sig_func = node3.attribute("function").as_string();
+                        std::string sig_group = node3.attribute("group").as_string();
+                        std::string sig_pad = node3.attribute("pad").as_string();
+                        instName = node2.attribute("name").as_string();
+                        if (utils::contains(sig_group, "LUT")) {
+                            std::cout << sig_group << '\n';
+
+                        }
+                        tmp.push_back(utils::triple<>{sig_func, sig_group, sig_pad});
+
+                    }
+                    if (!tmp.empty())
+                        mbuilder.addSignal(tmp, std::move(instName));
+                }
+
             }
         }
 

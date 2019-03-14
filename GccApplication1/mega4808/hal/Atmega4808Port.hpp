@@ -99,6 +99,7 @@ namespace mega4808 {
 		};
 		
 		#undef pp
+
 	};
 	
 	template<typename P>
