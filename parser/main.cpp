@@ -49,15 +49,15 @@ int main(int argc, const char** argv) {
     pugi::xml_parse_result result;
     if(argc > 1)
         result = doc.load_file(argv[1]);
-    else result = doc.load_file("../ATmega4809.atdf");
+    else result = doc.load_file("../ATmega4808.atdf");
 
     if (!result)
         return -1;
 
-    std::string devname = doc.select_nodes("/devices/device").begin()->node().attribute("name").as_string();
-    auto module = doc.select_nodes("/modules/module");
-    auto reg = doc.select_nodes("/modules/module/register-group/register");
-    auto peripherals = doc.select_nodes("/devices/device/peripherals/module");
+    std::string devname = doc.select_nodes("avr-tools-device-file/devices/device").begin()->node().attribute("name").as_string();
+    auto module = doc.select_nodes("avr-tools-device-file/modules/module");
+    auto reg = doc.select_nodes("avr-tools-device-file/modules/module/register-group/register");
+    auto peripherals = doc.select_nodes("avr-tools-device-file/devices/device/peripherals/module");
     std::string path;
 #ifdef __linux__
     if(argc > 2) path = argv[2]+("/"+devname);
@@ -109,7 +109,7 @@ int main(int argc, const char** argv) {
                     auto bs = std::bitset<32>(node2.attribute("mask").as_int());
                     if(bs.count() > 1){
                         for(uint32_t i = 0; bs.test(i) && i < 32; i++){
-                            mbuilder.addEnumEntry(utils::toCamelCase(node2.attribute("name").as_string()),
+                            mbuilder.addEnumEntry(utils::toCamelCase(node2.attribute("name").as_string())+std::to_string(i),
                                                   modName + "_" + node2.attribute("name").as_string()+ std::to_string(i) + "_bm");
                         }
                     } else
