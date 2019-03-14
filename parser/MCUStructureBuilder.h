@@ -46,6 +46,17 @@ namespace utils {
         std::transform(std::begin(trans), ++std::begin(trans), std::begin(trans), toupper);
         return trans;
     }
+
+    [[nodiscard]] int find(const std::vector<std::string>& container, std::string str){
+        for(int i = 0; i < container.size(); i++){
+            if(utils::toLowerCase(container[i]) == utils::toLowerCase(str)) return i;
+        }
+        return -1;
+    }
+
+    [[nodiscard]] bool contains(const std::vector<std::string>& container, std::string str){
+        return find(container,str) >= 0;
+    }
 }
 
 
@@ -304,23 +315,12 @@ class MCUStructureBuilder {
         return -1;
     }
 
-    [[nodiscard]] int find(const std::vector<std::string>& container, std::string str){
-        for(int i = 0; i < container.size(); i++){
-            if(utils::toLowerCase(container[i]) == utils::toLowerCase(str)) return i;
-        }
-        return -1;
-    }
-
-    [[nodiscard]] bool contains(const std::vector<std::string>& container, std::string str){
-        return find(container,str) >= 0;
-    }
-
     [[nodiscard]] int countDistinct(const std::vector<utils::triple<>>& container){
         int tmp = 0;
         std::vector<std::string> processed{};
         for (const auto &elem : container) {
             auto& search = elem.str1;
-            if(!contains(processed,search)) {
+            if(!utils::contains(processed,search)) {
                 tmp++;
                 processed.push_back(search);
             }
@@ -372,7 +372,7 @@ public:
             //sorting pads in groups
             for (auto &ele : fgps) {
                 const auto &search = ele.str2;
-                if (!contains(processed, search)) {
+                if (!utils::contains(processed, search)) {
                     processed.push_back(search);
                     std::vector<std::string> temp{};
                     for (auto &elem : fgps) {
@@ -411,7 +411,7 @@ public:
             std::vector<details::Struct> funcs{};
             for (auto &ele : fgps) {
                 const auto &search = ele.str1;
-                if (!contains(processed, search)) {
+                if (!utils::contains(processed, search)) {
                     processed.push_back(search);
                     funcs.emplace_back(utils::toCamelCase(search+""));
                 }
