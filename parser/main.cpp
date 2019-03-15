@@ -10,7 +10,7 @@
 
 using namespace utils;
 
-auto avPins(pugi::xml_node& pinouts, const std::vector<std::string> &ports) {
+auto avPins(pugi::xml_node &pinouts, const std::vector<std::string> &ports) {
     std::vector<std::string> ret{};
     for (auto elem : pinouts.children()) {
         if (utils::contains(elem.attribute("name").as_string(), "QFN")) {
@@ -33,7 +33,7 @@ auto avPins(pugi::xml_node& pinouts, const std::vector<std::string> &ports) {
     return ret;
 }
 
-std::vector<std::string> avPorts(pugi::xml_node& pinouts) {
+std::vector<std::string> avPorts(pugi::xml_node &pinouts) {
     std::vector<std::string> ret{};
     std::vector<std::string> processed{};
 
@@ -77,7 +77,7 @@ int main(int argc, const char **argv) {
     auto ports_available = avPorts(pinout);
     auto pins_available = avPins(pinout, ports_available);
 
-    for(auto& elem : pins_available){
+    for (auto &elem : pins_available) {
         std::cout << elem << '\n';
     }
 
@@ -85,19 +85,18 @@ int main(int argc, const char **argv) {
     auto peripherals = doc.select_nodes("avr-tools-device-file/devices/device/peripherals/module");
     std::string path;
 #ifdef __linux__
-    if(argc > 2) path = argv[2]+("/"+devname);
+    if(argc > 2) path = argv[2]+std::string("/");
 #elif _WIN32
-    if (argc > 2) path = argv[2] + ("\\" + devname);
+    if (argc > 2) path = argv[2] + std::string("\\");
 #else
         static_assert(false,"OS not supported");
 #endif
-    else path = devname;
     std::cout << "output: " << path << '\n';
     for (auto node: module) {
         pugi::xml_node tool = node.node();
         std::string modName = tool.attribute("name").as_string();
         std::cout << "Module Name " << modName << "\n";
-        MCUStructureBuilder mbuilder = MCUStructureBuilder(path + "", tool.attribute("name").as_string());
+        MCUStructureBuilder mbuilder = MCUStructureBuilder(devname+"", tool.attribute("name").as_string());
         for (auto node1: tool.child("register-group").children("register")) {
             std::string reg_name = node1.attribute("name").as_string();
             std::string reg_caption = node1.attribute("caption").as_string();
@@ -118,34 +117,53 @@ int main(int argc, const char **argv) {
             }
             std::vector<tuple<>> val_group{};
             bool entryGenerated = false;
-            for (auto node2 : node1.children("bitfield")) {
-                if (reg_t == reg_type::Data) {
-                    if (reg_prot == "RW") {
-                        reg_t = reg_type::Control;
-                    } else {
-                        reg_t = reg_type::Flag;
+
+            auto it = node1.children("mode");
+            bool hasmode = it.begin() != it.end();
+            auto iterator = it.begin();
+            auto it2 = node1.children("bitfield");
+            do {
+                if(hasmode) it2 = iterator->children("bitfield");
+
+                for (auto node2 :  it2) {
+                    std::string mname;
+                    if (hasmode) {
+                        mname = (*iterator).attribute("name").as_string() + std::string("_");
                     }
-                }
-                auto tempstr = std::string(node2.attribute("values").as_string());
-                if (!entryGenerated) {
-                    mbuilder.addEnum(reg_enum + "");
-                    entryGenerated = true;
-                }
-                if (tempstr.empty()) {
-                    auto bs = std::bitset<32>(static_cast<size_t>(node2.attribute("mask").as_int()));
-                    if (bs.count() > 1) {
-                        for (uint32_t i = 0; bs.test(i) && i < 32; i++) {
-                            mbuilder.addEnumEntry(
-                                    utils::toCamelCase(node2.attribute("name").as_string()) + std::to_string(i),
-                                    modName + "_" + node2.attribute("name").as_string() + std::to_string(i) + "_bm");
+
+                    if (reg_t == reg_type::Data) {
+                        if (reg_prot == "RW") {
+                            reg_t = reg_type::Control;
+                        } else {
+                            reg_t = reg_type::Flag;
                         }
-                    } else
-                        mbuilder.addEnumEntry(utils::toCamelCase(node2.attribute("name").as_string()),
-                                              modName + "_" + node2.attribute("name").as_string() + "_bm");
-                } else {
-                    val_group.push_back(tuple<>{tempstr, node2.attribute("name").as_string()});
+                    }
+                    auto tempstr = std::string(node2.attribute("values").as_string());
+                    if (!entryGenerated) {
+                        mbuilder.addEnum(reg_enum + "");
+                        entryGenerated = true;
+                    }
+                    if (tempstr.empty()) {
+                        auto bs = std::bitset<32>(static_cast<size_t>(node2.attribute("mask").as_int()));
+                        if (bs.count() > 1) {
+                            for (uint32_t i = 0; bs.test(i) && i < 32; i++) {
+                                mbuilder.addEnumEntry(
+                                        utils::toCamelCase(mname + node2.attribute("name").as_string()) +
+                                        std::to_string(i),
+                                        modName + "_" + node2.attribute("name").as_string() + std::to_string(i) +
+                                        "_bm");
+                            }
+                        } else
+                            mbuilder.addEnumEntry(utils::toCamelCase(mname + node2.attribute("name").as_string()),
+                                                  modName + "_" + node2.attribute("name").as_string() + "_bm");
+                    } else {
+                        val_group.push_back(tuple<>{tempstr, mname + node2.attribute("name").as_string()});
+                    }
+
                 }
-            }
+                if(hasmode)
+                    iterator++;
+            } while(iterator != it.end());
 
             for (auto &valstr : val_group) {
                 std::string enumname = modName;
@@ -170,7 +188,7 @@ int main(int argc, const char **argv) {
             if (node1.node().attribute("name").as_string() == modName) {
                 for (auto node2 : node1.node().children()) {
                     std::string instName = node2.attribute("name").as_string();
-                    if (modName != "PORT" || utils::contains(ports_available,std::string()+instName[4])) {
+                    if (modName != "PORT" || utils::contains(ports_available, std::string() + instName[4])) {
                         mbuilder.addInstance(instName + "");
 
                         std::vector<utils::triple<>> tmp;
@@ -181,7 +199,7 @@ int main(int argc, const char **argv) {
                             std::string sig_pad = node3.attribute("pad").as_string();
                             instName = node2.attribute("name").as_string();
 
-                            if (modName != "PORT" || utils::contains(pins_available,(sig_pad)))
+                            if (modName != "PORT" || utils::contains(pins_available, (sig_pad)))
                                 tmp.push_back(utils::triple<>{sig_func, sig_group, sig_pad});
 
                         }
@@ -193,7 +211,7 @@ int main(int argc, const char **argv) {
             }
         }
 
-        mbuilder.parse();
+        mbuilder.parse(path);
     }
 
     std::cout << "Hello, World!" << std::endl;

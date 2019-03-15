@@ -179,7 +179,7 @@ namespace details {
 #pragma GCC diagnostic pop
         //using pin ## number = AVR::port::details::PortPin<P,number>
         [[nodiscard]] std::string generate() noexcept override {
-            std::string tmp = "using pin" + number + " = AVR::port::details::PortPin<AVR::port::"+port+","+number+">;";
+            std::string tmp = "using pin"+ port + number + " = AVR::port::details::PortPin<AVR::port::"+port+","+number+">;";
             return tmp;
         }
 
@@ -435,7 +435,7 @@ public:
         } else std::cerr << "no function found, sth went wrong\n";
     }
 
-    void parse() noexcept {
+    void parse(const std::string& path) noexcept {
         std::string tmp = header;
         for (auto &elem: enums) {
             compStruct.addMember(elem);
@@ -449,7 +449,7 @@ public:
         nameSpace.addMember(ins);
         tmp += nameSpace.generate();
 
-        std::string outName = utils::toHigherCase(deviceName) + compname + ".hpp";
+        std::string outName = utils::toHigherCase(path)+ deviceName + compname + ".hpp";
         try {
             std::ofstream of(outName);
             of << tmp;
