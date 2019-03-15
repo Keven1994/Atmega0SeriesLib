@@ -77,10 +77,6 @@ int main(int argc, const char **argv) {
     auto ports_available = avPorts(pinout);
     auto pins_available = avPins(pinout, ports_available);
 
-    for (auto &elem : pins_available) {
-        std::cout << elem << '\n';
-    }
-
     auto reg = doc.select_nodes("avr-tools-device-file/modules/module/register-group/register");
     auto peripherals = doc.select_nodes("avr-tools-device-file/devices/device/peripherals/module");
     std::string path;
@@ -91,11 +87,10 @@ int main(int argc, const char **argv) {
 #else
         static_assert(false,"OS not supported");
 #endif
-    std::cout << "output: " << path << '\n';
+
     for (auto node: module) {
         pugi::xml_node tool = node.node();
         std::string modName = tool.attribute("name").as_string();
-        std::cout << "Module Name " << modName << "\n";
         MCUStructureBuilder mbuilder = MCUStructureBuilder(devname+"", tool.attribute("name").as_string());
         for (auto node1: tool.child("register-group").children("register")) {
             std::string reg_name = node1.attribute("name").as_string();

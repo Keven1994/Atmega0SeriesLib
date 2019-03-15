@@ -48,7 +48,7 @@ namespace utils {
     }
 
     [[nodiscard]] int find(const std::vector<std::string>& container, std::string str){
-        for(int i = 0; i < container.size(); i++){
+        for(int i = 0; static_cast<unsigned long long>(i) < container.size(); i++){
             if(utils::toLowerCase(container[i]) == utils::toLowerCase(str)) return i;
         }
         return -1;
@@ -163,11 +163,11 @@ namespace details {
 
     class TypePin : public generatable {
 
-        std::string port, number;
+        std::string port, number, count;
 
     public:
 
-        TypePin(std::string &&port, std::string &&number) noexcept : port(utils::toHigherCase(port)), number(number) {
+        TypePin(std::string &&port, std::string &&number, std::string&& count) noexcept : port(utils::toHigherCase(port)), number(number), count(count) {
 
         }
 
@@ -179,7 +179,7 @@ namespace details {
 #pragma GCC diagnostic pop
         //using pin ## number = AVR::port::details::PortPin<P,number>
         [[nodiscard]] std::string generate() noexcept override {
-            std::string tmp = "using pin"+ port + number + " = AVR::port::details::PortPin<AVR::port::"+port+","+number+">;";
+            std::string tmp = "using pin" + count + " = AVR::port::details::PortPin<AVR::port::"+port+","+number+">;";
             return tmp;
         }
 
@@ -309,7 +309,7 @@ class MCUStructureBuilder {
     std::vector<details::Struct> instances;
 
     [[nodiscard]] int find(const std::vector<details::Struct>& container, std::string str){
-        for(int i = 0; i < container.size(); i++){
+        for(int i = 0; static_cast<unsigned long long>(i) < container.size(); i++){
             if(utils::toLowerCase(container[i].name()) == utils::toLowerCase(str)) return i;
         }
         return -1;
@@ -328,9 +328,9 @@ class MCUStructureBuilder {
         return tmp;
     }
 
-    [[nodiscard]] bool sameRow(const std::vector<utils::triple<>>& fgps, const std::string& str,const std::string& str2){
+    [[nodiscard]] bool sameRow13(const std::vector<utils::triple<>>& fgps, const std::string& str,const std::string& str2){
         for(auto& elem: fgps){
-            if(utils::toLowerCase(elem.str1) == utils::toLowerCase(str) && utils::toLowerCase(elem.str2) == utils::toLowerCase(str2)) return true;
+            if(utils::toLowerCase(elem.str1) == utils::toLowerCase(str) && utils::toLowerCase(elem.str3) == utils::toLowerCase(str2)) return true;
         }
         return false;
     }
@@ -376,27 +376,28 @@ public:
                     processed.push_back(search);
                     std::vector<std::string> temp{};
                     for (auto &elem : fgps) {
-                        if (elem.str2 == search)
+                        if (elem.str2 == search) {
                             temp.push_back(elem.str3);
+                        }
                     }
                     groups.push_back(utils::tuple<std::string, std::vector<std::string>>{search, temp});
                 }
             }
         }
 
-        std::vector<details::Struct> toAdd{};
-        for(auto& elem : groups){
-            details::Struct temp = details::Struct(utils::toCamelCase(elem.str1));
-            for(auto& ele : elem.str2){
-                auto tmp = details::TypePin(std::string{ele[1]},std::string{ele[2]});
-                temp.addMember(tmp);
-            }
-            toAdd.push_back(temp);
-        }
 
         auto funcctr = countDistinct(fgps);
         if(funcctr == 1){ //special case when there is only 1 function (e.g. ports)
-
+            std::vector<details::Struct> toAdd{};
+            for(auto& elem : groups){
+                details::Struct temp = details::Struct(utils::toCamelCase(elem.str1));
+                auto i = 0;
+                for(auto& ele : elem.str2){
+                    auto tmp = details::TypePin(std::string{ele[1]}, std::string{ele[2]}, std::to_string(i++));
+                    temp.addMember(tmp);
+                }
+                toAdd.push_back(temp);
+            }
             for(auto& elem: toAdd){
                 auto i = find(instances,modName);
                 if(i >= 0) {
@@ -406,7 +407,6 @@ public:
         } else if(funcctr > 1){
 
             std::vector<std::string> processed;
-            //sorting pads in groups
             std::vector<std::string> temp{};
             std::vector<details::Struct> funcs{};
             for (auto &ele : fgps) {
@@ -416,16 +416,28 @@ public:
                     funcs.emplace_back(utils::toCamelCase(search+""));
                 }
             }
-            for(auto& func : funcs) {
-                for (auto &elem : toAdd) {
 
-                    if (sameRow(fgps,func.name(),elem.name())) {
-                        auto i = find(instances, (modName));
-                        if (i >= 0) {
-                            func.addMember(elem);
+            std::vector<details::Struct> toAdd{};
+            for(auto& elem : funcs){
+
+                for(auto& ele : groups){
+                    details::Struct group = details::Struct(utils::toCamelCase(ele.str1));
+                    bool filled = false;
+                    auto i = 0;
+                    for(auto& el : ele.str2) {
+                        if (sameRow13(fgps, elem.name(), el)) {
+                            auto tmp = details::TypePin(std::string{el[1]}, std::string{el[2]}, std::to_string(i++));
+                            group.addMember(tmp);
+                            filled = true;
                         }
                     }
+                    if(filled)
+                    elem.addMember(group);
                 }
+                toAdd.push_back(elem);
+            }
+
+            for(auto& func : funcs) {
                 auto i = find(instances,modName);
                 if(i >= 0) {
                     instances[i].addMember(func);
