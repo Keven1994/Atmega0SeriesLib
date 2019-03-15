@@ -340,3 +340,17 @@ ASALocalRun/
 *.o
 
 *.exe
+
+GccApplication1/CMakeCache\.txt
+
+GccApplication1/cmake_install\.cmake
+
+GccApplication1/CMakeFiles/
+
+GccApplication1/CMakeFiles/avr_terminal\.dir/
+
+*.elf
+
+*.hex
+
+GccApplication1/Makefile
