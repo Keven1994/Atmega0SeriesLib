@@ -298,7 +298,7 @@ namespace details {
 
 
 class MCUStructureBuilder {
-    static inline constexpr auto header = "#pragma once\n #include \"../../hw_abstractions/Port.hpp\"\n #include \"../../hw_abstractions/Pin.hpp\"\n\n";
+    static inline constexpr auto header = "#pragma once\n #include \"../../hw_abstractions/Port.hpp\"\n\n";
     static inline auto f = details::Function("[[nodiscard,gnu::always_inline]] static inline","auto&","value","","","" );
 
     std::string deviceName;

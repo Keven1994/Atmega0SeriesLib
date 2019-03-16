@@ -7,7 +7,7 @@
 
 
 #pragma once
-#include "Pin.hpp"
+#include "Bit.hpp"
 #include "../tools/utils.h"
 
 namespace reg {

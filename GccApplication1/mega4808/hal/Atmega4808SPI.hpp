@@ -1,6 +1,5 @@
 #pragma once
 #include "../../hw_abstractions/Port.hpp"
-#include "../../hw_abstractions/Pin.hpp"
 #include "../../hw_abstractions/SPI.hpp"
 
 namespace mega4808 {

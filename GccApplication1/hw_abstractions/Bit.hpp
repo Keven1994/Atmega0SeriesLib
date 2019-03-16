@@ -8,14 +8,14 @@
 
 #pragma once
 
-struct Pin {
+struct Bit {
 	mem_width pinValue;
 	
-	constexpr explicit Pin(mem_width number) : pinValue( 1 << number ) {}
-	constexpr Pin(const Pin& other) : pinValue(other.pinValue) {}
-	constexpr Pin(Pin&& other) = delete;
-	constexpr Pin operator~() const {
-		return Pin(~pinValue);
+	constexpr explicit Bit(mem_width number) : pinValue( 1 << number ) {}
+	constexpr Bit(const Bit& other) : pinValue(other.pinValue) {}
+	constexpr Bit(Bit&& other) = delete;
+	constexpr Bit operator~() const {
+		return Bit(~pinValue);
 	}
 	
 	template<typename T>
@@ -33,36 +33,36 @@ struct Pin {
 	}
 	
 	constexpr void operator=(mem_width number) { pinValue = 1 << number; }
-	constexpr void operator=(const Pin& other) { pinValue = other.pinValue; }
-	constexpr void operator=(Pin&& other) = delete;
+	constexpr void operator=(const Bit& other) { pinValue = other.pinValue; }
+	constexpr void operator=(Bit&& other) = delete;
 	constexpr explicit operator mem_width() const{
 		return pinValue;
 	}
 };
 
 template<typename T>
-inline void operator^=(T& lhs,const Pin rhs) {
+inline void operator^=(T& lhs,const Bit rhs) {
 	lhs ^= static_cast<mem_width>(rhs);
 }
 
 template<typename T>
-inline void operator&=(T& lhs,const Pin rhs){
+inline void operator&=(T& lhs,const Bit rhs){
 	lhs &= static_cast<mem_width>(rhs);
 }
 
 template<typename T>
-inline void operator|=(T& lhs,const Pin rhs){
+inline void operator|=(T& lhs,const Bit rhs){
 	lhs |= static_cast<mem_width>(rhs);
 }
 
-constexpr inline mem_width operator^(const Pin lhs,const Pin rhs) {
+constexpr inline mem_width operator^(const Bit lhs,const Bit rhs) {
 	return static_cast<mem_width>(lhs) ^ static_cast<mem_width>(rhs);
 }
 
-constexpr inline mem_width operator&(const Pin lhs,const Pin rhs) {
+constexpr inline mem_width operator&(const Bit lhs,const Bit rhs) {
 	return static_cast<mem_width>(lhs) & static_cast<mem_width>(rhs);
 }
 
-constexpr inline mem_width operator|(const Pin lhs,const Pin rhs) {
+constexpr inline mem_width operator|(const Bit lhs,const Bit rhs) {
 	return static_cast<mem_width>(lhs) | static_cast<mem_width>(rhs);
 }

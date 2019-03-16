@@ -34,17 +34,19 @@
 	using ch1 = Atmega4809::EventSystem::ch1;
 #endif
 	
-using PortF = AVR::port::Port<AVR::port::F>;
-using PortC = AVR::port::Port<AVR::port::C>;
+using namespace AVR::port;
 
-using led1 = AVR::port::Pin<PortF, 1>;
-using led2 = AVR::port::Pin<PortF, 2>;
+using PortF = Port<F>;
+using PortC = Port<C>;
+
+using led1 = Pin<PortF, 1>;
+using led2 = Pin<PortF, 2>;
 	
 	
 int main( ) {
 
-	PortF::get<AVR::port::Port_Registers<>::dir>().on();
-	AVR::port::PinsOn<led1,led2>();
+	PortF::get<Port_Registers<>::dir>().on();
+	PinsOn<led1,led2>();
 	
 	while(true){
 		led1::invert();

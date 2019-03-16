@@ -8,7 +8,6 @@
 
 #pragma once
 #include "../../hw_abstractions/Port.hpp"
-#include "../../hw_abstractions/Pin.hpp"
 
 namespace mega4808 {
 

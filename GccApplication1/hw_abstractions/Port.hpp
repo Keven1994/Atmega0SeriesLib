@@ -14,6 +14,7 @@ namespace AVR{
 	namespace port {
 		
 		namespace details {
+			
 			template<typename first,typename ...T>
 			[[nodiscard]] constexpr bool samePorts() noexcept {
 				if constexpr(sizeof...(T) == 0)
@@ -26,6 +27,7 @@ namespace AVR{
 				}
 				
 			}
+			
 			template<typename P, typename regs>
 			class Port {
 				
@@ -81,9 +83,6 @@ namespace AVR{
 			template<typename P, mem_width number>
 			class PortPin{
 				
-				template<typename... Pins>
-				friend void PinsOn();
-				
 				static inline auto& _port = P::port;
 
 				public:
@@ -92,7 +91,7 @@ namespace AVR{
 
 				NoConstructors(PortPin);
 				
-				static inline constexpr auto pinValue = Pin(number);
+				static inline constexpr auto pinValue = Bit(number);
 				
 				static inline void off(){
 					_port().OUT &= ~pinValue;
