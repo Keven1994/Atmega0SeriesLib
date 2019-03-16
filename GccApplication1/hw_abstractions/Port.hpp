@@ -11,96 +11,134 @@
 #include "../MCUSelect.hpp"
 
 namespace AVR{
-namespace port {
-	
-	namespace details {
+	namespace port {
 		
-		template<typename P, mem_width number>
-		class PortPin;
+		namespace details {
+			template<typename first,typename ...T>
+			[[nodiscard]] constexpr bool samePorts() noexcept {
+				if constexpr(sizeof...(T) == 0)
+				return true;
+				else {
+					if constexpr (!utils::isEqual<typename first::port, typename utils::front<T...>::type::port>::value)
+					return false;
+					else
+					return samePorts<T...>();
+				}
+				
+			}
+			template<typename P, typename regs>
+			class Port {
+				
+				public:
+				
+				static inline auto& port = P::value;
+				
+				using pins = typename P::Pin;
+				using registers = typename regs::registers;
+				
+				NoConstructors(Port);
+				
+				template<typename reg>
+				static inline auto& get(){
+					using reg_t = typename reg::type;
+					return reg_t::getRegister(*((typename reg_t::regSize*)&port() + reg::value));
+				}
+
+				[[nodiscard]] static inline auto& getDir() {
+					return reg::Register<>::getRegister(port().DIR);
+				};
+
+				[[nodiscard]] static inline auto& getInput() {
+					return reg::Register<reg::accessmode::ReadOnly>::getRegister(port().IN);
+				};
+
+				[[nodiscard]] static inline auto& getOutput() {
+					return reg::Register<>::getRegister(port().OUT);
+				};
+				
+				template<typename... PINS>
+				static inline void setInput(PINS... args) {
+					if constexpr(sizeof...(PINS) == 0){
+						getDir().raw() = static_cast<mem_width>(0x00);
+						} else {
+						getDir().raw() &= ~(static_cast<mem_width>(args) | ...);
+					}
+				}
+				
+				template<typename... PINS>
+				static inline void setOutput(PINS... args) {
+					if constexpr(sizeof...(PINS) == 0){
+						getDir().raw() = static_cast<mem_width>(-1);
+						} else {
+						getDir().raw() |= (static_cast<mem_width>(args) | ...);
+					}
+				}
+			};
+			
+			template<typename... Pins>
+			static inline void PinsOn();
+			
+			template<typename P, mem_width number>
+			class PortPin{
+				
+				template<typename... Pins>
+				friend void PinsOn();
+				
+				static inline auto& _port = P::port;
+
+				public:
+
+				using port = P;
+
+				NoConstructors(PortPin);
+				
+				static inline constexpr auto pinValue = Pin(number);
+				
+				static inline void off(){
+					_port().OUT &= ~pinValue;
+				}
+				
+				static inline void on(){
+					_port().OUT |= pinValue;
+				}
+				
+				static inline void invert(){
+					_port().OUT ^= pinValue;
+				}
+				
+				static inline void setOutput(){ //no option to write as template -> parse error in template argument list, bug?
+					_port().DIR |= pinValue;
+				}
+				
+				static inline void setInput() {
+					_port().DIR &= ~pinValue;
+				}
+				
+			};
+		}
 		
-		template<typename P, typename regs>
-		class Port {
-			
-			template<typename p, mem_width number>
-			friend class PortPin;
-			
-			static inline auto& port = P::value;
-			public:
-			using pins = typename P::pins;
-			using portPins = typename P::template portPins<Port>;
-			using registers = typename regs::registers;
-			
-			NoConstructors(Port);
-			
-			template<typename reg>
-			static inline auto& get(){
-				using reg_t = typename reg::type;
-				return reg_t::getRegister(*((typename reg_t::regSize*)&port() + reg::value));
-			}
-
-			[[nodiscard]] static inline auto& getDir() {
-				return reg::Register<>::getRegister(port().DIR);
-			};
-
-			[[nodiscard]] static inline auto& getInput() {
-				return reg::Register<reg::accessmode::ReadOnly>::getRegister(port().IN);
-			};
-
-			[[nodiscard]] static inline auto& getOutput() {
-				return reg::Register<>::getRegister(port().OUT);
-			};
-			
-			template<typename... PINS>
-			static inline void setInput(PINS... args) {
-				if constexpr(sizeof...(PINS) == 0){
-					getDir().raw() = static_cast<mem_width>(0x00);
-					} else {
-					getDir().raw() &= ~(static_cast<mem_width>(args) | ...);
-				}
-			}
-			
-			template<typename... PINS>
-			static inline void setOutput(PINS... args) {
-				if constexpr(sizeof...(PINS) == 0){
-					getDir().raw() = static_cast<mem_width>(-1);
-					} else {
-					getDir().raw() |= (static_cast<mem_width>(args) | ...);
-				}
-			}
-		};
-
-		template<typename P, mem_width number>
-		class PortPin{
-			
-			static inline auto& port = P::port;
-			
-			public:
-			
-			NoConstructors(PortPin);
-			
-			static inline constexpr auto pinValue = Pin(number);
-			
-			static inline void off(){
-				port().OUT &= ~pinValue;
-			}
-			
-			static inline void on(){
-				port().OUT |= pinValue;
-			}
-			
-			static inline void invert(){
-				port().OUT ^= pinValue;
-			}
-			
-			static inline void setOutput(){ //no option to write as template -> parse error in template argument list, bug?
-				port().DIR |= pinValue;
-			}
-			
-			static inline void setInput() {
-				port().DIR &= ~pinValue;
-			}
-			
-		};
+		template<typename... Pins>
+		requires(details::samePorts<Pins...>())
+		static inline void PinsOn() {
+			using firstPin = typename utils::front<Pins...>::type;
+			auto& Pval = firstPin::port::port().OUT;
+			Pval |= (Pins::pinValue | ...);
+		}
+		
+		template<typename... Pins>
+		requires(details::samePorts<Pins...>())
+		static inline void PinsInvert() {
+			using firstPin = typename utils::front<Pins...>::type;
+			auto& Pval = firstPin::port().OUT;
+			Pval ^= (Pins::pinValue | ...);
+		}
+		
+		template<typename... Pins>
+		requires(details::samePorts<Pins...>())
+		static inline void PinsOff() {
+			using firstPin = typename utils::front<Pins...>::type;
+			auto& Pval = firstPin::port().OUT;
+			Pval &= ~(Pins::pinValue | ...);
 		}
 
 		struct A{};struct B{};struct C{};struct D{};struct E{};struct F{};

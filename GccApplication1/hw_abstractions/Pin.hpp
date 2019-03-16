@@ -54,3 +54,15 @@ template<typename T>
 inline void operator|=(T& lhs,const Pin rhs){
 	lhs |= static_cast<mem_width>(rhs);
 }
+
+constexpr inline mem_width operator^(const Pin lhs,const Pin rhs) {
+	return static_cast<mem_width>(lhs) ^ static_cast<mem_width>(rhs);
+}
+
+constexpr inline mem_width operator&(const Pin lhs,const Pin rhs) {
+	return static_cast<mem_width>(lhs) & static_cast<mem_width>(rhs);
+}
+
+constexpr inline mem_width operator|(const Pin lhs,const Pin rhs) {
+	return static_cast<mem_width>(lhs) | static_cast<mem_width>(rhs);
+}

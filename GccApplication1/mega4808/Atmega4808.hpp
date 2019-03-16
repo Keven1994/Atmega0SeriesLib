@@ -28,20 +28,20 @@ using namespace utils;
 
 			NoConstructors(Ports);
 			
-			using porta = port<ports::A>;
-			using portc = port<ports::C>;
-			using portd = port<ports::D>;
-			using portf = port<ports::F>;
+			using porta = port<ports::porta>;
+			using portc = port<ports::portc>;
+			using portd = port<ports::portd>;
+			using portf = port<ports::portf>;
 		};
 		
 		using port_registers = typename mega4808::portComponent::registers;
 		
 		template<typename p>
 		struct testports {
-			using portX = typename condEqual<AVR::port::A,p, port<ports::A>, 
-							typename condEqual<AVR::port::C,p, port<ports::C>,
-								typename condEqual<AVR::port::D,p, port<ports::D>,
-									typename condEqual<AVR::port::F,p, port<ports::F>,void
+			using portX = typename condEqual<AVR::port::A,p, port<ports::porta>, 
+							typename condEqual<AVR::port::C,p, port<ports::portc>,
+								typename condEqual<AVR::port::D,p, port<ports::portd>,
+									typename condEqual<AVR::port::F,p, port<ports::portf>,void
 									>::type
 								>::type
 							>::type

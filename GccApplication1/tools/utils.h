@@ -178,14 +178,16 @@ namespace utils {
 		static constexpr auto size = sizeof...(T)+1;
 	};
 
-
-	template<typename T>
-	struct front { using type = T; };
-
-	template<template<typename,typename...> typename list, typename F, typename ...T>
-	struct front<list<F,T...>> {
-		using type = F;
-	};
+		template<typename... Pack>
+		struct front{
+			using type = void;	
+		};
+		
+		template<typename P,typename... Pack>
+		struct front<P,Pack...>{
+			using type = P;
+		};
+		
 
 	template<typename Push, typename L>
 	struct push_front {};
