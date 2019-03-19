@@ -179,7 +179,7 @@ namespace details {
 #pragma GCC diagnostic pop
         //using pin ## number = AVR::port::details::PortPin<P,number>
         [[nodiscard]] std::string generate() noexcept override {
-            std::string tmp = "using pin" + count + " = AVR::port::details::PortPin<AVR::port::"+port+","+number+">;";
+            std::string tmp = "using pin" + count + " = AVR::port::details::PortPin<port<ports::port"+utils::toLowerCase(port)+">,"+number+">;";
             return tmp;
         }
 

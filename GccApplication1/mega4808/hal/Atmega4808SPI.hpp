@@ -59,7 +59,7 @@ struct spis {
 		
 		struct Spi_alt2 {
 			struct Miso {
-				//using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::E>,1>; ?
+				//using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::E>,1>; ? -> not available
 			};
 			
 			struct Mosi {
@@ -75,44 +75,43 @@ struct spis {
 			};
 			
 		};
-		
-		struct Spi_alt {
-			struct Miso {
-				using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::C>,1>;
-			};
-			
-			struct Mosi {
-				using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::C>,0>;
-			};
-			
-			struct Sck {
-				using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::C>,2>;
-			};
-			
-			struct Ss {
-				using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::C>,3>;
-			};
-			
-		};
-		
-		struct Spi {
-			struct Miso {
-				using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::A>,5>;
-			};
-			
-			struct Mosi {
-				using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::A>,4>;
-			};
-			
-			struct Sck {
-				using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::A>,6>;
-			};
-			
-			struct Ss {
-				using pin0 = AVR::port::Pin<AVR::port::Port<AVR::port::A>,7>;
-			};
-			
-		};
+            struct Spi_alt {
+	            struct Miso {
+		            using pin0 = AVR::port::details::PortPin<port<ports::portc>,1>;
+	            };
+	            
+	            struct Mosi {
+		            using pin0 = AVR::port::details::PortPin<port<ports::portc>,0>;
+	            };
+	            
+	            struct Sck {
+		            using pin0 = AVR::port::details::PortPin<port<ports::portc>,2>;
+	            };
+	            
+	            struct Ss {
+		            using pin0 = AVR::port::details::PortPin<port<ports::portc>,3>;
+	            };
+	            
+            };
+            
+            struct Spi {
+	            struct Miso {
+		            using pin0 = AVR::port::details::PortPin<port<ports::porta>,5>;
+	            };
+	            
+	            struct Mosi {
+		            using pin0 = AVR::port::details::PortPin<port<ports::porta>,4>;
+	            };
+	            
+	            struct Sck {
+		            using pin0 = AVR::port::details::PortPin<port<ports::porta>,6>;
+	            };
+	            
+	            struct Ss {
+		            using pin0 = AVR::port::details::PortPin<port<ports::porta>,7>;
+	            };
+	            
+            };
 		
 	};
 	

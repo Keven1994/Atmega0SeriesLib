@@ -17,14 +17,10 @@ using ptr_t = uintptr_t;
 
 #include "hal/Atmega4808EVSYS.hpp"
 
-
+#include "hal/Atmega4808SPI.hpp"
 
 
 namespace mega4808 {
-	
-	namespace details {
-		struct _spi;
-	}
 
 	struct Atmega4808 {
 		
@@ -58,16 +54,7 @@ namespace mega4808 {
 			using ch5 = channel<5>;
 		};
 		
-		using SPI = details::_spi;
-	}__attribute__((packed));
-
-#include "hal/Atmega4808SPI.hpp"
-
-	namespace details {
-		using namespace mega4808;
-		
-		struct _spi {
-			
+		struct SPI {
 			using TransferMode = mega4808::TransferMode;
 			using Prescaler = mega4808::Prescaler;
 			//template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, bool waitForReceive, Prescaler prescaler>
@@ -75,7 +62,6 @@ namespace mega4808 {
 			using SpiMaster = typename spiMaster<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative>::SPI;
 			
 			template<bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0>
-			using SPISlave = typename spiSlave<msb,tmode,buffered,waitForReceive,alternative>::SPI;
-		};
-	}
+			using SPISlave = typename spiSlave<msb,tmode,buffered,waitForReceive,alternative>::SPI;};//= details::_spi;
+	}__attribute__((packed));
 }

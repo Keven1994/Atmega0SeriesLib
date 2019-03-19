@@ -202,7 +202,7 @@ int main(int argc, const char **argv) {
                             std::string sig_pad = node3.attribute("pad").as_string();
                             instName = node2.attribute("name").as_string();
 
-                            if (modName != "PORT" || utils::contains(pins_available, (sig_pad)))
+                            if (modName != "PORT" && utils::contains(pins_available, (sig_pad)))
                                 tmp.push_back(utils::triple<>{sig_func, sig_group, sig_pad});
 
                         }
