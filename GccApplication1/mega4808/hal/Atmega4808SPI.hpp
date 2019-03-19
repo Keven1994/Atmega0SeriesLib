@@ -1,6 +1,18 @@
 #pragma once
 #include "../../hw_abstractions/Port.hpp"
-#include "../../hw_abstractions/SPI.hpp"
+namespace AVR{
+	namespace spi {
+		namespace details {
+				template<typename SPIComponent, typename spiInf, auto order,  auto clockDoubled, auto slaveSelectDisable,
+				auto transferMode, auto buffered, auto waitForReceive, auto prescaler, typename bit_width>
+				struct SPIMaster;
+				
+						template<typename SPIComponent, typename spiInf, auto order,
+						auto transferMode, auto buffered, auto waitForReceive, typename bit_width>
+						struct SPISlave;
+		}
+	}
+}
 
 namespace mega4808 {
 struct spiComponent {
@@ -135,7 +147,7 @@ struct spis {
 				Div128 = static_cast<mem_width>(spiComponent::CTRLAMasks::presc_div128)
 			};
 			
-			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, bool waitForReceive, Prescaler prescaler, uint8_t alternative>
+			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, bool waitForReceive, Prescaler prescaler, uint8_t alternative, typename bit_width>
 			struct spiMaster{
 				static_assert(! (!buffered && waitForReceive), "unbuffered mode combined with waitforreceive does not make sense, check spi configuration");
 
@@ -150,10 +162,10 @@ struct spis {
 				static constexpr BConf buf = buffered ? BConf::Bufen : static_cast<BConf>(0);
 				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
 
-				using SPI = spi::SPIMaster<spiComponent, typename spis::spi0, Msb,clkx2,ssd,tmode,buf,bufwait,presc>;
+				using SPI = AVR::spi::details::SPIMaster<spiComponent, typename spis::spi0, Msb,clkx2,ssd,tmode,buf,bufwait,presc,bit_width>;
 			};
 
-			template<bool msb,TransferMode transferMode, bool buffered, bool waitForReceive, uint8_t alternative>
+			template<bool msb,TransferMode transferMode, bool buffered, bool waitForReceive, uint8_t alternative,typename bit_width>
 			struct spiSlave{
 				static_assert(! (!buffered && waitForReceive), "unbuffered mode combined with waitforreceive does not make sense, check spi configuration");
 
@@ -165,7 +177,7 @@ struct spis {
 				static constexpr BConf buf = buffered ? BConf::Bufen : static_cast<BConf>(0);
 				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
 				
-				using SPI = spi::SPISlave<spiComponent, typename spis::spi0, Msb,tmode,buf,bufwait>;
+				using SPI = AVR::spi::details::SPISlave<spiComponent, typename spis::spi0, Msb,tmode,buf,bufwait,bit_width>;
 			};
 			
 }

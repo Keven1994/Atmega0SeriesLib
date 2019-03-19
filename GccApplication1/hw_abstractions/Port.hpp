@@ -126,6 +126,22 @@ namespace AVR{
 		
 		template<typename... Pins>
 		requires(details::samePorts<Pins...>())
+		static inline void PinsDirIn() {
+			using firstPin = typename utils::front<Pins...>::type;
+			auto& Pval = firstPin::port::port().DIR;
+			Pval &= ~(Pins::pinValue | ...);
+		}
+		
+		template<typename... Pins>
+		requires(details::samePorts<Pins...>())
+		static inline void PinsDirOut() {
+			using firstPin = typename utils::front<Pins...>::type;
+			auto& Pval = firstPin::port::port().DIR;
+			Pval |= (Pins::pinValue | ...);
+		}
+		
+		template<typename... Pins>
+		requires(details::samePorts<Pins...>())
 		static inline void PinsInvert() {
 			using firstPin = typename utils::front<Pins...>::type;
 			auto& Pval = firstPin::port::port().OUT;

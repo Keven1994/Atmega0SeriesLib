@@ -21,10 +21,13 @@ using ptr_t = uintptr_t;
 
 
 namespace mega4808 {
+	
 
+	template<typename frequenzy>
+	requires(utils::isEqual<MHZ4,frequenzy>::value || utils::isEqual<MHZ12,frequenzy>::value || utils::isEqual<MHZ20,frequenzy>::value)
 	struct Atmega4808 {
 		
-		static constexpr auto clockFrequenzy = 4000000UL;
+		static constexpr auto clockFrequenzy = frequenzy::value;
 		
 		NoConstructors(Atmega4808);
 		
@@ -57,11 +60,12 @@ namespace mega4808 {
 		struct SPI {
 			using TransferMode = mega4808::TransferMode;
 			using Prescaler = mega4808::Prescaler;
-			//template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, bool waitForReceive, Prescaler prescaler>
-			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, uint8_t alternative = 0>
-			using SpiMaster = typename spiMaster<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative>::SPI;
+
+			template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, uint8_t alternative = 0, typename bit_width = mem_width>
+			using SPIMaster = typename spiMaster<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative,bit_width>::SPI;
 			
-			template<bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0>
-			using SPISlave = typename spiSlave<msb,tmode,buffered,waitForReceive,alternative>::SPI;};//= details::_spi;
-	}__attribute__((packed));
+			template<bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0, typename bit_width = mem_width>
+			using SPISlave = typename spiSlave<msb,tmode,buffered,waitForReceive,alternative,bit_width>::SPI;
+		};
+	};
 }

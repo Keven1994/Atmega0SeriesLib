@@ -14,8 +14,8 @@ struct Bit {
 	constexpr explicit Bit(mem_width number) : pinValue( 1 << number ) {}
 	constexpr Bit(const Bit& other) : pinValue(other.pinValue) {}
 	constexpr Bit(Bit&& other) = delete;
-	constexpr Bit operator~() const {
-		return Bit(~pinValue);
+	constexpr mem_width operator~() const {
+		return ~pinValue;
 	}
 	
 	template<typename T>

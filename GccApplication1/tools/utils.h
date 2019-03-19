@@ -250,7 +250,7 @@ namespace utils {
 		if constexpr(sizeof...(T) == 0) 
 			return true;
 		else {
-			if constexpr (!isEqual<first, typename front<list<T...>>::type>::value)
+			if constexpr (!isEqual<first, typename front<T...>::type>::value)
 				return false;
 			else
 				return sameTypes<T...>();
