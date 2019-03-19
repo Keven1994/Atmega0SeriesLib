@@ -15,23 +15,25 @@ namespace spi {
 	struct SPIMaster {
 
 		NoConstructors(SPIMaster);
-		using ControlA = typename SPIComponent::ControlA::type;
-		using ControlB = typename SPIComponent::ControlB::type;
-		using Data = typename SPIComponent::Data::type;
-		using InterruptFlags = typename SPIComponent::InterruptFlags::type;
+		using ControlA = typename SPIComponent::registers::ctrla::type;
+		using ControlB = typename SPIComponent::registers::ctrlb::type;
+		using Data = typename SPIComponent::registers::data;
+		using InterruptFlags = typename SPIComponent::registers::intflags;
 		
 		[[gnu::always_inline]] static inline void init(){
-			constexpr typename ControlA::regSize mBit = 1 << 5;
+			constexpr auto mBit = SPIComponent::CTRLAMasks::Master ;
 
 			auto& ctra = ControlA::getRegister(spiInf::value().CTRLA);
 			auto& ctrb = ControlB::getRegister(spiInf::value().CTRLB);
 
-			spiInf::mport::getDir().on(spiInf::pins::mosi,spiInf::pins::sck);
-			spiInf::mport::getDir().off(spiInf::pins::miso);
+						AVR::port::PinsOn<typename spiInf::Spi::Mosi::pin0,typename spiInf::Spi::Sck::pin0>();
+						//spiInf::mport::getDir().on(spiInf::spi::mosi::pin0,spiInf::spi::Sck::pin0);
+						//spiInf::mport::getDir().off(spiInf::pins::miso);
+						AVR::port::PinsOff<typename spiInf::Spi::Miso::pin0>();
 
 			ctra.set(prescaler, clockDoubled, order, mBit);
 			ctrb.set(transferMode, buffered, waitForReceive,slaveSelectDisable);
-			ctra.on(ControlA::special_bit::SPIEnable);
+			ctra.on(SPIComponent::CTRLAMasks::Enable);
 		}
 		
 		[[nodiscard]] static inline mem_width singleTransmit(mem_width data) {
@@ -82,8 +84,8 @@ namespace spi {
 	template<typename SPIComponent, typename spiInf, auto order,
 	auto transferMode, auto buffered, auto waitForReceive>
 	struct SPISlave {
-		using ControlA = typename SPIComponent::ControlA::type;
-		using ControlB = typename SPIComponent::ControlB::type;
+		using ControlA = typename SPIComponent::CTRLAMasks;
+		using ControlB = typename SPIComponent::CTRLBMasks;
 		using Data = typename SPIComponent::Data::type;
 		using InterruptFlags = typename SPIComponent::InterruptFlags::type;
 		NoConstructors(SPISlave);
@@ -93,11 +95,13 @@ namespace spi {
 			auto& ctra = reg::Register<>::getRegister(spiInf::value().CTRLA);
 			auto& ctrb = reg::Register<>::getRegister(spiInf::value().CTRLB);
 			
-			spiInf::mport::getDir().on(spiInf::spi::mosi::pin0,spiInf::pins::sck);
-			spiInf::mport::getDir().off(spiInf::pins::miso);
+			AVR::port::PinsOn<spiInf::spi::mosi::pin0,spiInf::spi::Sck::pin0>();
+			//spiInf::mport::getDir().on(spiInf::spi::mosi::pin0,spiInf::spi::Sck::pin0);
+			//spiInf::mport::getDir().off(spiInf::pins::miso);
+			AVR::port::PinsOff<spiInf::spi::miso::pin0>();
 			ctra.set(order);
 			ctrb.set(transferMode, buffered, waitForReceive);
-			ctra.on(ControlA::special_bit::SPIEnable);
+			ctra.on(ControlA::Enable);
 		}
 
 		[[nodiscard]] static inline mem_width singleTransmit(mem_width data) {

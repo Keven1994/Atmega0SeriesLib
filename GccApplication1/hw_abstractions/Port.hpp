@@ -128,7 +128,7 @@ namespace AVR{
 		requires(details::samePorts<Pins...>())
 		static inline void PinsInvert() {
 			using firstPin = typename utils::front<Pins...>::type;
-			auto& Pval = firstPin::port().OUT;
+			auto& Pval = firstPin::port::port().OUT;
 			Pval ^= (Pins::pinValue | ...);
 		}
 		
@@ -136,14 +136,14 @@ namespace AVR{
 		requires(details::samePorts<Pins...>())
 		static inline void PinsOff() {
 			using firstPin = typename utils::front<Pins...>::type;
-			auto& Pval = firstPin::port().OUT;
+			auto& Pval = firstPin::port::port().OUT;
 			Pval &= ~(Pins::pinValue | ...);
 		}
 
 		struct A{};struct B{};struct C{};struct D{};struct E{};struct F{};
 		
 		template<typename p, typename DefaultMCU = DEFAULT_MCU>
-		using Port = typename DefaultMCU::template testports<p>::portX;
+		using Port = typename DefaultMCU::template Ports<p>::portX;
 		
 		template<typename DefaultMCU = DEFAULT_MCU>
 		using Port_Registers = typename DefaultMCU::port_registers;
