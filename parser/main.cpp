@@ -100,12 +100,13 @@ int main(int argc, const char **argv) {
             std::string reg_size = node1.attribute("size").as_string();
             std::string reg_enum = reg_name + "Masks";
             reg_type reg_t;
+            bool hasBitfields = node1.children("bitfield").begin() != node1.children("bitfield").end();
             if (utils::contains(reg_name, "TGL") || utils::contains(reg_caption, "Toggle")) {
                 reg_t = reg_type::Toggle;
-            } else if (utils::contains(reg_name, "CTRL") || utils::contains(reg_caption, "Select") ||
-                       utils::contains(reg_caption, "Control")) {
+            } else if ((utils::contains(reg_name, "CTRL") || utils::contains(reg_caption, "Select") ||
+                       utils::contains(reg_caption, "Control")) && hasBitfields) {
                 reg_t = reg_type::Control;
-            } else if (utils::contains(reg_name, "FLAGS") || utils::contains(reg_caption, "Status")) {
+            } else if ((utils::contains(reg_name, "FLAGS") || utils::contains(reg_caption, "Status")) && hasBitfields) {
                 reg_t = reg_type::Flag;
             } else {
                 reg_t = reg_type::Data;
@@ -117,6 +118,7 @@ int main(int argc, const char **argv) {
             bool hasmode = it.begin() != it.end();
             auto iterator = it.begin();
             auto it2 = node1.children("bitfield");
+
             do {
                 if(hasmode) it2 = iterator->children("bitfield");
 
@@ -134,10 +136,12 @@ int main(int argc, const char **argv) {
                         }
                     }
                     auto tempstr = std::string(node2.attribute("values").as_string());
+
                     if (!entryGenerated) {
                         mbuilder.addEnum(reg_enum + "");
                         entryGenerated = true;
                     }
+
                     if (tempstr.empty()) {
                         auto bs = std::bitset<32>(static_cast<size_t>(node2.attribute("mask").as_int()));
                         if (bs.count() > 1) {
@@ -152,6 +156,10 @@ int main(int argc, const char **argv) {
                             mbuilder.addEnumEntry(utils::toCamelCase(mname + node2.attribute("name").as_string()),
                                                   modName + "_" + node2.attribute("name").as_string() + "_bm");
                     } else {
+                        auto f = tempstr.find("_DEFAULT");
+                        if(f != std::string::npos) {
+                            tempstr = tempstr.substr(0,f)+tempstr.substr(f+8,tempstr.size());
+                        }
                         val_group.push_back(tuple<>{tempstr, mname + node2.attribute("name").as_string()});
                     }
 

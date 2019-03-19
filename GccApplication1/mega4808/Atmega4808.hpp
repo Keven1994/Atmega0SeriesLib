@@ -22,6 +22,8 @@ namespace mega4808 {
 using namespace utils;
 	struct Atmega4808 {
 		
+		static constexpr auto clockFrequenzy = 4000000UL;
+		
 		NoConstructors(Atmega4808);
 		
 		struct Ports {

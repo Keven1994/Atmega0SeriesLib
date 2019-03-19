@@ -93,7 +93,7 @@ namespace spi {
 			auto& ctra = reg::Register<>::getRegister(spiInf::value().CTRLA);
 			auto& ctrb = reg::Register<>::getRegister(spiInf::value().CTRLB);
 			
-			spiInf::mport::getDir().on(spiInf::pins::mosi,spiInf::pins::sck);
+			spiInf::mport::getDir().on(spiInf::spi::mosi::pin0,spiInf::pins::sck);
 			spiInf::mport::getDir().off(spiInf::pins::miso);
 			ctra.set(order);
 			ctrb.set(transferMode, buffered, waitForReceive);

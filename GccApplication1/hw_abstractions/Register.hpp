@@ -216,6 +216,52 @@ namespace reg {
 		}
 	}__attribute__((packed));
 	
+	template<typename size, typename Bits>
+	class Register<accessmode::RW,specialization::Flag,Bits,size> {
+		
+		const volatile size reg;
+		
+		public:
+		
+		NoConstructors(Register);
+		
+		using regSize = size;
+		
+		using special_bit = Bits;
+		
+		[[nodiscard]] volatile mem_width raw() const volatile {
+			return reg;
+		}
+		
+		[[nodiscard]] volatile size& raw() volatile {
+			return reg;
+		}
+		
+		//SFINAE
+		[[nodiscard]] bool areSet() volatile;
+
+		template<typename... ARGS>
+		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
+			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
+			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
+		}
+		
+		template<typename... ARGS>
+		inline void invert(const ARGS... bits) volatile {
+			if constexpr(sizeof...(ARGS) == 0){
+				reg = static_cast<size>(-1);
+			} else
+			reg = (static_cast<size>(bits) | ...);
+		}
+		
+		/*
+		function to cast the structs to Register
+		*/
+		[[nodiscard]] static inline volatile Register& getRegister(volatile size& reg) {
+			return reinterpret_cast<volatile Register&>(reg);
+		}
+	}__attribute__((packed));
+	
 	template<typename size>
 	class Register<accessmode::RW,specialization::Toggle,void,size> {
 
