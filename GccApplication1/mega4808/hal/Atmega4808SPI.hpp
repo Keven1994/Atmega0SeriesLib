@@ -2,7 +2,7 @@
 #include "../../hw_abstractions/Port.hpp"
 namespace AVR{
 	namespace spi {
-		struct noInterrupt; struct interrupts;
+		struct blocking; struct notBlocking;
 
 		namespace details {
 

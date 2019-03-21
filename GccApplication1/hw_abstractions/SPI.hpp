@@ -11,7 +11,7 @@
 namespace AVR {
 	namespace spi {
 		
-		struct noInterrupt {}; struct interrupts {};
+		struct blocking {}; struct notBlocking {};
 
 		namespace details{
 			template<typename interruptUsage, typename SPIComponent, typename spiInf, typename bit_width>
@@ -24,30 +24,36 @@ namespace AVR {
 				using InterruptControlBits = typename InterruptControl::special_bit;
 				using InterruptFlagBits = typename InterruptFlags::special_bit;
 				
-				template<typename utils::enable_if_t<utils::isEqual<interruptUsage, interrupts>::value, int> = 0>
-				static inline void nonBlockSend(bit_width data){
+				template<typename T = void>
+				static inline void nonBlockSend(bit_width data)				
+					requires(utils::isEqual<interruptUsage, notBlocking>::value) 
+				{
 					auto& datareg = Data::getRegister(spiInf::value().DATA);
 					datareg.raw() = data;
 				}
 				
-				template<typename utils::enable_if_t<utils::isEqual<interruptUsage, interrupts>::value,int> = 0>
-				[[nodiscard]] static inline bit_width nonBlockReceive(){
+				template<typename T = void>
+				[[nodiscard]] static inline bit_width nonBlockReceive() 
+					requires(utils::isEqual<interruptUsage, notBlocking>::value)  
+				{
 					auto& datareg = Data::getRegister(spiInf::value().DATA);
 					return datareg.raw();
 				}
 				
 				//no enable_if because of parameter pack
 				template<typename... Args>
-				requires(utils::sameTypes<InterruptControlBits,Args...>() && utils::isEqual<interruptUsage, interrupts>::value)
+				requires(utils::sameTypes<InterruptControlBits,Args...>() && utils::isEqual<interruptUsage, notBlocking>::value)
 				static inline void enableInterrupt(Args... Bits) {
 					InterruptControl::getRegister(spiInf::value().INTCTRL).set(Bits...);
 				}
 
 				template<auto& funcRef, typename... FlagsToTest>
 				requires(utils::sameTypes<InterruptFlagBits, FlagsToTest...>())
-				static inline void doIfTest(FlagsToTest... flags) {
+				static inline decltype(funcRef()) doIfTest(FlagsToTest... flags) {
+					using retType = decltype(funcRef());
 					if (InterruptFlags::getRegister(spiInf::value().INTFLAGS).areSet(flags...))
-						funcRef();
+						return funcRef();
+					return retType{};
 				}
 				
 				[[nodiscard]] static inline bit_width singleTransmit(bit_width data) {
@@ -143,11 +149,11 @@ namespace AVR {
 		using TransferMode =  typename DEFAULT_MCU::SPI::TransferMode;
 		using Prescaler = typename DEFAULT_MCU::SPI::Prescaler;
 
-		template<typename interruptUsage = noInterrupt,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
-		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, uint8_t alternative = 0, typename bit_width = mem_width>
+		template<typename interruptUsage = blocking,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
+		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div16, uint8_t alternative = 0, typename bit_width = mem_width>
 		using SPIMaster = typename DEFAULT_MCU::SPI::template SPIMaster<interruptUsage,msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative,bit_width>;
 		
-		template<typename interruptUsage = noInterrupt, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0, typename bit_width = mem_width>
+		template<typename interruptUsage = blocking, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0, typename bit_width = mem_width>
 		using SPISlave = typename DEFAULT_MCU::SPI::template SPISlave<interruptUsage,msb,tmode,buffered,waitForReceive,alternative,bit_width>;
 
 	}

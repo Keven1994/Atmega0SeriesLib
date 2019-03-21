@@ -63,10 +63,10 @@ namespace mega4808 {
 			using TransferMode = mega4808::TransferMode;
 			using Prescaler = mega4808::Prescaler;
 
-			template<typename interruptUsage = AVR::spi::noInterrupt,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, uint8_t alternative = 0, typename bit_width = mem_width>
+			template<typename interruptUsage = AVR::spi::blocking,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, uint8_t alternative = 0, typename bit_width = mem_width>
 			using SPIMaster = typename spiMaster<interruptUsage,msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative,bit_width>::SPI;
 			
-			template<typename interruptUsage = AVR::spi::noInterrupt,bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0, typename bit_width = mem_width>
+			template<typename interruptUsage = AVR::spi::blocking,bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0, typename bit_width = mem_width>
 			using SPISlave = typename spiSlave<interruptUsage,msb,tmode,buffered,waitForReceive,alternative,bit_width>::SPI;
 		};
 	};

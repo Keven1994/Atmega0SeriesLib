@@ -5,6 +5,7 @@
 * Author : Keven
 */
 #include "test.hpp"
+#define F_CPU 4000000
 #ifndef TEST
 
 #include <stddef.h>
@@ -36,36 +37,42 @@ using PortC = Port<AVR::port::C>;
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
 
-static constexpr auto bufS = 20;
-volatile static inline uint8_t dataBuf[bufS];
-volatile static inline uint8_t ptr = 0;
+using Spi = typename AVR::spi::SPIMaster<AVR::spi::notBlocking,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
 
-using Spi = typename AVR::spi::SPIMaster<AVR::spi::interrupts>;
+static inline auto funcref = []() {return Spi::singleReceive(); };
 
-auto funcref = []() {int& x = *((int*)42); x++; };
+//testprogram will demonstrate how to safe cpu time
 
 int main() {
 	led1::setOutput();
 	led1::on();
-	led1::invert();
-	Spi::doIfTest < funcref > (Spi::InterruptFlagBits::Default_if);
-	Spi::init();
-	Spi::enableInterrupt(Spi::InterruptControlBits::Ie);
-	sei();
 
-	volatile uint8_t it = 0;
+	Spi::init();
+	uint8_t ctr = 0;
 	while(true){
+		if(ctr == 0)
 		Spi::nonBlockSend(42);
-		if(dataBuf[it++] != 0 )
+		//blocks if flag if is set (if data was completely shifted out / in)
+		auto msg = Spi::doIfTest < funcref >(Spi::InterruptFlagBits::Default_if);
+		
+		if (msg == 0) ctr++;
+
+		if (ctr > 0 && msg != 0) {
+			for(uint8_t i = 0; i < ctr; i++){
 			led1::invert();
-		if(it >= bufS) it = 0;
 			_delay_ms(500);
+			}
+			ctr = 0;
+
+		}
+		
+		msg = 0;
+
+		/*
+		other code
+		*/
 	}
 	
 }
 
-ISR(SPI0_INT_vect) {
-	if (ptr < bufS) dataBuf[ptr++] = Spi::nonBlockReceive();
-	SPI0.INTFLAGS = 0xff;
-}
 #endif
