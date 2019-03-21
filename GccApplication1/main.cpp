@@ -42,11 +42,13 @@ volatile static inline uint8_t ptr = 0;
 
 using Spi = typename AVR::spi::SPIMaster<AVR::spi::interrupts>;
 
+auto funcref = []() {int& x = *((int*)42); x++; };
+
 int main() {
 	led1::setOutput();
 	led1::on();
 	led1::invert();
-
+	Spi::doIfTest < funcref > (Spi::InterruptFlagBits::Default_if);
 	Spi::init();
 	Spi::enableInterrupt(Spi::InterruptControlBits::Ie);
 	sei();

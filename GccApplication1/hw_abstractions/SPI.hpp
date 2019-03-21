@@ -22,6 +22,7 @@ namespace AVR {
 				using Data = typename SPIComponent::registers::data::type;
 				using InterruptFlags = typename SPIComponent::registers::intflags::type;
 				using InterruptControlBits = typename InterruptControl::special_bit;
+				using InterruptFlagBits = typename InterruptFlags::special_bit;
 				
 				template<typename utils::enable_if_t<utils::isEqual<interruptUsage, interrupts>::value, int> = 0>
 				static inline void nonBlockSend(bit_width data){
@@ -40,6 +41,13 @@ namespace AVR {
 				requires(utils::sameTypes<InterruptControlBits,Args...>() && utils::isEqual<interruptUsage, interrupts>::value)
 				static inline void enableInterrupt(Args... Bits) {
 					InterruptControl::getRegister(spiInf::value().INTCTRL).set(Bits...);
+				}
+
+				template<auto& funcRef, typename... FlagsToTest>
+				requires(utils::sameTypes<InterruptFlagBits, FlagsToTest...>())
+				static inline void doIfTest(FlagsToTest... flags) {
+					if (InterruptFlags::getRegister(spiInf::value().INTFLAGS).areSet(flags...))
+						funcRef();
 				}
 				
 				[[nodiscard]] static inline bit_width singleTransmit(bit_width data) {
