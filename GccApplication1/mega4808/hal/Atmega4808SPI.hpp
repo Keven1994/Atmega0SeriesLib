@@ -2,14 +2,17 @@
 #include "../../hw_abstractions/Port.hpp"
 namespace AVR{
 	namespace spi {
+		struct noInterrupt; struct interrupts;
+
 		namespace details {
-				template<typename SPIComponent, typename spiInf, auto order,  auto clockDoubled, auto slaveSelectDisable,
+
+				template<typename interruptUsage, typename SPIComponent, typename spiInf, auto order,  auto clockDoubled, auto slaveSelectDisable,
 				auto transferMode, auto buffered, auto waitForReceive, auto prescaler, typename bit_width>
 				struct SPIMaster;
 				
-						template<typename SPIComponent, typename spiInf, auto order,
-						auto transferMode, auto buffered, auto waitForReceive, typename bit_width>
-						struct SPISlave;
+				template<typename interruptUsage, typename SPIComponent, typename spiInf, auto order,
+				auto transferMode, auto buffered, auto waitForReceive, typename bit_width>
+				struct SPISlave;
 		}
 	}
 }
@@ -147,7 +150,7 @@ struct spis {
 				Div128 = static_cast<mem_width>(spiComponent::CTRLAMasks::presc_div128)
 			};
 			
-			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, bool waitForReceive, Prescaler prescaler, uint8_t alternative, typename bit_width>
+			template<typename interruptUsage,bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, bool waitForReceive, Prescaler prescaler, uint8_t alternative, typename bit_width>
 			struct spiMaster{
 				static_assert(! (!buffered && waitForReceive), "unbuffered mode combined with waitforreceive does not make sense, check spi configuration");
 
@@ -162,10 +165,10 @@ struct spis {
 				static constexpr BConf buf = buffered ? BConf::Bufen : static_cast<BConf>(0);
 				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
 
-				using SPI = AVR::spi::details::SPIMaster<spiComponent, typename spis::spi0, Msb,clkx2,ssd,tmode,buf,bufwait,presc,bit_width>;
+				using SPI = AVR::spi::details::SPIMaster<interruptUsage,spiComponent, typename spis::spi0, Msb,clkx2,ssd,tmode,buf,bufwait,presc,bit_width>;
 			};
 
-			template<bool msb,TransferMode transferMode, bool buffered, bool waitForReceive, uint8_t alternative,typename bit_width>
+			template<typename interruptUsage,bool msb,TransferMode transferMode, bool buffered, bool waitForReceive, uint8_t alternative,typename bit_width>
 			struct spiSlave{
 				static_assert(! (!buffered && waitForReceive), "unbuffered mode combined with waitforreceive does not make sense, check spi configuration");
 
@@ -177,7 +180,7 @@ struct spis {
 				static constexpr BConf buf = buffered ? BConf::Bufen : static_cast<BConf>(0);
 				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
 				
-				using SPI = AVR::spi::details::SPISlave<spiComponent, typename spis::spi0, Msb,tmode,buf,bufwait,bit_width>;
+				using SPI = AVR::spi::details::SPISlave<interruptUsage,spiComponent, typename spis::spi0, Msb,tmode,buf,bufwait,bit_width>;
 			};
 			
 }

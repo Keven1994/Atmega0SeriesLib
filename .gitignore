@@ -354,3 +354,9 @@ GccApplication1/CMakeFiles/avr_terminal\.dir/
 *.hex
 
 GccApplication1/Makefile
+
+GccApplication1/Project1/Project1/Project1\.vcxproj\.filters
+
+GccApplication1/Project1/Project1\.sln
+
+GccApplication1/Project1/Project1/Project1\.vcxproj

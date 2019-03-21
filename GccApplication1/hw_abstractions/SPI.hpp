@@ -11,8 +11,10 @@
 namespace AVR {
 	namespace spi {
 		
+		struct noInterrupt {}; struct interrupts {};
+
 		namespace details{
-			template<typename SPIComponent, typename spiInf, typename bit_width>
+			template<typename interruptUsage, typename SPIComponent, typename spiInf, typename bit_width>
 			struct SPI {
 				using ControlA = typename SPIComponent::registers::ctrla::type;
 				using ControlB = typename SPIComponent::registers::ctrlb::type;
@@ -21,18 +23,21 @@ namespace AVR {
 				using InterruptFlags = typename SPIComponent::registers::intflags::type;
 				using InterruptControlBits = typename InterruptControl::special_bit;
 				
+				template<typename utils::enable_if_t<utils::isEqual<interruptUsage, interrupts>::value, int> = 0>
 				static inline void nonBlockSend(bit_width data){
 					auto& datareg = Data::getRegister(spiInf::value().DATA);
 					datareg.raw() = data;
 				}
 				
+				template<typename utils::enable_if_t<utils::isEqual<interruptUsage, interrupts>::value,int> = 0>
 				[[nodiscard]] static inline bit_width nonBlockReceive(){
 					auto& datareg = Data::getRegister(spiInf::value().DATA);
 					return datareg.raw();
 				}
 				
+				//no enable_if because of parameter pack
 				template<typename... Args>
-				requires(utils::sameTypes<InterruptControlBits,Args...>())
+				requires(utils::sameTypes<InterruptControlBits,Args...>() && utils::isEqual<interruptUsage, interrupts>::value)
 				static inline void enableInterrupt(Args... Bits) {
 					InterruptControl::getRegister(spiInf::value().INTCTRL).set(Bits...);
 				}
@@ -81,9 +86,9 @@ namespace AVR {
 				}
 			};
 			
-			template<typename SPIComponent, typename spiInf, auto order,  auto clockDoubled, auto slaveSelectDisable,
+			template<typename interruptUsage, typename SPIComponent, typename spiInf, auto order,  auto clockDoubled, auto slaveSelectDisable,
 			auto transferMode, auto buffered, auto waitForReceive, auto prescaler, typename bit_width = mem_width>
-			struct SPIMaster : public details::SPI<SPIComponent, spiInf, bit_width> {
+			struct SPIMaster : public details::SPI<interruptUsage,SPIComponent, spiInf, bit_width> {
 
 				NoConstructors(SPIMaster);
 				
@@ -105,9 +110,9 @@ namespace AVR {
 				
 			};
 
-			template<typename SPIComponent, typename spiInf, auto order,
+			template<typename interruptUsage, typename SPIComponent, typename spiInf, auto order,
 			auto transferMode, auto buffered, auto waitForReceive, typename bit_width = mem_width>
-			struct SPISlave : public details::SPI<SPIComponent, spiInf, bit_width> {
+			struct SPISlave : public details::SPI<interruptUsage,SPIComponent, spiInf, bit_width> {
 
 				NoConstructors(SPISlave);
 
@@ -127,15 +132,15 @@ namespace AVR {
 			};
 		}
 
-		using TransferMode = DEFAULT_MCU::SPI::TransferMode;
-		using Prescaler = DEFAULT_MCU::SPI::Prescaler;
+		using TransferMode =  typename DEFAULT_MCU::SPI::TransferMode;
+		using Prescaler = typename DEFAULT_MCU::SPI::Prescaler;
 
-		template<bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
+		template<typename interruptUsage = noInterrupt,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
 		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, uint8_t alternative = 0, typename bit_width = mem_width>
-		using SPIMaster = typename DEFAULT_MCU::SPI::template SPIMaster<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative,bit_width>;
+		using SPIMaster = typename DEFAULT_MCU::SPI::template SPIMaster<interruptUsage,msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative,bit_width>;
 		
-		template<bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0, typename bit_width = mem_width>
-		using SPISlave = typename DEFAULT_MCU::SPI::template SPISlave<msb,tmode,buffered,waitForReceive,alternative,bit_width>;
+		template<typename interruptUsage = noInterrupt, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0, typename bit_width = mem_width>
+		using SPISlave = typename DEFAULT_MCU::SPI::template SPISlave<interruptUsage,msb,tmode,buffered,waitForReceive,alternative,bit_width>;
 
 	}
 }

@@ -6,7 +6,7 @@
 */
 
 #pragma once
-#include "../hw_abstractions/Register.hpp"
+#include "Register.hpp"
 #include "../tools/utils.h"
 #include "../MCUSelect.hpp"
 
@@ -117,7 +117,9 @@ namespace AVR{
 		}
 		
 		template<typename... Pins>
+#ifndef Intelli
 		requires(details::samePorts<Pins...>())
+#endif
 		static inline void PinsOn() {
 			using firstPin = typename utils::front<Pins...>::type;
 			auto& Pval = firstPin::port::port().OUT;
@@ -125,7 +127,9 @@ namespace AVR{
 		}
 		
 		template<typename... Pins>
+#ifndef Intelli
 		requires(details::samePorts<Pins...>())
+#endif
 		static inline void PinsDirIn() {
 			using firstPin = typename utils::front<Pins...>::type;
 			auto& Pval = firstPin::port::port().DIR;
@@ -133,7 +137,9 @@ namespace AVR{
 		}
 		
 		template<typename... Pins>
+#ifndef Intelli
 		requires(details::samePorts<Pins...>())
+#endif
 		static inline void PinsDirOut() {
 			using firstPin = typename utils::front<Pins...>::type;
 			auto& Pval = firstPin::port::port().DIR;
@@ -141,7 +147,9 @@ namespace AVR{
 		}
 		
 		template<typename... Pins>
+#ifndef Intelli
 		requires(details::samePorts<Pins...>())
+#endif
 		static inline void PinsInvert() {
 			using firstPin = typename utils::front<Pins...>::type;
 			auto& Pval = firstPin::port::port().OUT;
@@ -149,7 +157,9 @@ namespace AVR{
 		}
 		
 		template<typename... Pins>
+#ifndef Intelli
 		requires(details::samePorts<Pins...>())
+#endif
 		static inline void PinsOff() {
 			using firstPin = typename utils::front<Pins...>::type;
 			auto& Pval = firstPin::port::port().OUT;

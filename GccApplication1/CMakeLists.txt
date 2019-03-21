@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.11)
 
 set(PROG_TYPE avrisp)
 set(USBPORT /dev/tty.usbmodem411)
