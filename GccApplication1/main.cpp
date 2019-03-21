@@ -39,31 +39,28 @@ using led2 = Pin<PortA, 2>;
 
 using Spi = typename AVR::spi::SPIMaster<AVR::spi::notBlocking,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
 
-static inline auto funcref = []() {return Spi::singleReceive(); };
+static constexpr auto funcref = []() {return Spi::noneBlockReceive(); };
 
 //testprogram will demonstrate how to safe cpu time
 
 int main() {
 	led1::setOutput();
 	led1::on();
-
 	Spi::init();
 	uint8_t ctr = 0;
 	while(true){
 		if(ctr == 0)
-		Spi::nonBlockSend(42);
+		Spi::noneBlockSend(42);
 		//blocks if flag if is set (if data was completely shifted out / in)
 		auto msg = Spi::doIfTest < funcref >(Spi::InterruptFlagBits::Default_if);
 		
 		if (msg == 0) ctr++;
 
 		if (ctr > 0 && msg != 0) {
-			for(uint8_t i = 0; i < ctr; i++){
-			led1::invert();
-			_delay_ms(500);
+			while(ctr-- > 0){
+				led1::invert();
+				_delay_ms(500);
 			}
-			ctr = 0;
-
 		}
 		
 		msg = 0;

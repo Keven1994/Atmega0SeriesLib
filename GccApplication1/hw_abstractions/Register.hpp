@@ -93,7 +93,7 @@ namespace reg {
 		public:
 		NoConstructors(Register);
 		using regSize = size;
-		[[nodiscard]] volatile mem_width raw() const volatile {
+		[[nodiscard]] mem_width raw() const volatile {
 			return reg;
 		}
 		
@@ -196,7 +196,7 @@ namespace reg {
 		
 		using special_bit = Bits;
 		
-		[[nodiscard]] volatile mem_width raw() const volatile {
+		[[nodiscard]] mem_width raw() const volatile {
 			return reg;
 		}
 		
@@ -229,7 +229,7 @@ namespace reg {
 		
 		using special_bit = Bits;
 		
-		[[nodiscard]] volatile mem_width raw() const volatile {
+		[[nodiscard]] mem_width raw() const volatile {
 			return reg;
 		}
 		

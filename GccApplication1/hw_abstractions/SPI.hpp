@@ -16,6 +16,9 @@ namespace AVR {
 		namespace details{
 			template<typename interruptUsage, typename SPIComponent, typename spiInf, typename bit_width>
 			struct SPI {
+				
+				NoConstructors(SPI);
+				
 				using ControlA = typename SPIComponent::registers::ctrla::type;
 				using ControlB = typename SPIComponent::registers::ctrlb::type;
 				using InterruptControl = typename SPIComponent::registers::intctrl::type;
@@ -24,23 +27,20 @@ namespace AVR {
 				using InterruptControlBits = typename InterruptControl::special_bit;
 				using InterruptFlagBits = typename InterruptFlags::special_bit;
 				
-				template<typename T = void>
-				static inline void nonBlockSend(bit_width data)				
-					requires(utils::isEqual<interruptUsage, notBlocking>::value) 
+				static inline void noneBlockSend(bit_width data)		
+				requires(utils::isEqual<notBlocking,interruptUsage>::value)		
 				{
 					auto& datareg = Data::getRegister(spiInf::value().DATA);
 					datareg.raw() = data;
 				}
 				
-				template<typename T = void>
-				[[nodiscard]] static inline bit_width nonBlockReceive() 
-					requires(utils::isEqual<interruptUsage, notBlocking>::value)  
+				[[nodiscard]] static inline bit_width noneBlockReceive() 
+				requires(utils::isEqual<notBlocking,interruptUsage>::value)
 				{
 					auto& datareg = Data::getRegister(spiInf::value().DATA);
 					return datareg.raw();
 				}
 				
-				//no enable_if because of parameter pack
 				template<typename... Args>
 				requires(utils::sameTypes<InterruptControlBits,Args...>() && utils::isEqual<interruptUsage, notBlocking>::value)
 				static inline void enableInterrupt(Args... Bits) {
@@ -113,10 +113,7 @@ namespace AVR {
 					auto& ctrb = SPIMaster::ControlB::getRegister(spiInf::value().CTRLB);
 					
 					AVR::port::PinsDirOut<typename spiInf::Spi::Mosi::pin0,typename spiInf::Spi::Sck::pin0>();
-					//AVR::port::PinsDirIn<typename spiInf::Spi::Miso::pin0>();
 					spiInf::Spi::Miso::pin0::setInput();
-					//PORTA.DIR |= (1 <<4) | (1<<6);
-					//PORTA.DIR &= ~((1 << 5));
 					ctra.set(prescaler, clockDoubled, order, mBit);
 					ctrb.set(transferMode, buffered, waitForReceive,slaveSelectDisable);
 					ctra.on(SPIMaster::ControlA::special_bit::Enable);
