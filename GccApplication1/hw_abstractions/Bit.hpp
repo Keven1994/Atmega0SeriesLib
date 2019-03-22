@@ -55,14 +55,31 @@ inline void operator|=(T& lhs,const Bit rhs){
 	lhs |= static_cast<mem_width>(rhs);
 }
 
-constexpr inline mem_width operator^(const Bit lhs,const Bit rhs) {
+template<typename T>
+constexpr inline mem_width operator^(const T lhs,const Bit rhs) {
 	return static_cast<mem_width>(lhs) ^ static_cast<mem_width>(rhs);
 }
-
-constexpr inline mem_width operator&(const Bit lhs,const Bit rhs) {
+template<typename T>
+constexpr inline mem_width operator&(const T lhs,const Bit rhs) {
 	return static_cast<mem_width>(lhs) & static_cast<mem_width>(rhs);
 }
-
-constexpr inline mem_width operator|(const Bit lhs,const Bit rhs) {
+template<typename T>
+constexpr inline mem_width operator|(const T lhs,const Bit rhs) {
 	return static_cast<mem_width>(lhs) | static_cast<mem_width>(rhs);
+}
+template<typename T>
+constexpr inline mem_width operator+(const T lhs,const Bit rhs) {
+	return static_cast<mem_width>(lhs) + static_cast<mem_width>(rhs);
+}
+template<typename T>
+constexpr inline mem_width operator-(const T lhs,const Bit rhs) {
+	return static_cast<mem_width>(lhs) - static_cast<mem_width>(rhs);
+}
+template<typename T>
+constexpr inline mem_width operator*(const T lhs,const Bit rhs) {
+	return static_cast<mem_width>(lhs) * static_cast<mem_width>(rhs);
+}
+template<typename T>
+constexpr inline mem_width operator/(const T lhs,const Bit rhs) {
+	return static_cast<mem_width>(lhs) / static_cast<mem_width>(rhs);
 }

@@ -3,91 +3,89 @@
 #include "../../hw_abstractions/Eventsystem.hpp"
 
 namespace mega4808 {
-	
-	struct users {
-		struct evporta {
-			static inline auto& listener = EVSYS.USEREVOUTA;
+	namespace details {
+		struct users {
+			struct evporta {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USEREVOUTA;}
+			};
+			
+			struct evportc {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USEREVOUTC;}
+			};
+			
+			struct evportd {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USEREVOUTD;}
+			};
+			
+			struct evportf {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USEREVOUTF;}
+			};
+			
+			struct evtca0 {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERTCA0;}
+			};
+			
+			struct evtcb0 {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERTCB0;}
+			};
+			
+			struct evtcb1 {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERTCB1;}
+			};
+			
+			struct evtcb2 {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERTCB2;}
+			};
+			
+			struct evusart0 {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERUSART0;}
+			};
+			
+			struct evusart1 {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERUSART1;}
+			};
+			
+			struct evusart2 {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERUSART2;}
+			};
+			
+			struct evccllut0a {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT0A;}
+			};
+			
+			struct evccllut0b {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT0B;}
+			};
+			
+			struct evccllut1a {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT1A;}
+			};
+			
+			struct evccllut1b {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT1B;}
+			};
+			
+			struct evccllut2a {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT2A;}
+			};
+			
+			struct evccllut2b {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT2B;}
+			};
+			
+			struct evccllut3a {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT3A;}
+			};
+			
+			struct evccllut3b {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT3B;}
+			};
+			
+			struct evadc0 {
+				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERADC0;}
+			};
+			
 		};
-		
-		struct evportc {
-			static inline auto& listener = EVSYS.USEREVOUTC;
-		};
-		
-		struct evportd {
-			static inline auto& listener = EVSYS.USEREVOUTD;
-		};
-		
-		struct evportf {
-			static inline auto& listener = EVSYS.USEREVOUTF;
-		};
-		
-		struct evtca0 {
-			static inline auto& listener = EVSYS.USERTCA0;
-		};
-		
-		struct evtcb0 {
-			static inline auto& listener = EVSYS.USERTCB0;
-		};
-		
-		struct evtcb1 {
-			static inline auto& listener = EVSYS.USERTCB1;
-		};
-		
-		struct evtcb2 {
-			static inline auto& listener = EVSYS.USERTCB2;
-		};
-		
-		struct evusart0 {
-			static inline auto& listener = EVSYS.USERUSART0;
-		};
-		
-		struct evusart1 {
-			static inline auto& listener = EVSYS.USERUSART1;
-		};
-		
-		struct evusart2 {
-			static inline auto& listener = EVSYS.USERUSART2;
-		};
-		
-		struct evccllut0a {
-			static inline auto& listener = EVSYS.USERCCLLUT0A;
-		};
-		
-		struct evccllut0b {
-			static inline auto& listener = EVSYS.USERCCLLUT0B;
-		};
-		
-		struct evccllut1a {
-			static inline auto& listener = EVSYS.USERCCLLUT1A;
-		};
-		
-		struct evccllut1b {
-			static inline auto& listener = EVSYS.USERCCLLUT1B;
-		};
-		
-		struct evccllut2a {
-			static inline auto& listener = EVSYS.USERCCLLUT2A;
-		};
-		
-		struct evccllut2b {
-			static inline auto& listener = EVSYS.USERCCLLUT2B;
-		};
-		
-		struct evccllut3a {
-			static inline auto& listener = EVSYS.USERCCLLUT3A;
-		};
-		
-		struct evccllut3b {
-			static inline auto& listener = EVSYS.USERCCLLUT3B;
-		};
-		
-		struct evadc0 {
-			static inline auto& listener = EVSYS.USERADC0;
-		};
-		
-	};
-	
-	namespace {
 		
 		struct generalGenerators {
 
@@ -129,14 +127,13 @@ namespace mega4808 {
 		template<>
 		struct generatorChannel<0> {
 			
-			static inline auto& value = EVSYS.CHANNEL0;
+			[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.CHANNEL0;}
 			using generals = generalGenerators;
 			using RTCDivGenerator = type1RTC;
 			
-			template<auto& pin>
+			template<typename pin>
 			struct PortAGenerator {
-				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pin);
+				static inline constexpr mem_width value = 0x40+pin::pinValue;
 			};
 
 		};
@@ -144,15 +141,15 @@ namespace mega4808 {
 		template<>
 		struct generatorChannel<1> {
 			
-			static inline auto& value = EVSYS.CHANNEL1;
+			[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.CHANNEL1;}
 			using generals = generalGenerators;
 			
 			using RTCDivGenerator = type2RTC;
 			
-			template<auto& pin>
+			template<typename pin>
 			struct PortAGenerator {
-				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pin);
+				
+				static inline constexpr mem_width value = 0x40+pin::pinValue;
 			};
 
 		};
@@ -160,20 +157,20 @@ namespace mega4808 {
 		template<>
 		struct generatorChannel<2> {
 			
-			static inline auto& value = EVSYS.CHANNEL2;
+			[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.CHANNEL2;}
 			using generals = generalGenerators;
 			using RTCDivGenerator = type1RTC;
 			
-			template<auto& pin>
+			template<typename pin>
 			struct PortCGenerator {
-				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pin);
+				
+				static inline constexpr mem_width value = 0x40+pin::pinValue;
 			};
 			
-			template<auto& pin>
+			template<typename pin>
 			struct PortDGenerator {
-				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pin);
+				
+				static inline constexpr mem_width value = 0x48+pin::pinValue;
 			};
 
 		};
@@ -181,56 +178,53 @@ namespace mega4808 {
 		template<>
 		struct generatorChannel<3> {
 			
-			static inline auto& value = EVSYS.CHANNEL3;
+			[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.CHANNEL3;}
 			using generals = generalGenerators;
 			
 			using RTCDivGenerator = type2RTC;
 			
-			template<auto& pin>
+			template<typename pin>
 			struct PortCGenerator {
-				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x40+static_cast<mem_width>(pin);
+				
+				static inline constexpr mem_width value = 0x40+pin::pinValue;
 			};
 			
-			template<auto& pin>
+			template<typename pin>
 			struct PortDGenerator {
-				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pin);
+				
+				static inline constexpr mem_width value = 0x48+pin::pinValue;
 			};
 		};
 
 		template<>
 		struct generatorChannel<4> {
 			
-			static inline auto& value = EVSYS.CHANNEL4;
+			[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.CHANNEL4;}
 			using generals = generalGenerators;
 			
 			using RTCDivGenerator = type1RTC;
 			
-			template<auto& pin>
+			template<typename pin>
 			struct PortFGenerator {
-				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pin);
+				
+				static inline constexpr mem_width value = 0x48+pin::pinValue;
 			};
 		};
 		
 		template<>
 		struct generatorChannel<5> {
 			
-			static inline auto& value = EVSYS.CHANNEL5;
+			[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.CHANNEL5;}
 			using generals = generalGenerators;
 			
 			using RTCDivGenerator = type2RTC;
 			
-			template<auto& pin>
+			template<typename pin>
 			struct PortFGenerator {
-				static_assert(static_cast<mem_width>(pin) < sizeof(mem_width)*8, "only pins [0,7] allowed");
-				static inline constexpr mem_width value = 0x48+static_cast<mem_width>(pin);
+				
+				static inline constexpr mem_width value = 0x48+pin::pinValue;
 			};
 		};
-
-		template<mem_width number>
-		using channel = eventsystem::Channel<mega4808::generatorChannel<number>, number, mega4808::generatorChannel<number>,mega4808::users>;
 		
 	}
 }

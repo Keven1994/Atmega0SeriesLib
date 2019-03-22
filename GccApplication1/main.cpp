@@ -23,6 +23,7 @@
 #include "mega4808/Atmega4808.hpp"
 #include "hw_abstractions/SPI.hpp"
 #include "hw_abstractions/Port.hpp"
+#include "hw_abstractions/Eventsystem.hpp"
 
 #elif defined(MEGA4809)
 #include "mega4809/Atmega4809.hpp"
@@ -36,7 +37,7 @@ using PortC = Port<AVR::port::C>;
 
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
-
+using ch0 = AVR::eventsystem::Channel<0>;
 using Spi = typename AVR::spi::SPIMaster<AVR::spi::notBlocking,AVR::spi::Spis::spi0,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
 
 static constexpr auto funcref = []() {return Spi::noneBlockReceive(); };
@@ -44,6 +45,13 @@ static constexpr auto funcref = []() {return Spi::noneBlockReceive(); };
 //testprogram will demonstrate how to safe cpu time
 
 int main() {
+	//every channel have its own generators
+	using gens = typename ch0::generators;
+	//set generator from channel 0 to port A pin 0
+	ch0::setGenerator<gens::template PortAGenerator<typename PortA::pins::pin0>>(); //use the nested pin type to ensure to not use unavailable pins
+	//user port c listen to channel 0
+	ch0::registerListener<typename AVR::eventsystem::users<>::evportc>();
+	
 	led1::setOutput();
 	led1::on();
 	Spi::init();

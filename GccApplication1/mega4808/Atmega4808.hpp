@@ -24,7 +24,7 @@ namespace mega4808 {
 	template<typename frequenzy>
 	#ifndef Intelli
 	requires(utils::isEqual<MHZ4,frequenzy>::value || utils::isEqual<MHZ12,frequenzy>::value || utils::isEqual<MHZ20,frequenzy>::value)
-	#endif 
+	#endif
 	struct Atmega4808 {
 		
 		static constexpr auto clockFrequenzy = frequenzy::value;
@@ -35,6 +35,7 @@ namespace mega4808 {
 		
 		template<typename p>
 		struct Ports {
+
 			using portX = typename utils::condEqual<AVR::port::A,p, port<ports::porta>,
 			typename utils::condEqual<AVR::port::C,p, port<ports::portc>,
 			typename utils::condEqual<AVR::port::D,p, port<ports::portd>,
@@ -49,12 +50,10 @@ namespace mega4808 {
 		
 		struct EventSystem {
 
-			using ch0 = channel<0>;
-			using ch1 = channel<1>;
-			using ch2 = channel<2>;
-			using ch3 = channel<3>;
-			using ch4 = channel<4>;
-			using ch5 = channel<5>;
+			template<mem_width number>
+			using generators = mega4808::details::generatorChannel<number>;
+			
+			using users = mega4808::details::users;
 		};
 		
 		struct SPI {
@@ -63,7 +62,7 @@ namespace mega4808 {
 			using Components = mega4808::spis;
 			using Component = mega4808::spiComponent;
 
-			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, 
+			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered,
 			bool waitForReceive, Prescaler prescaler>
 			requires(!(!buffered && waitForReceive))
 			struct SPIMasterSetting{

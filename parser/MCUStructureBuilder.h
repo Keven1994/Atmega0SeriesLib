@@ -75,6 +75,20 @@ namespace details {
         Data, Flag, Toggle, Control
     };
 
+    class portAlias : public  generatable {
+
+    public:
+
+        portAlias() noexcept {
+
+        }
+
+        //using pin ## number = AVR::port::details::PortPin<P,number>
+        [[nodiscard]] std::string generate() noexcept override {
+           return "template<typename P>\nusing port = AVR::port::details::Port<P,portComponent::registers>;";
+        }
+    };
+
     class Reg : public generatable {
         static inline constexpr auto reg_str = "utils::Pair<reg::Register<";
         static inline constexpr auto R_str = "reg::accessmode::ReadOnly";
@@ -334,7 +348,7 @@ class MCUStructureBuilder {
         }
         return false;
     }
-
+    bool aliasGenerate = false;
 public:
     using reg_type = details::special;
 
@@ -366,6 +380,9 @@ public:
     }
 
     void addSignal(std::vector<utils::triple<>>& fgps, std::string&& modName) noexcept {
+        if(utils::contains(modName,"PORT")) {
+            aliasGenerate = true;
+        }
         std::vector<utils::tuple<std::string,std::vector<std::string>>> groups;
         {
             std::vector<std::string> processed;
@@ -454,6 +471,10 @@ public:
         }
         compStruct.addMember(regs);
         nameSpace.addMember(compStruct);
+        if(aliasGenerate){
+            auto alias = details::portAlias{};
+            nameSpace.addMember(alias);
+        }
         auto ins = details::Struct(utils::toLowerCase(compname)+"s");
         for (auto &elem : instances) {
             ins.addMember(elem);
