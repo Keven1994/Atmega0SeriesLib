@@ -37,7 +37,7 @@ using PortC = Port<AVR::port::C>;
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
 
-using Spi = typename AVR::spi::SPIMaster<AVR::spi::notBlocking,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
+using Spi = typename AVR::spi::SPIMaster<AVR::spi::notBlocking,AVR::spi::Spis::spi0,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
 
 static constexpr auto funcref = []() {return Spi::noneBlockReceive(); };
 

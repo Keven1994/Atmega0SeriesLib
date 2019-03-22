@@ -14,9 +14,7 @@ using ptr_t = uintptr_t;
 
 //hw includes
 #include "hal/Atmega4808Port.hpp"
-
 #include "hal/Atmega4808EVSYS.hpp"
-
 #include "hal/Atmega4808SPI.hpp"
 
 
@@ -24,9 +22,9 @@ namespace mega4808 {
 	
 
 	template<typename frequenzy>
-#ifndef Intelli
+	#ifndef Intelli
 	requires(utils::isEqual<MHZ4,frequenzy>::value || utils::isEqual<MHZ12,frequenzy>::value || utils::isEqual<MHZ20,frequenzy>::value)
-#endif // !Íntelli
+	#endif 
 	struct Atmega4808 {
 		
 		static constexpr auto clockFrequenzy = frequenzy::value;
@@ -62,12 +60,38 @@ namespace mega4808 {
 		struct SPI {
 			using TransferMode = mega4808::TransferMode;
 			using Prescaler = mega4808::Prescaler;
+			using Components = mega4808::spis;
+			using Component = mega4808::spiComponent;
 
-			template<typename interruptUsage = AVR::spi::blocking,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, uint8_t alternative = 0, typename bit_width = mem_width>
-			using SPIMaster = typename spiMaster<interruptUsage,msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler,alternative,bit_width>::SPI;
-			
-			template<typename interruptUsage = AVR::spi::blocking,bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, uint8_t alternative = 0, typename bit_width = mem_width>
-			using SPISlave = typename spiSlave<interruptUsage,msb,tmode,buffered,waitForReceive,alternative,bit_width>::SPI;
+			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered, 
+			bool waitForReceive, Prescaler prescaler>
+			requires(!(!buffered && waitForReceive))
+			struct SPIMasterSetting{
+
+				using AConf = spiComponent::CTRLAMasks;
+				using BConf = spiComponent::CTRLBMasks;
+				
+				static constexpr AConf Msb = msb ? static_cast<AConf>(0) : AConf::Dord;
+				static constexpr AConf clkx2 = clockDoubled ? AConf::Clk2x :  static_cast<AConf>(0);
+				static constexpr AConf presc = static_cast<AConf>(prescaler);
+				static constexpr BConf ssd = slaveSelectDisable ? BConf::Ssd :  static_cast<BConf>(0);
+				static constexpr BConf tmode = static_cast<BConf>(transferMode);
+				static constexpr BConf buf = buffered ? BConf::Bufen : static_cast<BConf>(0);
+				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
+			};
+
+			template<bool msb,TransferMode transferMode, bool buffered, bool waitForReceive>
+			requires(!(!buffered && waitForReceive))
+			struct SPISlaveSetting{
+
+				using AConf = spiComponent::CTRLAMasks;
+				using BConf = spiComponent::CTRLBMasks;
+				
+				static constexpr AConf Msb = msb ? static_cast<AConf>(0) : AConf::Dord;
+				static constexpr BConf tmode = static_cast<BConf>(transferMode);
+				static constexpr BConf buf = buffered ? BConf::Bufen : static_cast<BConf>(0);
+				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
+			};
 		};
 	};
 }
