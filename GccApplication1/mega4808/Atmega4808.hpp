@@ -16,6 +16,7 @@ using ptr_t = uintptr_t;
 #include "hal/Atmega4808Port.hpp"
 #include "hal/Atmega4808EVSYS.hpp"
 #include "hal/Atmega4808SPI.hpp"
+#include "hal/ATmega4808TWI.hpp"
 
 
 namespace mega4808 {

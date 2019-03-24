@@ -43,20 +43,43 @@ using Spi = typename AVR::spi::SPIMaster<AVR::spi::notBlocking,AVR::spi::Spis::s
 static constexpr auto funcref = []() {return Spi::noneBlockReceive(); };
 
 //testprogram will demonstrate how to safe cpu time
-
+#include "hw_abstractions/TWI.hpp"
 int main() {
 	//every channel have its own generators
 	using gens = typename ch0::generators;
 	//set generator from channel 0 to port A pin 0
-	ch0::setGenerator<gens::template PortAGenerator<typename PortA::pins::pin0>>(); //use the nested pin type to ensure to not use unavailable pins
+	//ch0::setGenerator<gens::template PortAGenerator<typename PortA::pins::pin0>>(); //use the nested pin type to ensure to not use unavailable pins
 	//user port c listen to channel 0
-	ch0::registerListener<typename AVR::eventsystem::users<>::evportc>();
+	//ch0::registerListener<typename AVR::eventsystem::users<>::evportc>();
 	
-	led1::setOutput();
-	led1::on();
-	Spi::init();
+	//led1::setOutput();
+	//led1::on();
+	//Spi::init();
 	uint8_t ctr = 0;
-	while(true){
+	//while(true){
+		PORTA.DIR = 0xff;
+		TWI0.CTRLA = 8;
+		TWI0.MBAUD = 21;
+		//TWI0.CTRLA = 3;
+		TWI0.MCTRLA = 1;
+
+		while(true){
+			if(((TWI0.MSTATUS & TWI_BUSSTATE_enum::TWI_BUSSTATE_IDLE_gc) == TWI_BUSSTATE_enum::TWI_BUSSTATE_IDLE_gc) | 
+			((TWI0.MSTATUS & TWI_BUSSTATE_enum::TWI_BUSSTATE_OWNER_gc) == TWI_BUSSTATE_enum::TWI_BUSSTATE_OWNER_gc)){
+				TWI0.MADDR = 0x0f | (1<<7);
+				while(! ((TWI0.MSTATUS & TWI_WIF_bm ) == TWI_WIF_bm));
+				TWI0.MDATA = 42;
+			//if((TWI0.MSTATUS & TWI_ACKACT_bm) == TWI_ACKACT_bm)
+				//TWI0.MDATA = 42;
+			//else {
+				//TWI0.MCTRLB = TWI_FLUSH_bm;	
+			//}
+			} else {
+				TWI0.MSTATUS = 0x1;
+			}
+			_delay_ms(200);
+		//}
+		/*
 		if(ctr == 0)
 		Spi::noneBlockSend(42);
 		//blocks if flag if is set (if data was completely shifted out / in)
