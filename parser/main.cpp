@@ -156,10 +156,6 @@ int main(int argc, const char **argv) {
                             mbuilder.addEnumEntry(utils::toCamelCase(mname + node2.attribute("name").as_string()),
                                                   modName + "_" + node2.attribute("name").as_string() + "_bm");
                     } else {
-                        auto f = tempstr.find("_DEFAULT");
-                        if(f != std::string::npos) {
-                            tempstr = tempstr.substr(0,f)+tempstr.substr(f+8,tempstr.size());
-                        }
                         val_group.push_back(tuple<>{tempstr, mname + node2.attribute("name").as_string()});
                     }
 
@@ -170,11 +166,19 @@ int main(int argc, const char **argv) {
 
             for (auto &valstr : val_group) {
                 std::string enumname = modName;
+
+                auto f = valstr.str2.find("DEFAULT_");
+                if(f != std::string::npos) {
+                    valstr.str2 = valstr.str2.substr(0,f)+valstr.str2.substr(f+8,valstr.str2.size());
+
+                }
                 enumname.append("_").append(valstr.str2).append("_enum").append("::").append(
                         modName + "_" + valstr.str2 + "_");
                 for (auto node2 : tool.children("value-group")) {
+
                     if (node2.attribute("name").as_string() == valstr.str1) {
                         for (auto node3 : node2.children("value")) {
+
                             std::string valname = enumname + node3.attribute("name").as_string() + "_gc";
                             mbuilder.addEnumEntry(
                                     utils::toLowerCase(valstr.str2 + "_" + node3.attribute("name").as_string()),

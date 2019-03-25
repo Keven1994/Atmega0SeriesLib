@@ -93,5 +93,38 @@ namespace mega4808 {
 				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
 			};
 		};
+		
+		struct TWI {
+			using TransferMode = mega4808::TransferMode;
+			using Prescaler = mega4808::Prescaler;
+			using Components = mega4808::spis;
+			using Component = mega4808::spiComponent;
+
+			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut>
+			struct TWIMasterSetting{
+
+				using AConf = twiComponent::CTRLAMasks;
+				using MAConf = twiComponent::MCTRLAMasks;
+				
+				static constexpr AConf fastmode = fastModePlus ? AConf::Default_fmpen : static_cast<AConf>(0);
+				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
+				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);
+				static constexpr MAConf quickcommand = quickCommand ? MAConf::Qcen : static_cast<MAConf>(0);
+				static constexpr MAConf smartmode = smartMode ? MAConf::Smen : static_cast<MAConf>(0);
+				static constexpr MAConf timeout = static_cast<MAConf>(timeOut);
+			};
+
+			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup>
+			struct TWISlaveSetting{
+
+				using AConf = twiComponent::CTRLAMasks;
+				using SAConf = twiComponent::SCTRLAMasks;
+				using SBConf = twiComponent::SCTRLBMasks;
+				
+				static constexpr AConf fastmode = fastModePlus ? AConf::Default_fmpen : static_cast<AConf>(0);
+				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
+				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);
+			};
+		};
 	};
 }

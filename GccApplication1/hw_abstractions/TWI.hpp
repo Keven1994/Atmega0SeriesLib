@@ -78,7 +78,7 @@ namespace AVR {
 			}
 			
 			static inline void init(){
-				
+				TWI0.MCTRLB = TWI_FLUSH_bm;
 			}
 			
 			static inline void stop(){
@@ -91,7 +91,7 @@ namespace AVR {
 			
 			template<auto& func,typename... Flags>
 			requires(utils::sameTypes<SDASlave::Mstatus::special_bit,Flags...>())
-			static inline decltype(func()) testIfSet(Flags... flags){
+			static inline decltype(func()) doIfSet(Flags... flags){
 				using ret_type = decltype(func());
 				if(SDASlave::Mstatus::getRegister(SDASlave::instance::value().SSTATUS).areSet(flags...))
 				return func();
