@@ -100,7 +100,7 @@ namespace AVR {
 				}
 			};
 			
-			template<typename accesstype, typename component, typename instance, typename Setting, typename bit_width>
+			template<typename accesstype, typename component, typename instance,typename alt, typename Setting, typename bit_width>
 			struct SPIMaster : public details::SPI<accesstype,component, instance, bit_width> {
 
 				NoConstructors(SPIMaster);
@@ -111,8 +111,8 @@ namespace AVR {
 					auto& ctra = SPIMaster::ControlA::getRegister(instance::value().CTRLA);
 					auto& ctrb = SPIMaster::ControlB::getRegister(instance::value().CTRLB);
 					
-					AVR::port::PinsDirOut<typename instance::Spi::Mosi::pin0,typename instance::Spi::Sck::pin0>();
-					instance::Spi::Miso::pin0::setInput();
+					AVR::port::PinsDirOut<typename alt::Mosi::pin0,typename alt::Sck::pin0>();
+					alt::Miso::pin0::setInput();
 					ctra.set(Setting::presc, Setting::clkx2, Setting::Msb, mBit);
 					ctrb.set(Setting::tmode, Setting::buf, Setting::bufwait,Setting::ssd);
 					ctra.on(SPIMaster::ControlA::special_bit::Enable);
@@ -120,7 +120,7 @@ namespace AVR {
 				
 			};
 
-			template<typename accesstype, typename component, typename instance,typename Setting, typename bit_width>
+			template<typename accesstype, typename component, typename instance,typename alt,typename Setting, typename bit_width>
 			struct SPISlave : public details::SPI<accesstype,component, instance, bit_width> {
 
 				NoConstructors(SPISlave);
@@ -130,8 +130,8 @@ namespace AVR {
 					auto& ctra = SPISlave::ControlA::getRegister(instance::value().CTRLA);
 					auto& ctrb = SPISlave::ControlB::getRegister(instance::value().CTRLB);
 					
-					AVR::port::PinsDirIn<typename instance::Spi::Mosi::pin0,typename instance::Spi::Sck::pin0>();
-					AVR::port::PinsDirOut<typename instance::Spi::Miso::pin0>();
+					AVR::port::PinsDirIn<typename alt::Mosi::pin0,typename instance::Spi::Sck::pin0>();
+					AVR::port::PinsDirOut<typename alt::Miso::pin0>();
 					
 					ctra.set(Setting::Msb);
 					ctrb.set(Setting::tmode, Setting::buf, Setting::bufwait);
@@ -145,12 +145,12 @@ namespace AVR {
 		using Prescaler = typename DEFAULT_MCU::SPI::Prescaler;
 		using Spis = typename DEFAULT_MCU::SPI::Components;
 
-		template<typename accesstype = blocking,typename instance = Spis::spi0,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
+		template<typename accesstype = blocking,typename instance = Spis::spi0,typename alternative = typename instance::Spi,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
 		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div16, typename bit_width = mem_width>
-		using SPIMaster = AVR::spi::details::SPIMaster<accesstype,typename DEFAULT_MCU::SPI::Component,instance, typename DEFAULT_MCU::SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
+		using SPIMaster = AVR::spi::details::SPIMaster<accesstype,typename DEFAULT_MCU::SPI::Component,instance, alternative, typename DEFAULT_MCU::SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
 		
-		template<typename accesstype = blocking,typename instance = Spis::spi0, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
-		using SPISlave = AVR::spi::details::SPISlave<accesstype,typename DEFAULT_MCU::SPI::Component,instance,typename DEFAULT_MCU::SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
+		template<typename accesstype = blocking,typename instance = Spis::spi0, typename alternative = typename instance::Spi, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
+		using SPISlave = AVR::spi::details::SPISlave<accesstype,typename DEFAULT_MCU::SPI::Component,instance, alternative,typename DEFAULT_MCU::SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
 
 	}
 }

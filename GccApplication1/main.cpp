@@ -24,6 +24,7 @@
 #include "hw_abstractions/SPI.hpp"
 #include "hw_abstractions/Port.hpp"
 #include "hw_abstractions/Eventsystem.hpp"
+#include "hw_abstractions/TWI.hpp"
 
 #elif defined(MEGA4809)
 #include "mega4809/Atmega4809.hpp"
@@ -38,13 +39,16 @@ using PortC = Port<AVR::port::C>;
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
 using ch0 = AVR::eventsystem::Channel<0>;
-using Spi = typename AVR::spi::SPIMaster<AVR::spi::notBlocking,AVR::spi::Spis::spi0,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
-
+using Spi = AVR::spi::SPIMaster<AVR::spi::notBlocking,AVR::spi::Spis::spi0,AVR::spi::Spis::spi0::Spi,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
+using twi = AVR::twi::TWIMaster<>;
 static constexpr auto funcref = []() {return Spi::noneBlockReceive(); };
 
 //testprogram will demonstrate how to safe cpu time
 #include "hw_abstractions/TWI.hpp"
 int main() {
+	twi::init();
+	twi::stop();
+	auto g = twi::singleReceive<>();
 	//every channel have its own generators
 	using gens = typename ch0::generators;
 	//set generator from channel 0 to port A pin 0
@@ -57,12 +61,11 @@ int main() {
 	//Spi::init();
 	uint8_t ctr = 0;
 	//while(true){
-		PORTA.DIR = 0xff;
-		TWI0.CTRLA = 8;
-		TWI0.MBAUD = 21;
-		//TWI0.CTRLA = 3;
-		TWI0.MCTRLA = 1;
-
+		//PORTA.DIR = 0xff;
+		//TWI0.CTRLA = 8;
+		//TWI0.MBAUD = 21;
+		//TWI0.MCTRLA = 1;
+	twi::init();
 		while(true){
 			if(((TWI0.MSTATUS & TWI_BUSSTATE_enum::TWI_BUSSTATE_IDLE_gc) == TWI_BUSSTATE_enum::TWI_BUSSTATE_IDLE_gc) | 
 			((TWI0.MSTATUS & TWI_BUSSTATE_enum::TWI_BUSSTATE_OWNER_gc) == TWI_BUSSTATE_enum::TWI_BUSSTATE_OWNER_gc)){
@@ -79,11 +82,11 @@ int main() {
 			}
 			_delay_ms(200);
 		//}
-		/*
+		
 		if(ctr == 0)
 		Spi::noneBlockSend(42);
 		//blocks if flag if is set (if data was completely shifted out / in)
-		auto msg = Spi::doIfTest < funcref >(Spi::InterruptFlagBits::Default_if);
+		auto msg = Spi::doIfTest < Spi::noneBlockReceive >(Spi::InterruptFlagBits::Default_if);
 		
 		if (msg == 0) ctr++;
 

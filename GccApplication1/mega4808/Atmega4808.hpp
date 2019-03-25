@@ -95,23 +95,25 @@ namespace mega4808 {
 		};
 		
 		struct TWI {
-			using TransferMode = mega4808::TransferMode;
-			using Prescaler = mega4808::Prescaler;
-			using Components = mega4808::spis;
-			using Component = mega4808::spiComponent;
+			using SDAHold = mega4808::SDAHold;
+			using SDASetup = mega4808::SDASetup;
+			using MasterTimeout = mega4808::MasterTimeout;
+			using Components = mega4808::twis;
+			using Component = mega4808::twiComponent;
 
-			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut>
+			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut, mem_width baudRate>
 			struct TWIMasterSetting{
 
 				using AConf = twiComponent::CTRLAMasks;
 				using MAConf = twiComponent::MCTRLAMasks;
 				
-				static constexpr AConf fastmode = fastModePlus ? AConf::Default_fmpen : static_cast<AConf>(0);
+				static constexpr AConf fastmode = fastModePlus ? AConf::Fmpen : static_cast<AConf>(0);
 				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
 				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);
 				static constexpr MAConf quickcommand = quickCommand ? MAConf::Qcen : static_cast<MAConf>(0);
 				static constexpr MAConf smartmode = smartMode ? MAConf::Smen : static_cast<MAConf>(0);
 				static constexpr MAConf timeout = static_cast<MAConf>(timeOut);
+				static constexpr mem_width baud = baudRate;
 			};
 
 			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup>
@@ -121,7 +123,7 @@ namespace mega4808 {
 				using SAConf = twiComponent::SCTRLAMasks;
 				using SBConf = twiComponent::SCTRLBMasks;
 				
-				static constexpr AConf fastmode = fastModePlus ? AConf::Default_fmpen : static_cast<AConf>(0);
+				static constexpr AConf fastmode = fastModePlus ? AConf::Fmpen : static_cast<AConf>(0);
 				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
 				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);
 			};
