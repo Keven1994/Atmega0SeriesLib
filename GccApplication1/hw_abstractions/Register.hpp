@@ -71,6 +71,13 @@ namespace reg {
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
 		
+		[[nodiscard]] bool anySet() volatile;
+
+		template<typename... ARGS>
+		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile {
+			return (static_cast<size>(bits) | ...) & reg ;
+		}
+		
 		[[nodiscard]] volatile size& raw() volatile {
 			return reg;
 		}
@@ -104,6 +111,14 @@ namespace reg {
 		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
+		
+		[[nodiscard]] bool anySet() volatile;
+
+		template<typename... ARGS>
+		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile {
+			return (static_cast<size>(bits) | ...) & reg;
+		}
+		
 		/*
 		function to cast the structs to Register
 		*/
@@ -165,6 +180,14 @@ namespace reg {
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
 		
+		[[nodiscard]] bool anySet() volatile;
+
+		template<typename... ARGS>
+		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile {
+			return (static_cast<size>(bits) | ...) & reg ;
+		}
+		
+		
 		[[nodiscard]] volatile size& raw() volatile {
 			return reg;
 		}
@@ -208,6 +231,14 @@ namespace reg {
 			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
+		
+		[[nodiscard]] bool anySet() volatile;
+
+		template<typename... ARGS>
+		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile {
+			return (static_cast<size>(bits) | ...) & reg ;
+		}
+		
 		/*
 		function to cast the structs to Register
 		*/
@@ -245,6 +276,14 @@ namespace reg {
 			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
+		
+		[[nodiscard]] bool anySet() volatile;
+
+		template<typename... ARGS>
+		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile {
+			return (static_cast<size>(bits) | ...) & reg;
+		}
+		
 		
 		template<typename... ARGS>
 		inline void invert(const ARGS... bits) volatile {
@@ -285,6 +324,14 @@ namespace reg {
 		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
+		
+		[[nodiscard]] bool anySet() volatile;
+
+		template<typename... ARGS>
+		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile {
+			return (static_cast<size>(bits) | ...) & reg ;
+		}
+		
 		
 		[[nodiscard]] volatile size& raw() volatile {
 			return reg;

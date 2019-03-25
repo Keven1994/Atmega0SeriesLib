@@ -123,10 +123,16 @@ int main(int argc, const char **argv) {
                 if(hasmode) it2 = iterator->children("bitfield");
 
                 for (auto node2 :  it2) {
-                    std::string mname;
-                    if (hasmode) {
-                        mname = (*iterator).attribute("name").as_string() + std::string("_");
+                    //std::string mname;
+                    std::string noDef = node2.attribute("name").as_string();
+                    auto f = noDef.find("DEFAULT_");
+                    if(f != std::string::npos) {
+                        noDef = noDef.substr(0,f)+noDef.substr(f+8,noDef.size());
+
                     }
+                    //if (hasmode) {
+                      //  mname = (*iterator).attribute("name").as_string() + std::string("_");
+                    //}
 
                     if (reg_t == reg_type::Data) {
                         if (reg_prot == "RW") {
@@ -141,22 +147,23 @@ int main(int argc, const char **argv) {
                         mbuilder.addEnum(reg_enum + "");
                         entryGenerated = true;
                     }
-
                     if (tempstr.empty()) {
+
                         auto bs = std::bitset<32>(static_cast<size_t>(node2.attribute("mask").as_int()));
                         if (bs.count() > 1) {
                             for (uint32_t i = 0; bs.test(i) && i < 32; i++) {
                                 mbuilder.addEnumEntry(
-                                        utils::toCamelCase(mname + node2.attribute("name").as_string()) +
+                                        utils::toCamelCase(noDef) +
                                         std::to_string(i),
-                                        modName + "_" + node2.attribute("name").as_string() + std::to_string(i) +
+                                        modName + "_" + noDef + std::to_string(i) +
                                         "_bm");
                             }
-                        } else
-                            mbuilder.addEnumEntry(utils::toCamelCase(mname + node2.attribute("name").as_string()),
-                                                  modName + "_" + node2.attribute("name").as_string() + "_bm");
+                        } else {
+                            mbuilder.addEnumEntry(utils::toCamelCase(noDef),
+                                                  modName + "_" + noDef + "_bm");
+                        }
                     } else {
-                        val_group.push_back(tuple<>{tempstr, mname + node2.attribute("name").as_string()});
+                        val_group.push_back(tuple<>{tempstr, noDef});
                     }
 
                 }
@@ -179,9 +186,11 @@ int main(int argc, const char **argv) {
                     if (node2.attribute("name").as_string() == valstr.str1) {
                         for (auto node3 : node2.children("value")) {
 
-                            std::string valname = enumname + node3.attribute("name").as_string() + "_gc";
+                            std::string noDef = node3.attribute("name").as_string();
+                            std::string valname = enumname + noDef + "_gc";
+
                             mbuilder.addEnumEntry(
-                                    utils::toLowerCase(valstr.str2 + "_" + node3.attribute("name").as_string()),
+                                    utils::toCamelCase(valstr.str2 + "_" + noDef),
                                     std::move(valname));
                         }
                     }

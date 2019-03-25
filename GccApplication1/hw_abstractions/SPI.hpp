@@ -27,14 +27,14 @@ namespace AVR {
 				using InterruptControlBits = typename InterruptControl::special_bit;
 				using InterruptFlagBits = typename InterruptFlags::special_bit;
 				
-				static inline void noneBlockSend(bit_width data)		
-				requires(utils::isEqual<notBlocking,accesstype>::value)		
+				static inline void noneBlockSend(bit_width data)
+				requires(utils::isEqual<notBlocking,accesstype>::value)
 				{
 					auto& datareg = Data::getRegister(instance::value().DATA);
 					datareg.raw() = data;
 				}
 				
-				[[nodiscard]] static inline bit_width noneBlockReceive() 
+				[[nodiscard]] static inline bit_width noneBlockReceive()
 				requires(utils::isEqual<notBlocking,accesstype>::value)
 				{
 					auto& datareg = Data::getRegister(instance::value().DATA);
@@ -49,10 +49,19 @@ namespace AVR {
 
 				template<auto& funcRef, typename... FlagsToTest>
 				requires(utils::sameTypes<InterruptFlagBits, FlagsToTest...>())
-				static inline decltype(funcRef()) doIfTest(FlagsToTest... flags) {
+				static inline decltype(funcRef()) doIfSet(FlagsToTest... flags) {
 					using retType = decltype(funcRef());
 					if (InterruptFlags::getRegister(instance::value().INTFLAGS).areSet(flags...))
-						return funcRef();
+					return funcRef();
+					return retType{};
+				}
+				
+				template<auto& funcRef, typename... FlagsToTest>
+				requires(utils::sameTypes<InterruptFlagBits, FlagsToTest...>())
+				static inline decltype(funcRef()) doIfAnySet(FlagsToTest... flags) {
+					using retType = decltype(funcRef());
+					if (InterruptFlags::getRegister(instance::value().INTFLAGS).anySet(flags...))
+					return funcRef();
 					return retType{};
 				}
 				

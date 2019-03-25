@@ -45,63 +45,20 @@ static constexpr auto funcref = []() {return Spi::noneBlockReceive(); };
 
 //testprogram will demonstrate how to safe cpu time
 #include "hw_abstractions/TWI.hpp"
+
+static constexpr auto lam = [](){twi::singleTransfer<true,0x0f>(42); return 42;};
+
 int main() {
 	twi::init();
-	twi::stop();
-	auto g = twi::singleReceive<>();
-	//every channel have its own generators
-	using gens = typename ch0::generators;
-	//set generator from channel 0 to port A pin 0
-	//ch0::setGenerator<gens::template PortAGenerator<typename PortA::pins::pin0>>(); //use the nested pin type to ensure to not use unavailable pins
-	//user port c listen to channel 0
-	//ch0::registerListener<typename AVR::eventsystem::users<>::evportc>();
-	
-	//led1::setOutput();
-	//led1::on();
-	//Spi::init();
-	uint8_t ctr = 0;
-	//while(true){
-		//PORTA.DIR = 0xff;
-		//TWI0.CTRLA = 8;
-		//TWI0.MBAUD = 21;
-		//TWI0.MCTRLA = 1;
-	twi::init();
+
 		while(true){
-			if(((TWI0.MSTATUS & TWI_BUSSTATE_enum::TWI_BUSSTATE_IDLE_gc) == TWI_BUSSTATE_enum::TWI_BUSSTATE_IDLE_gc) | 
-			((TWI0.MSTATUS & TWI_BUSSTATE_enum::TWI_BUSSTATE_OWNER_gc) == TWI_BUSSTATE_enum::TWI_BUSSTATE_OWNER_gc)){
-				TWI0.MADDR = 0x0f | (1<<7);
-				while(! ((TWI0.MSTATUS & TWI_WIF_bm ) == TWI_WIF_bm));
-				TWI0.MDATA = 42;
-			//if((TWI0.MSTATUS & TWI_ACKACT_bm) == TWI_ACKACT_bm)
-				//TWI0.MDATA = 42;
-			//else {
-				//TWI0.MCTRLB = TWI_FLUSH_bm;	
-			//}
-			} else {
+			auto err = twi::doIfAnySet<lam>(twi::Mstatus::special_bit::Busstate_idle , twi::Mstatus::special_bit::Busstate_owner);
+			if(err != 42){
 				TWI0.MSTATUS = 0x1;
 			}
+
 			_delay_ms(200);
-		//}
 		
-		if(ctr == 0)
-		Spi::noneBlockSend(42);
-		//blocks if flag if is set (if data was completely shifted out / in)
-		auto msg = Spi::doIfTest < Spi::noneBlockReceive >(Spi::InterruptFlagBits::Default_if);
-		
-		if (msg == 0) ctr++;
-
-		if (ctr > 0 && msg != 0) {
-			while(ctr-- > 0){
-				led1::invert();
-				_delay_ms(500);
-			}
-		}
-		
-		msg = 0;
-
-		/*
-		other code
-		*/
 	}
 	
 }
