@@ -18,36 +18,44 @@ namespace AVR {
 		
 		namespace details {
 			
+			template<typename component, typename instance>
+			struct TWI {
+				protected:
+				template<typename Reg>
+				[[nodiscard,gnu::always_inline]] static inline auto& reg(){
+					return AVR::port::details::getRegister<Reg,instance::value>();
+				}
+			};
 			
 			template<typename accesstype,  typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-			class TWIMaster {
-				static constexpr mem_width lastBit = 1 << 7;
-				public:
+			class TWIMaster : protected TWI<component, instance> {
+				using Bridgectrl = typename component::registers::bridgectrl;
+				using Ctrla =  typename component::registers::ctrla;
+				using Dbgctrl = typename component::registers::dbgctrl;
+				using Maddr =  typename component::registers::maddr;
+				using Mbaud =  typename component::registers::mbaud;
+				using Mctrla =  typename component::registers::mctrla;
+				using Mctrlb = typename component::registers::mctrlb;
+				using Mdata =  typename component::registers::mdata;
+				using Mstatus =  typename component::registers::mstatus;
 				
-				using Bridgectrl = typename component::registers::bridgectrl::type;
-				using Ctrla =  typename component::registers::ctrla::type;
-				using Dbgctrl = typename component::registers::dbgctrl::type;
-				using Maddr =  typename component::registers::maddr::type;
-				using Mbaud =  typename component::registers::mbaud::type;
-				using Mctrla =  typename component::registers::mctrla::type;
-				using Mctrlb = typename component::registers::mctrlb::type;
-				using Mdata =  typename component::registers::mdata::type;
-				using Mstatus =  typename component::registers::mstatus::type;
+				public:
+				using status_bits = typename TWIMaster::Mstatus::type::special_bit;
 				
 				template<bool pinSetting = true, uint8_t address>
-				requires(address < lastBit)
+				requires(address < (1 << 7))
 				static inline void singleTransfer(uint8_t data){
-					constexpr mem_width addr = lastBit | address;
-					auto& status = Mstatus::getRegister(instance::value().MSTATUS);
+					constexpr mem_width addr = ~(TWI_ADDREN_bm) & address;
+					auto& status = TWIMaster::template reg<Mstatus>();
 					
 					if constexpr(pinSetting){
 						alt::Sda::pin0::setOutput();
 					}
 					
-					Maddr::getRegister(instance::value().MADDR).set(addr);
-					while(! (status.areSet(Mstatus::special_bit::Wif)));
-					Mdata::getRegister(instance::value().MDATA).set(data);
-					while(! (status.areSet(Mstatus::special_bit::Wif)));
+					TWIMaster::template reg<Maddr>().set(addr);
+					while(! (status.areSet(status_bits::Wif)));
+					TWIMaster::template reg<Mdata>().set(data);
+					while(! (status.areSet(status_bits::Wif)));
 				}
 				
 				static inline void Transfer(bit_width* data, uint8_t n){
@@ -57,13 +65,13 @@ namespace AVR {
 				
 				template<bool pinSetting = true, uint8_t address>
 				[[nodiscard]] static inline bit_width singleReceive(){
-					static constexpr uint8_t addr = ~lastBit & address;
+					static constexpr uint8_t addr = TWI_ADDREN_bm | (address << 1);
 					if constexpr(pinSetting){
 						alt::Sda::pin0::setInput();
 					}
-					Maddr::getRegister(instance::value().MADDR).set(addr);
-					while(! (Mstatus::getRegister(instance::value().MSTATUS).areSet(Mstatus::special_bit::Rif)));
-					return Mdata::getRegister(instance::value().MDATA).raw();
+					TWIMaster::template reg<Maddr>().set(addr);
+					while(! (TWIMaster::template reg<Mstatus>().areSet(Mstatus::special_bit::Rif)));
+					return TWIMaster::template reg<Mdata>().raw();
 				}
 				
 				template<bool pinSetting = true>
@@ -75,64 +83,86 @@ namespace AVR {
 				}
 				
 				template<auto& func,typename... Flags>
-				requires(utils::sameTypes<typename Mstatus::special_bit,Flags...>())
-				static inline decltype(func()) doIfSet(Flags... flags){
+				requires(utils::sameTypes<status_bits,Flags...>())
+				static inline auto doIfSet(Flags... flags){
 					using ret_type = decltype(func());
-					if(Mstatus::getRegister(instance::value().MSTATUS).areSet(flags...))
+					if(TWIMaster::template reg<Mstatus>().areSet(flags...))
 					return func();
 					return ret_type{};
 				}
 				
 				template<auto& func,typename... Flags>
-				requires(utils::sameTypes<typename Mstatus::special_bit,Flags...>())
-				static inline decltype(func()) doIfAnySet(Flags... flags){
+				requires(utils::sameTypes<status_bits,Flags...>())
+				static inline auto doIfAnySet(Flags... flags){
 					using ret_type = decltype(func());
-					if(Mstatus::getRegister(instance::value().MSTATUS).anySet(flags...))
+					if(TWIMaster::template reg<Mstatus>().anySet(flags...))
 					return func();
 					return ret_type{};
 				}
 				
 				static inline void init(){
 					alt::Scl::pin0::setOutput();
-					Ctrla::getRegister(instance::value().CTRLA).set(Setting::fastmode,Setting::holdtime,Setting::setuptime);
-					Mbaud::getRegister(instance::value().MBAUD).set(Setting::baud);
-					Mctrla::getRegister(instance::value().MCTRLA).set(Setting::quickcommand,Setting::smartmode,Setting::timeout,Mctrla::special_bit::Enable);
+					TWIMaster::template reg<Ctrla>().set(Setting::fastmode,Setting::holdtime,Setting::setuptime);
+					TWIMaster::template reg<Mbaud>().set(Setting::baud);
+					TWIMaster::template reg<Mctrla>().set(Setting::quickcommand,Setting::smartmode,Setting::timeout,Mctrla::type::special_bit::Enable);
+					busStateIdle();
+				}
+				
+				static inline void busStateIdle(){
+					TWIMaster::template reg<Mstatus>().toggle(status_bits::Busstate_idle);
 				}
 				
 				static inline void stop(){
-					TWIMaster::Mctrlb::getRegister(instance::value().MCTRLB).on(TWIMaster::Mctrlb::special_bit::Mcmd_stop);
+					TWIMaster::template reg<Mctrlb>().on(TWIMaster::Mctrlb::special_bit::Mcmd_stop);
 				}
 				
 				private:
 				static inline void restart() {
-					TWIMaster::Mctrlb::getRegister(instance::value().MCTRLB).on(TWIMaster::Mctrlb::special_bit::Mcmd_repstart);
+					TWIMaster::template reg<Mctrlb>().on(TWIMaster::Mctrlb::special_bit::Mcmd_repstart);
 				}
 			};
 			
 			template<typename accesstype,  typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-			struct TWISlave  {
+			class TWISlave : public TWI<component,instance>  {
 				
-				using Bridgectrl = typename component::registers::bridgectrl::type;
-				using Ctrla =  typename component::registers::ctrla::type;
-				using Dbgctrl = typename component::registers::dbgctrl::type;
-				using Saddr =  typename component::registers::saddr::type;
-				using Saddrmask =  typename component::registers::saddrmask::type;
-				using Sctrla =  typename component::registers::sctrla::type;
-				using Sctrlb =  typename component::registers::sctrlb::type;
-				using Sdata =  typename component::registers::sdata::type;
-				using Sstatus =  typename component::registers::sstatus::type;
+				using Bridgectrl = typename component::registers::bridgectrl;
+				using Ctrla =  typename component::registers::ctrla;
+				using Dbgctrl = typename component::registers::dbgctrl;
+				using Saddr =  typename component::registers::saddr;
+				using Saddrmask =  typename component::registers::saddrmask;
+				using Sctrla =  typename component::registers::sctrla;
+				using Sctrlb =  typename component::registers::sctrlb;
+				using Sdata =  typename component::registers::sdata;
+				using Sstatus =  typename component::registers::sstatus;
+				using status_bits = typename component::registers::sstatus::type::special_bit;
+				
+				public:
 				
 				template<auto& func,typename... Flags>
-				requires(utils::sameTypes<TWISlave::Mstatus::special_bit,Flags...>())
-				static inline decltype(func()) doIfSet(Flags... flags){
+				requires(utils::sameTypes<Sstatus::special_bit,Flags...>())
+				static inline auto doIfSet(Flags... flags){
 					using ret_type = decltype(func());
-					if(TWISlave::Mstatus::getRegister(TWISlave::instance::value().SSTATUS).areSet(flags...))
+					if(TWISlave::template reg<Sstatus>().areSet(flags...))
 					return func();
 					return ret_type{};
 				}
 				
+				template<uint8_t address>
+				requires(address < (1<<7))
 				static inline void init(){
 					alt::Scl::pin0::setInput();
+					TWISlave::template reg<Ctrla>().set(Setting::fastmode,Setting::holdtime,Setting::setuptime);
+					TWISlave::template reg<Saddr>().set(address);
+				}
+				
+				template<bool pinSetting = true, uint8_t address>
+				[[nodiscard]] static inline bit_width singleReceive(){
+					auto& statusreg = TWISlave::template reg<Sstatus>();
+					if constexpr(pinSetting){
+						alt::Sda::pin0::setInput();
+					}
+					while(!(statusreg.areSet(status_bits::Dif) && !statusreg.areSet(status_bits::Dir)));
+					return TWISlave::template reg<Sdata>.raw();
 				}
 			};
 		}

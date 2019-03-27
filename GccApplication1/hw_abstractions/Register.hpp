@@ -56,7 +56,7 @@ namespace reg {
 		}
 
 		template<typename... ARGS>
-		inline void invert(const ARGS... bits) volatile {
+		inline void toggle(const ARGS... bits) volatile {
 			if constexpr(sizeof...(ARGS) == 0){
 				reg ^= static_cast<size>(-1);
 			} else
@@ -163,7 +163,7 @@ namespace reg {
 		}
 
 		template<typename... ARGS>
-		inline void invert(const ARGS... bits) volatile {
+		inline void toggle(const ARGS... bits) volatile {
 			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			if constexpr(sizeof...(ARGS) == 0){
 				reg ^= static_cast<size>(-1);
@@ -250,7 +250,7 @@ namespace reg {
 	template<typename size, typename Bits>
 	class Register<accessmode::RW,specialization::Flag,Bits,size> {
 		
-		const volatile size reg;
+		volatile size reg;
 		
 		public:
 		
@@ -286,7 +286,7 @@ namespace reg {
 		
 		
 		template<typename... ARGS>
-		inline void invert(const ARGS... bits) volatile {
+		inline void toggle(const ARGS... bits) volatile {
 			if constexpr(sizeof...(ARGS) == 0){
 				reg = static_cast<size>(-1);
 			} else
@@ -310,7 +310,7 @@ namespace reg {
 		NoConstructors(Register);
 		using regSize = size;
 		template<typename... ARGS>
-		inline void invert(const ARGS... bits) volatile {
+		inline void toggle(const ARGS... bits) volatile {
 			if constexpr(sizeof...(ARGS) == 0){
 				reg = static_cast<size>(-1);
 			} else

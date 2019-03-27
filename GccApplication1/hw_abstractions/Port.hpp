@@ -15,6 +15,12 @@ namespace AVR{
 		
 		namespace details {
 			
+			template<typename T, auto& inst>
+			[[nodiscard,gnu::always_inline]] static inline auto& getRegister(){
+					using reg_t = typename T::type;
+					return reg_t::getRegister(*((typename reg_t::regSize*)&inst() + T::value));
+			}
+			
 			template<typename first,typename ...T>
 			[[nodiscard]] constexpr bool samePorts() noexcept {
 				if constexpr(sizeof...(T) == 0)
@@ -101,7 +107,7 @@ namespace AVR{
 					_port().OUT |= pinValue;
 				}
 				
-				static inline void invert(){
+				static inline void toggle(){
 					_port().OUT ^= pinValue;
 				}
 				
@@ -150,7 +156,7 @@ namespace AVR{
 #ifndef Intelli
 		requires(details::samePorts<Pins...>())
 #endif
-		static inline void PinsInvert() {
+		static inline void PinsToggle() {
 			using firstPin = typename utils::front<Pins...>::type;
 			auto& Pval = firstPin::port::port().OUT;
 			Pval ^= (Pins::pinValue | ...);

@@ -39,22 +39,27 @@ using PortC = Port<AVR::port::C>;
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
 using ch0 = AVR::eventsystem::Channel<0>;
-using Spi = AVR::spi::SPIMaster<AVR::spi::notBlocking,AVR::spi::Spis::spi0,AVR::spi::Spis::spi0::Spi,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
+using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking,AVR::spi::Spis::spi0,AVR::spi::Spis::spi0::Spi,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
 using twi = AVR::twi::TWIMaster<>;
-static constexpr auto funcref = []() {return Spi::noneBlockReceive(); };
 
-//testprogram will demonstrate how to safe cpu time
+static constexpr auto funcref = []() {return spi::noneBlockReceive(); };
+
 #include "hw_abstractions/TWI.hpp"
 
-static constexpr auto lam = [](){twi::singleTransfer<true,0x0f>(42); return 42;};
+enum class error : mem_width {
+	Error = 0, 
+	NoError = 42	
+};
+
+static constexpr auto lam = [](){twi::singleTransfer<true,0x0f>(42); return static_cast<mem_width>(error::NoError);};
 
 int main() {
 	twi::init();
 
 		while(true){
-			auto err = twi::doIfAnySet<lam>(twi::Mstatus::special_bit::Busstate_idle , twi::Mstatus::special_bit::Busstate_owner);
-			if(err != 42){
-				TWI0.MSTATUS = 0x1;
+			auto err = twi::doIfAnySet<lam>(twi::status_bits::Busstate_idle , twi::status_bits::Busstate_owner);
+			if(err == static_cast<mem_width>(error::Error)){
+				twi::busStateIdle();
 			}
 
 			_delay_ms(200);
