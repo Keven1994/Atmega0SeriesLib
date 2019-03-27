@@ -47,19 +47,22 @@ static constexpr auto funcref = []() {return spi::noneBlockReceive(); };
 #include "hw_abstractions/TWI.hpp"
 
 enum class error : mem_width {
-	Error = 0, 
-	NoError = 42	
+	Busy = 0, 
+	notBusy = 42	
 };
 
-static constexpr auto lam = [](){twi::singleTransfer<true,0x0f>(42); return static_cast<mem_width>(error::NoError);};
+static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction::output>(); twi::singleTransfer(42); twi::stopTransaction(); return static_cast<mem_width>(error::notBusy);};
 
 int main() {
 	twi::init();
 
 		while(true){
 			auto err = twi::doIfAnySet<lam>(twi::status_bits::Busstate_idle , twi::status_bits::Busstate_owner);
-			if(err == static_cast<mem_width>(error::Error)){
-				twi::busStateIdle();
+
+			if( err != static_cast<mem_width>(error::notBusy)){
+				/*
+				if bus is busy...
+				*/
 			}
 
 			_delay_ms(200);
