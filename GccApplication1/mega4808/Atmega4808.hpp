@@ -18,15 +18,23 @@ using ptr_t = uintptr_t;
 #include "hal/Atmega4808SPI.hpp"
 #include "hal/ATmega4808TWI.hpp"
 
+#include "../hw_abstractions/RessourceController.hpp"
+
 
 namespace mega4808 {
 	
 
 	template<typename frequenzy>
-	#ifndef Intelli
 	requires(utils::isEqual<MHZ4,frequenzy>::value || utils::isEqual<MHZ12,frequenzy>::value || utils::isEqual<MHZ20,frequenzy>::value)
-	#endif
-	struct Atmega4808 {
+	class Atmega4808 {
+		
+		template<typename Alias>
+		friend struct AVR::rc::details::resolveComponent;
+		
+		template<typename MCU,typename FIRST,typename... PINS>
+		friend class AVR::rc::ResController;
+		
+		public:
 		
 		static constexpr auto clockFrequenzy = frequenzy::value;
 		
@@ -56,12 +64,12 @@ namespace mega4808 {
 			
 			using users = mega4808::details::users;
 		};
-		
-		struct SPI {
+
+		struct SPI : public AVR::rc::details::RCComponent<spis> {
+				
 			using TransferMode = mega4808::TransferMode;
 			using Prescaler = mega4808::Prescaler;
-			using Components = mega4808::spis;
-			using Component = mega4808::spiComponent;
+			using Component_t = mega4808::spiComponent;
 
 			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered,
 			bool waitForReceive, Prescaler prescaler>
@@ -95,6 +103,10 @@ namespace mega4808 {
 		};
 		
 		struct TWI {
+			
+			template<typename Alias>
+			friend struct resolveComponent;
+			
 			using SDAHold = mega4808::SDAHold;
 			using SDASetup = mega4808::SDASetup;
 			using MasterTimeout = mega4808::MasterTimeout;
@@ -128,5 +140,6 @@ namespace mega4808 {
 				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);
 			};
 		};
+		
 	};
 }

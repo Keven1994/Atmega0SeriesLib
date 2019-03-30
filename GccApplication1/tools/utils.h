@@ -16,6 +16,21 @@
 #define NoConstructors(x) x() = delete; x(const x&) = delete; x(x&&) = delete
 
 namespace utils {
+	
+	template<typename T1, typename T2>
+	struct tuple {
+	using t1 = T1;
+	using t2 = T2;	
+	};
+	
+
+struct false_type {
+	static constexpr bool value = false;
+};
+
+struct true_type {
+	static constexpr bool value = true;
+};
 
 	template<bool B, class T = void>
 	struct enable_if {};
@@ -270,6 +285,17 @@ namespace utils {
 	struct condEqual {
 		using type = typename conditional<isEqual<t1,t2>::value,T,E>::type;
 	};
+	
+	template<class...> struct disjunction : false_type { };
+template<class B1> struct disjunction<B1> : B1 { };
+template<class B1, class... Bn>
+struct disjunction<B1, Bn...> 
+    : conditional<bool(B1::value), B1, disjunction<Bn...>>::type  { };
+			
+			template<typename T, typename... list>
+			struct contains {
+				static constexpr bool value = disjunction<isEqual<T,list>...>::value;
+			};
 			
 	template<typename T, auto val>
 	struct Pair {
@@ -277,6 +303,7 @@ namespace utils {
 		using type = T;
 	};
 	
+	/*
 	template<typename searched, typename first, typename ... pack>
 	struct contains {
 		static inline constexpr bool value = isEqual<searched,first>::value ? true : contains<searched,pack...>::value;
@@ -286,7 +313,7 @@ namespace utils {
 	template<typename searched, typename first>
 	struct contains<searched,first> {
 		static inline constexpr bool value = isEqual<searched,first>::value;
-	};
+	};*/
 
 #ifndef __AVR__
     template<typename T>

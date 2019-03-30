@@ -8,6 +8,8 @@
 #pragma once
 #include "Register.hpp"
 #include "../MCUSelect.hpp"
+#include "RessourceController.hpp"
+
 namespace AVR {
 	namespace spi {
 		
@@ -36,13 +38,15 @@ namespace AVR {
 				using InterruptFlagBits = typename InterruptFlags::type::special_bit;
 				
 				public:
-				
-				static inline void noneBlockSend(bit_width data)
+
+				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,notBlocking>::value, int> = 0>
+				static inline void tranfer(bit_width data)
 				requires(utils::isEqual<notBlocking,accesstype>::value) {
 					reg<Data>().raw() = data;
 				}
-				
-				[[nodiscard]] static inline bit_width noneBlockReceive()
+
+				template<typename block = accesstype,utils::enable_if_t<utils::isEqual<block,notBlocking>::value, int> = 0>
+				[[nodiscard]] static inline bit_width receive()
 				requires(utils::isEqual<notBlocking,accesstype>::value) {
 					return reg<Data>().raw();
 				}
@@ -55,7 +59,7 @@ namespace AVR {
 
 				template<auto& funcRef, typename... FlagsToTest>
 				requires(utils::sameTypes<InterruptFlagBits, FlagsToTest...>())
-				static inline decltype(funcRef()) doIfSet(FlagsToTest... flags) {
+				static inline auto doIfSet(FlagsToTest... flags) {
 					using retType = decltype(funcRef());
 					if (reg<InterruptFlags>().areSet(flags...))
 					return funcRef();
@@ -64,46 +68,50 @@ namespace AVR {
 				
 				template<auto& funcRef, typename... FlagsToTest>
 				requires(utils::sameTypes<InterruptFlagBits, FlagsToTest...>())
-				static inline decltype(funcRef()) doIfAnySet(FlagsToTest... flags) {
+				static inline auto doIfAnySet(FlagsToTest... flags) {
 					using retType = decltype(funcRef());
 					if (reg<InterruptFlags>().anySet(flags...))
 					return funcRef();
 					return retType{};
 				}
-				
-				[[nodiscard]] static inline bit_width singleTransmit(bit_width data) {
+
+				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,blocking>::value, int> = 0>
+				[[nodiscard]] static inline bit_width transmit(bit_width data) {
 					reg<Data>().raw() = data;
 					while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Default_if));
 					return reg<Data>().raw();
 				}
-				
-				[[nodiscard]] static inline bit_width singleReceive() {
+
+				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,blocking>::value, int> = 0>
+				[[nodiscard]] static inline bit_width receive() {
 					while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Default_if));
 					return reg<Data>().raw();
 				}
-				
-				static inline void singleTransfer(bit_width data) {
+
+				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,blocking>::value, int> = 0>
+				static inline void transfer(bit_width data) {
 					reg<Data>().raw() = data;
 					while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Default_if));
 				}
 				
-				[[nodiscard]] static inline bit_width* Transmit(bit_width* data, bit_width size) {
+				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,blocking>::value, int> = 0>
+				[[nodiscard]] static inline bit_width* transmit(bit_width* data, bit_width size) {
 					for(bit_width i = 0; i < size; i++){
 						data[i] = singleTransmit(data[i]);
 					}
 					return data;
 				}
 				
-				[[nodiscard]] static inline bit_width* Receive(bit_width* data, bit_width size) {
+				[[nodiscard]] static inline bit_width* receive(bit_width* data, bit_width size) {
 					for(bit_width i = 0; i < size; i++){
-						data[i] = singleReceive();
+						data[i] = receive();
 					}
 					return data;
 				}
 				
-				static inline void Transfer(bit_width* data, bit_width size) {
+				static inline void transfer(bit_width* data, bit_width size) {
 					for(bit_width i = 0; i < size; i++){
-						singleTransmit(data[i]);
+						transfer(data[i]);
 					}
 				}
 			};
@@ -141,16 +149,23 @@ namespace AVR {
 			};
 		}
 
-		using TransferMode =  typename DEFAULT_MCU::SPI::TransferMode;
-		using Prescaler = typename DEFAULT_MCU::SPI::Prescaler;
-		using Spis = typename DEFAULT_MCU::SPI::Components;
+		template<typename mcu = DEFAULT_MCU>
+		using TransferMode =  typename mcu::SPI::TransferMode;
+		template<typename mcu = DEFAULT_MCU>
+		using Prescaler = typename mcu::SPI::Prescaler;
+		template<auto Instance, auto Alternative,typename mcu = DEFAULT_MCU>
+		using Component = AVR::rc::details::Component<typename mcu::SPI,Instance, Alternative>;
+		using defRC = rc::RessourceController<Component<0,0>>;
+		using defInst = typename defRC::getRessource<0>::inst;
+		//using defAlt = typename defRC::getRessource<0>::alt;
+		//using Spis = typename DEFAULT_MCU::SPI::Components;
 
-		template<typename accesstype = blocking,typename instance = Spis::spi0,typename alternative = typename instance::Spi,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
-		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div16, typename bit_width = mem_width>
-		using SPIMaster = AVR::spi::details::SPIMaster<accesstype,typename DEFAULT_MCU::SPI::Component,instance, alternative, typename DEFAULT_MCU::SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
+		template<typename accesstype = blocking,typename instance = defInst,typename alternative = typename instance::template alt<0>,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode<> tmode = TransferMode<>::Mode0,
+		bool buffered = false,bool waitForReceive = false, Prescaler<> prescaler = Prescaler<>::Div16, typename bit_width = mem_width>
+		using SPIMaster = AVR::spi::details::SPIMaster<accesstype,typename DEFAULT_MCU::SPI::Component_t,instance, alternative, typename DEFAULT_MCU::SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
 		
-		template<typename accesstype = blocking,typename instance = Spis::spi0, typename alternative = typename instance::Spi, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
-		using SPISlave = AVR::spi::details::SPISlave<accesstype,typename DEFAULT_MCU::SPI::Component,instance, alternative,typename DEFAULT_MCU::SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
+		template<typename accesstype = blocking,typename instance = defInst, typename alternative = typename defInst::template alt<0>, bool msb = true, TransferMode<> tmode = TransferMode<>::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
+		using SPISlave = AVR::spi::details::SPISlave<accesstype,typename DEFAULT_MCU::SPI::Component_t,instance, alternative,typename DEFAULT_MCU::SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
 
 	}
 }

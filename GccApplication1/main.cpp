@@ -5,8 +5,9 @@
 * Author : Keven
 */
 #include "test.hpp"
-#define F_CPU 4000000
 #ifndef TEST
+
+#define F_CPU 4000000
 
 #include <stddef.h>
 #include <util/delay.h>
@@ -36,13 +37,16 @@ using namespace AVR::port;
 using PortA = Port<AVR::port::A>;
 using PortC = Port<AVR::port::C>;
 
+using RC = AVR::rc::RessourceController<
+	AVR::spi::Component<0,1>, AVR::spi::Component<0,1>>; //getting first instance here: spi0 and second alternative (portmux) here alt1
+
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
 using ch0 = AVR::eventsystem::Channel<0>;
-using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking,AVR::spi::Spis::spi0,AVR::spi::Spis::spi0::Spi,true,false,true, AVR::spi::TransferMode::Mode0,false,false, AVR::spi:: Prescaler::Div16>;
+using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking,RC::getRessource<0>::inst,RC::getRessource<0>::alt>;
 using twi = AVR::twi::TWIMaster<>;
 
-static constexpr auto funcref = []() {return spi::noneBlockReceive(); };
+static constexpr auto funcref = []() {return spi::receive(); };
 
 #include "hw_abstractions/TWI.hpp"
 

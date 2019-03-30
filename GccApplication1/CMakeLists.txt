@@ -8,7 +8,7 @@ set(PROG_ARGS -b 19200 -P ${USBPORT})
 # Variables regarding the AVR chip
 set(MCU   atmega4808)
 set(AVR_DEV_LIB_NAME m4808)
-set(F_CPU 16000000)
+set(F_CPU 4000000)
 set(BAUD  9600)
 add_definitions(-DF_CPU=${F_CPU})
 
