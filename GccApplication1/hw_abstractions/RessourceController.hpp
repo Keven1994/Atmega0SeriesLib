@@ -8,6 +8,8 @@
 
 #pragma once
 #include "../tools/meta.h"
+#include "../tools/utils.h"
+
 namespace AVR {
 	
 	namespace rc {
@@ -66,9 +68,21 @@ namespace AVR {
 				using second = typename resolveAlt<_second>::list;
 				
 				if constexpr((sizeof...(pins)-N) > 1)
-				return !Meta::contains_any<first, second>::value & checkRessource_helper<N+1,typename Meta::concat_t<first,second>, pins...>();
+				return !Meta::contains_any<first, second>::value && checkRessource_helper<N+1,typename Meta::concat_t<first,second>, pins...>();
 				else {
 					return !Meta::contains_any<first,second>::value;
+				}
+			}
+			
+			template<auto N ,typename _first,typename _second, typename... pins>
+			static constexpr bool checkInstance_helper(){
+				using first = resolveInst<_first>;
+				using second = resolveInst<_second>;
+				
+				if constexpr((sizeof...(pins)-N) > 1)
+				return !utils::isEqual<first,second>::value && checkRessource_helper<N+1,typename Meta::concat_t<first,second>, pins...>();
+				else {
+					return !utils::isEqual<first,second>::value;
 				}
 			}
 			
@@ -79,8 +93,15 @@ namespace AVR {
 				else return checkRessource_helper<0,first,pins...>();
 			}
 			
-			static_assert(checkRessource<FIRST,PINS...>(), "I/O Pins conflicting");
+			template<typename first,typename... pins>
+			static constexpr bool checkInstance() {
+				if constexpr(sizeof...(pins) == 0)
+				return true;
+				else return checkInstance_helper<0,first,pins...>();
+			}
 			
+			static_assert(checkRessource<FIRST,PINS...>(), "I/O Pins conflicting");
+			static_assert(checkInstance<FIRST,PINS...>(), "only multiple alternatives from one instance");
 			public:
 			
 			template<auto N>

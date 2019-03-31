@@ -38,7 +38,7 @@ using PortA = Port<AVR::port::A>;
 using PortC = Port<AVR::port::C>;
 
 using RC = AVR::rc::RessourceController<
-	AVR::spi::Component<0,1>, AVR::spi::Component<0,1>>; //getting first instance here: spi0 and second alternative (portmux) here alt1
+	AVR::spi::Component<0,1>>; //getting first instance here: spi0 and second alternative (portmux) here alt1
 
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;

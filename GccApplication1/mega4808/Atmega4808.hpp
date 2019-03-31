@@ -65,19 +65,19 @@ namespace mega4808 {
 			using users = mega4808::details::users;
 		};
 
-		struct SPI : public AVR::rc::details::RCComponent<spis> {
+		struct SPI : public AVR::rc::details::RCComponent<spi_details::spis> {
 				
-			using TransferMode = mega4808::TransferMode;
-			using Prescaler = mega4808::Prescaler;
-			using Component_t = mega4808::spiComponent;
+			using TransferMode = mega4808::spi_details::TransferMode;
+			using Prescaler = mega4808::spi_details::Prescaler;
+			using Component_t = mega4808::spi_details::spiComponent;
 
 			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered,
 			bool waitForReceive, Prescaler prescaler>
 			requires(!(!buffered && waitForReceive))
 			struct SPIMasterSetting{
 
-				using AConf = spiComponent::CTRLAMasks;
-				using BConf = spiComponent::CTRLBMasks;
+				using AConf = spi_details::spiComponent::CTRLAMasks;
+				using BConf = spi_details::spiComponent::CTRLBMasks;
 				
 				static constexpr AConf Msb = msb ? static_cast<AConf>(0) : AConf::Dord;
 				static constexpr AConf clkx2 = clockDoubled ? AConf::Clk2x :  static_cast<AConf>(0);
@@ -92,8 +92,8 @@ namespace mega4808 {
 			requires(!(!buffered && waitForReceive))
 			struct SPISlaveSetting{
 
-				using AConf = spiComponent::CTRLAMasks;
-				using BConf = spiComponent::CTRLBMasks;
+				using AConf = spi_details::spiComponent::CTRLAMasks;
+				using BConf = spi_details::spiComponent::CTRLBMasks;
 				
 				static constexpr AConf Msb = msb ? static_cast<AConf>(0) : AConf::Dord;
 				static constexpr BConf tmode = static_cast<BConf>(transferMode);
