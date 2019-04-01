@@ -19,18 +19,18 @@ namespace utils {
 	
 	template<typename T1, typename T2>
 	struct tuple {
-	using t1 = T1;
-	using t2 = T2;	
+		using t1 = T1;
+		using t2 = T2;
 	};
 	
 
-struct false_type {
-	static constexpr bool value = false;
-};
+	struct false_type {
+		static constexpr bool value = false;
+	};
 
-struct true_type {
-	static constexpr bool value = true;
-};
+	struct true_type {
+		static constexpr bool value = true;
+	};
 
 	template<bool B, class T = void>
 	struct enable_if {};
@@ -46,6 +46,9 @@ struct true_type {
 
 	template<typename T, T X>
 	struct integralConstant;
+	
+	template<auto X>
+	struct autoConstant;
 
 	template<typename T, typename O>
 	struct isEqual;
@@ -89,28 +92,28 @@ struct true_type {
 
 		template<long long x>
 		struct	minRequired {
-			using min = 							
-				typename conditional<x <= SCHAR_MAX && x >= SCHAR_MIN , char,
-					typename conditional<x <= SHRT_MAX && x >= SHRT_MIN, short,
-						typename conditional<x <= INT_MAX && x >= INT_MIN, int,
-							typename conditional<x <= LONG_MAX && x >= LONG_MIN, long, long long
-							>::type
-						>::type
-					>::type
-				>::type;
+			using min =
+			typename conditional<x <= SCHAR_MAX && x >= SCHAR_MIN , char,
+			typename conditional<x <= SHRT_MAX && x >= SHRT_MIN, short,
+			typename conditional<x <= INT_MAX && x >= INT_MIN, int,
+			typename conditional<x <= LONG_MAX && x >= LONG_MIN, long, long long
+			>::type
+			>::type
+			>::type
+			>::type;
 		};
 
 		template<unsigned long long x>
 		struct	minRequiredUnsigned {
-			using min = 
-				typename conditional<x <= UCHAR_MAX, unsigned char,
-					typename conditional<x <= USHRT_MAX, unsigned short,
-						typename conditional<x <= UINT_MAX, unsigned int,
-							typename conditional<x <= ULONG_MAX, unsigned long, unsigned long long
-							>::type
-						>::type
-					>::type
-				>::type;
+			using min =
+			typename conditional<x <= UCHAR_MAX, unsigned char,
+			typename conditional<x <= USHRT_MAX, unsigned short,
+			typename conditional<x <= UINT_MAX, unsigned int,
+			typename conditional<x <= ULONG_MAX, unsigned long, unsigned long long
+			>::type
+			>::type
+			>::type
+			>::type;
 		};
 
 		template<typename T>
@@ -195,22 +198,22 @@ struct true_type {
 	struct list {
 		static constexpr auto size = sizeof...(T)+1;
 	};
-	 //to test if this change will cause bugs or other problems
+	//to test if this change will cause bugs or other problems
 	template<typename first, typename ...T>
 	struct list<first, T...> {
 		static constexpr auto size = sizeof...(T)+1;
 	};
 
-		template<typename... Pack>
-		struct front{
-			using type = void;	
-		};
-		
-		template<typename P,typename... Pack>
-		struct front<P,Pack...>{
-			using type = P;
-		};
-		
+	template<typename... Pack>
+	struct front{
+		using type = void;
+	};
+	
+	template<typename P,typename... Pack>
+	struct front<P,Pack...>{
+		using type = P;
+	};
+	
 
 	template<typename Push, typename L>
 	struct push_front {};
@@ -251,8 +254,8 @@ struct true_type {
 	struct getType<F,List<T,P...>>
 	{
 		static_assert(F >= 0, "no negative values allowed");
-		using type = 
-			typename getType<F, T, P...>::type;
+		using type =
+		typename getType<F, T, P...>::type;
 	};
 
 	//necessary for tl variant (ambiguous instantiation)
@@ -270,15 +273,15 @@ struct true_type {
 
 	template<typename first,typename ...T>
 	[[nodiscard]] constexpr bool sameTypes() noexcept {
-		if constexpr(sizeof...(T) == 0) 
-			return true;
+		if constexpr(sizeof...(T) == 0)
+		return true;
 		else {
 			if constexpr (!isEqual<first, typename front<T...>::type>::value)
-				return false;
+			return false;
 			else
-				return sameTypes<T...>();
+			return sameTypes<T...>();
 		}
-	
+		
 	}
 	
 	template<typename t1, typename t2, typename T, typename E>
@@ -287,45 +290,51 @@ struct true_type {
 	};
 	
 	template<class...> struct disjunction : false_type { };
-template<class B1> struct disjunction<B1> : B1 { };
-template<class B1, class... Bn>
-struct disjunction<B1, Bn...> 
-    : conditional<bool(B1::value), B1, disjunction<Bn...>>::type  { };
-			
-			template<typename T, typename... list>
-			struct contains {
-				static constexpr bool value = disjunction<isEqual<T,list>...>::value;
-			};
-			
+	template<class B1> struct disjunction<B1> : B1 { };
+	template<class B1, class... Bn>
+	struct disjunction<B1, Bn...>
+	: conditional<bool(B1::value), B1, disjunction<Bn...>>::type  { };
+	
+	template<typename T, typename... list>
+	struct contains {
+		static constexpr bool value = disjunction<isEqual<T,list>...>::value;
+	};
+	
 	template<typename T, auto val>
 	struct Pair {
 		static inline constexpr auto value = val;
 		using type = T;
 	};
 	
+	template<auto val>
+	struct autoConstant{
+		using type = decltype(val);
+		static constexpr auto value = val;
+	};
+	
 	/*
 	template<typename searched, typename first, typename ... pack>
 	struct contains {
-		static inline constexpr bool value = isEqual<searched,first>::value ? true : contains<searched,pack...>::value;
+	static inline constexpr bool value = isEqual<searched,first>::value ? true : contains<searched,pack...>::value;
 	};
 
 	//last in recursion
 	template<typename searched, typename first>
 	struct contains<searched,first> {
-		static inline constexpr bool value = isEqual<searched,first>::value;
+	static inline constexpr bool value = isEqual<searched,first>::value;
 	};*/
 
-#ifndef __AVR__
-    template<typename T>
-    [[nodiscard]] constexpr typename std::make_unsigned<T>::type getFirstSetBitPos(T n) noexcept {
-	    static_assert(std::numeric_limits<T>::is_integer);
-	    return std::log2(n&-n);
-    }
-    template<class T>
-    struct is_duration : std::false_type {};
+	#ifndef __AVR__
+	template<typename T>
+	[[nodiscard]] constexpr typename std::make_unsigned<T>::type getFirstSetBitPos(T n) noexcept {
+		static_assert(std::numeric_limits<T>::is_integer);
+		return std::log2(n&-n);
+	}
+	template<class T>
+	struct is_duration : std::false_type {};
 
-    template<class Rep, class Period>
-    struct is_duration<std::chrono::duration<Rep, Period>> : std::true_type {};
+	template<class Rep, class Period>
+	struct is_duration<std::chrono::duration<Rep, Period>> : std::true_type {};
 
 	template<class T>
 	struct is_hertz : std::false_type {};
@@ -333,11 +342,11 @@ struct disjunction<B1, Bn...>
 	template<class Rep, class Period>
 	struct is_hertz<CustomDataTypes::Frequency::Hertz<Rep,Period>> : std::true_type {};
 
-    template<class T>
-    struct is_volt : std::false_type {};
+	template<class T>
+	struct is_volt : std::false_type {};
 
-    template<class Rep, class Period>
-    struct is_volt<CustomDataTypes::Electricity::Volt<Rep, Period>> : std::true_type {};
+	template<class Rep, class Period>
+	struct is_volt<CustomDataTypes::Electricity::Volt<Rep, Period>> : std::true_type {};
 
 
 	template<typename T>
@@ -355,14 +364,14 @@ struct disjunction<B1, Bn...>
 		using period = std::ratio<Nom,Denom>;
 	};
 
-    template <typename T, typename U>
-    struct is_template_same : std::false_type {};
+	template <typename T, typename U>
+	struct is_template_same : std::false_type {};
 
-    template <template<typename, typename> typename T, typename Rep, typename Period, typename oRep, typename oPeriod>
-    struct is_template_same<T<Rep, Period>, T<oRep, oPeriod>> : std::true_type {};
+	template <template<typename, typename> typename T, typename Rep, typename Period, typename oRep, typename oPeriod>
+	struct is_template_same<T<Rep, Period>, T<oRep, oPeriod>> : std::true_type {};
 
-    template <typename T, typename U>
-    constexpr bool is_template_same_v = is_template_same<T, U>::value;
+	template <typename T, typename U>
+	constexpr bool is_template_same_v = is_template_same<T, U>::value;
 
 	template<typename T>
 	struct periodic_printable;
@@ -377,94 +386,94 @@ struct disjunction<B1, Bn...>
 		static constexpr std::string_view name = "s";
 	};
 
-    template< class T >
-    struct remove_cvref {
-        typedef std::remove_cv_t<std::remove_reference_t<T>> type;
-    };
+	template< class T >
+	struct remove_cvref {
+		typedef std::remove_cv_t<std::remove_reference_t<T>> type;
+	};
 
 	[[nodiscard]] constexpr auto approximately_same(long a, long b) noexcept
-    {
-        return a == b;
-    }
+	{
+		return a == b;
+	}
 
-    template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+	template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 	[[nodiscard]] constexpr bool approximately_same(T a, T b) noexcept
 	{
-        return std::fabs(a - b) <= 1E-13;
+		return std::fabs(a - b) <= 1E-13;
 	}
 
 	template<template <typename, typename> typename T, typename Rep, typename U, typename V>
 	[[nodiscard]] constexpr auto approximately_same(T<Rep, U> a, T<Rep, V> b) noexcept {
-            if(std::ratio_less_v<U, V>) {
-                auto tmp_b = static_cast<T<Rep, U>>(b);
-                return approximately_same(a.count(), tmp_b.count());
-            } else {
-                auto tmp_a = static_cast<T<Rep, V>>(a);
-                return approximately_same(tmp_a.count(), b.count());
-            }
-    }
+		if(std::ratio_less_v<U, V>) {
+			auto tmp_b = static_cast<T<Rep, U>>(b);
+			return approximately_same(a.count(), tmp_b.count());
+			} else {
+			auto tmp_a = static_cast<T<Rep, V>>(a);
+			return approximately_same(tmp_a.count(), b.count());
+		}
+	}
 
-    template<template <typename> typename T, typename Rep>
+	template<template <typename> typename T, typename Rep>
 	[[nodiscard]] constexpr auto approximately_same(T<Rep> a, T<Rep> b) {
-        return a == b;
-    }
+		return a == b;
+	}
 
-    template<typename Rep, typename U, typename V>
+	template<typename Rep, typename U, typename V>
 	[[nodiscard]] constexpr auto approximately_same(std::chrono::duration<Rep, U> a, std::chrono::duration<Rep, V> b) noexcept {
-        if(std::ratio_less_v<U, V>) {
-            auto tmp_b = std::chrono::duration_cast<std::chrono::duration<Rep, U>>(b);
-            return approximately_same(a.count(), tmp_b.count());
-        } else {
-            auto tmp_a = std::chrono::duration_cast<std::chrono::duration<Rep, V>>(a);
-            return approximately_same(tmp_a.count(), b.count());
-        }
-    }
+		if(std::ratio_less_v<U, V>) {
+			auto tmp_b = std::chrono::duration_cast<std::chrono::duration<Rep, U>>(b);
+			return approximately_same(a.count(), tmp_b.count());
+			} else {
+			auto tmp_a = std::chrono::duration_cast<std::chrono::duration<Rep, V>>(a);
+			return approximately_same(tmp_a.count(), b.count());
+		}
+	}
 
-    template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+	template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 	[[nodiscard]] constexpr auto approximately_greater_or_equal(T a, T b) noexcept
-    {
-        return (a > b || approximately_same(a, b));
-    }
+	{
+		return (a > b || approximately_same(a, b));
+	}
 
-    template<typename Rep>
+	template<typename Rep>
 	[[nodiscard]] constexpr auto approximately_greater_or_equal(CustomDataTypes::Percentage<Rep> a, CustomDataTypes::Percentage<Rep>  b) noexcept
-    {
-        return (a.getPercent() > b.getPercent() || approximately_same(a, b));
-    }
+	{
+		return (a.getPercent() > b.getPercent() || approximately_same(a, b));
+	}
 
-    template<template <typename, typename> typename T, typename Rep, typename U, typename V>
+	template<template <typename, typename> typename T, typename Rep, typename U, typename V>
 	[[nodiscard]] constexpr auto approximately_greater_or_equal(T<Rep, U> a, T<Rep, V> b) noexcept
-    {
-        return (a > b || approximately_same(a, b));
-    }
+	{
+		return (a > b || approximately_same(a, b));
+	}
 
-    template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+	template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 	[[nodiscard]] constexpr auto approximately_less_or_equal(T a, T b) noexcept
-    {
-        return (a < b || approximately_same(a, b));
-    }
+	{
+		return (a < b || approximately_same(a, b));
+	}
 
-    template<template <typename, typename> typename T, typename Rep, typename U, typename V>
+	template<template <typename, typename> typename T, typename Rep, typename U, typename V>
 	[[nodiscard]] constexpr auto approximately_less_or_equal(T<Rep, U> a, T<Rep, V> b) noexcept
-    {
-        return (a < b || approximately_same(a, b));
-    }
+	{
+		return (a < b || approximately_same(a, b));
+	}
 
-    template<typename Rep>
-    [[nodiscard]] constexpr auto approximately_less_or_equal(CustomDataTypes::Percentage<Rep> a, CustomDataTypes::Percentage<Rep>  b) noexcept
-    {
-        return (a.getPercent() < b.getPercent() || approximately_same(a, b));
-    }
+	template<typename Rep>
+	[[nodiscard]] constexpr auto approximately_less_or_equal(CustomDataTypes::Percentage<Rep> a, CustomDataTypes::Percentage<Rep>  b) noexcept
+	{
+		return (a.getPercent() < b.getPercent() || approximately_same(a, b));
+	}
 
 	namespace printable {
-	    template<typename Rep, typename p>
-        std::ostream& operator<< (std::ostream& stream, const std::chrono::duration<Rep, p>& duration) {
-            using duration_type =  std::chrono::duration<Rep, p>;
-            stream << duration.count()
-                   << utils::ratio_lookup<typename utils::periodic_info<duration_type>::period>::abr_value
-                   << utils::periodic_printable<duration_type>::name;
-            return stream;
-        }
+		template<typename Rep, typename p>
+		std::ostream& operator<< (std::ostream& stream, const std::chrono::duration<Rep, p>& duration) {
+			using duration_type =  std::chrono::duration<Rep, p>;
+			stream << duration.count()
+			<< utils::ratio_lookup<typename utils::periodic_info<duration_type>::period>::abr_value
+			<< utils::periodic_printable<duration_type>::name;
+			return stream;
+		}
 	}
 	
 	#endif

@@ -36,14 +36,16 @@ using namespace AVR::port;
 
 using PortA = Port<AVR::port::A>;
 using PortC = Port<AVR::port::C>;
+using spiRessource = AVR::rc::Instance<AVR::spi::SPI_Comp<>,AVR::rc::Number<0>,AVR::portmux::PortMux<0>>;
+//using spiRessource1 = AVR::rc::Instance<AVR::spi::SPI_Comp<>,AVR::rc::Number<0>,AVR::portmux::PortMux<1>>; cannot happen -> multiple usage of a single instance
 
-using RC = AVR::rc::RessourceController<
-	AVR::spi::Component<0,1>>; //getting first instance here: spi0 and second alternative (portmux) here alt1
+using RC = AVR::rc::RessourceController<spiRessource>; 
 
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
 using ch0 = AVR::eventsystem::Channel<0>;
-using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking,RC::getRessource<0>::inst,RC::getRessource<0>::alt>;
+using rrl = RC::getRessource<spiRessource>::ressource;
+using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking,rrl>;
 using twi = AVR::twi::TWIMaster<>;
 
 static constexpr auto funcref = []() {return spi::receive(); };

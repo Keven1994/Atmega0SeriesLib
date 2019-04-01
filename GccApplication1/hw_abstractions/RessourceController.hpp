@@ -9,6 +9,7 @@
 #pragma once
 #include "../tools/meta.h"
 #include "../tools/utils.h"
+#include "PortMux.hpp"
 
 namespace AVR {
 	
@@ -18,8 +19,8 @@ namespace AVR {
 			
 			template<typename Alias>
 			struct resolveComponent {
-				using alt = typename Alias::super::template comps<Alias>::alt;
 				using inst = typename Alias::super::template comps<Alias>::inst;
+				using alt = typename Alias::super::template comps<Alias>::alt;
 			};
 			
 			template<typename Comp, auto instance, auto alternative>
@@ -35,8 +36,8 @@ namespace AVR {
 				friend struct AVR::rc::details::resolveComponent;
 				template<typename Alias>
 				struct comps{
-					using alt  =typename  comstr::template inst<Alias::Instance>::template alt<Alias::Alternative>;
 					using inst  =typename  comstr::template inst<Alias::Instance>;
+					using alt  =typename  inst::template alt<Alias::Alternative>;
 				};
 				
 			};
@@ -50,16 +51,16 @@ namespace AVR {
 			template<typename Alias>
 			using resolveInst = typename details::resolveComponent<Alias>::inst;
 			
-			template<auto N, typename First, typename... pins>
+			template<typename N, typename First, typename... pins>
 			struct getRessourceHelp {
-				using alt = typename utils::conditional<N == 0, resolveAlt<First>, typename getRessourceHelp<N-1, pins...>::alt>::type;
-				using inst = typename utils::conditional<N == 0,resolveInst<First>, typename getRessourceHelp<N-1, pins...>::inst>::type;
+				using alt = typename utils::conditional<utils::isEqual<N,First>::value, resolveAlt<First>, typename getRessourceHelp<N, pins...>::alt>::type;
+				using inst = typename utils::conditional<utils::isEqual<N,First>::value,resolveInst<First>, typename getRessourceHelp<N, pins...>::inst>::type;
 			};
 			
-			template<auto N, typename First>
+			template<typename N, typename First>
 			struct getRessourceHelp<N,First> {
-				using alt = typename utils::conditional<N == 0, resolveAlt<First>, void>::type;
-				using inst = typename utils::conditional<N == 0, resolveInst<First>, void>::type;
+				using alt = typename utils::conditional<utils::isEqual<N,First>::value, resolveAlt<First>, void>::type;
+				using inst = typename utils::conditional<utils::isEqual<N,First>::value, resolveInst<First>, void>::type;
 			};
 
 			template<auto N ,typename _first,typename _second, typename... pins>
@@ -104,14 +105,18 @@ namespace AVR {
 			static_assert(checkInstance<FIRST,PINS...>(), "only multiple alternatives from one instance");
 			public:
 			
-			template<auto N>
+			template<typename N>
 			struct getRessource {
-				static_assert(N >= 0, "invalid number, only positives allowed");
-				using alt = typename getRessourceHelp<N, FIRST, PINS...>::alt;
-				using inst = typename getRessourceHelp<N, FIRST, PINS...>::inst;
+				using ressource = utils::tuple<typename getRessourceHelp<N, FIRST, PINS...>::inst,typename getRessourceHelp<N, FIRST, PINS...>::alt>;
 			};
 
 		};
+		
+		template<auto N>
+		using Number = utils::autoConstant<N>;
+		
+		template<typename Comp, typename instance, typename  alternative>
+		using Instance = details::Component<Comp,instance::value,alternative::value>;
 		
 		template<typename FIRST,typename... PINS>
 		using RessourceController = ResController<DEFAULT_MCU,FIRST,PINS...>;
