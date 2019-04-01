@@ -162,7 +162,7 @@ namespace AVR {
 		using Component = AVR::rc::details::Component<typename mcu::SPI,utils::autoConstant<0>::value, utils::autoConstant<0>::value>;
 		
 		using defRC = rc::RessourceController<Component<>>;
-		using defInst = typename defRC::getRessource<Component<>>::ressource;
+		using defInst = typename defRC::getRessource<Component<>>::type;
 
 		template<typename accesstype = blocking,typename instance = defInst,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode<> tmode = TransferMode<>::Mode0,
 		bool buffered = false,bool waitForReceive = false, Prescaler<> prescaler = Prescaler<>::Div4, typename bit_width = mem_width>

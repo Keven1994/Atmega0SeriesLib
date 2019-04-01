@@ -107,9 +107,11 @@ namespace AVR {
 			
 			template<typename N>
 			struct getRessource {
-				using ressource = utils::tuple<typename getRessourceHelp<N, FIRST, PINS...>::inst,typename getRessourceHelp<N, FIRST, PINS...>::alt>;
+				using type = utils::tuple<typename getRessourceHelp<N, FIRST, PINS...>::inst,typename getRessourceHelp<N, FIRST, PINS...>::alt>;
 			};
 
+			template<typename N>
+			using getRessource_t = typename getRessource<N>::type;
 		};
 		
 		template<auto N>
