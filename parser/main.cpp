@@ -202,10 +202,11 @@ int main(int argc, const char **argv) {
 
         for (auto node1 : peripherals) {
             if (node1.node().attribute("name").as_string() == modName) {
+                int instNum = 0;
                 for (auto node2 : node1.node().children()) {
                     std::string instName = node2.attribute("name").as_string();
                     if (modName != "PORT" || utils::contains(ports_available, std::string() + instName[4])) {
-                        mbuilder.addInstance(instName + "");
+                        mbuilder.addInstance(instName,std::to_string(instNum));
 
                         std::vector<utils::triple<>> tmp;
                         for (auto node3 :node2.child("signals").children()) {
@@ -220,7 +221,7 @@ int main(int argc, const char **argv) {
 
                         }
                         if (!tmp.empty())
-                            mbuilder.addSignal(tmp, std::move(instName));
+                            mbuilder.addSignal(tmp, std::move(instName),instNum++);
                     }
                 }
 

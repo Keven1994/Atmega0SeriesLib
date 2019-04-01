@@ -20,8 +20,12 @@ namespace utils {
 
     template<typename T1 = std::string, typename T2 = std::string>
     struct tuple {
+        tuple() = default;
+
         T1 str1;
         T2 str2;
+        tuple(T1&& t1,T2&& t2) : str1(t1), str2(t2) {}
+        tuple(const T1& t1,const T2& t2) : str1(t1), str2(t2) {}
     };
 
     template<typename T1 = std::string, typename T2 = std::string, typename T3 = std::string>
@@ -271,7 +275,11 @@ namespace details {
             addEntry((prefix + type + " " + name), value);
         }
 
-        void addMember(generatable &gen) noexcept {
+        virtual void addTypeAlias(std::string&& name, std::string&& type){
+            addEntry("using "+name,type);
+        }
+
+        virtual void addMember(generatable &gen) noexcept {
             if (!mentrys.empty())
                 mentrys += "\n";
             auto tmp = "    " + gen.generate();
@@ -308,6 +316,40 @@ namespace details {
             return tmp;
         }
     };
+
+    class Declaraction : public generatable {
+        std::string str = "template<";
+
+    public:
+        Declaraction(std::string&& name, std::string&& paramtype, std::string&& paramname, std::string&& dummyname, std::string paramVal = ""){
+            str += paramtype;
+            str += " " +paramname;
+            str += " " +paramVal +",bool " + dummyname + " = true>\nstruct ";
+            str += name;
+            str += ";";
+        }
+
+        [[nodiscard]] std::string generate() noexcept override {
+            return str;
+        }
+    };
+
+    class TemplateStruct : public Struct {
+        std::string templatePraefix = "template<bool ";
+        std::string special ="<";
+    public:
+        TemplateStruct(std::string&& name, std::string paramVal, std::string&& dummyname) : Struct(std::move(name)) {
+            special += paramVal + ", " + dummyname + ">\n";
+            templatePraefix+= dummyname +">\n";
+        }
+
+        [[nodiscard]] std::string generate() noexcept override {
+            std::string tmp = templatePraefix+"struct " + Struct::name()+ special  + " {\n";
+            tmp += Struct::entrys();
+            tmp += "\n};";
+            return tmp;
+        }
+    };
 }
 
 
@@ -320,9 +362,16 @@ class MCUStructureBuilder {
     details::Struct compStruct, regs;
     details::Namespace nameSpace;
     std::vector<details::Enum> enums;
-    std::vector<details::Struct> instances;
+    std::vector<details::TemplateStruct> instances;
 
     [[nodiscard]] int find(const std::vector<details::Struct>& container, std::string str){
+        for(int i = 0; static_cast<unsigned long long>(i) < container.size(); i++){
+            if(utils::toLowerCase(container[i].name()) == utils::toLowerCase(str)) return i;
+        }
+        return -1;
+    }
+
+    [[nodiscard]] int find(const std::vector<details::TemplateStruct>& container, std::string str){
         for(int i = 0; static_cast<unsigned long long>(i) < container.size(); i++){
             if(utils::toLowerCase(container[i].name()) == utils::toLowerCase(str)) return i;
         }
@@ -363,9 +412,11 @@ public:
         regs.addMember(tmp);
     }
 
-    void addInstance(std::string &&name) {
-        f.changeContent("return "+name+";");
-        auto tmp = details::Struct(utils::toLowerCase(name));
+    void addInstance(std::string& mname,std::string &&number) {
+        f.changeContent("return "+mname+";");
+        auto tmp = details::TemplateStruct("inst",number, "dummy");
+        auto decl = details::Declaraction("alt","auto","N","dummy1");
+        tmp.addMember(decl);
         tmp.addMember(f);
         instances.push_back(tmp);
     }
@@ -379,7 +430,8 @@ public:
         enums.back().addEntry(name, value);
     }
 
-    void addSignal(std::vector<utils::triple<>>& fgps, std::string&& modName) noexcept {
+    void addSignal(std::vector<utils::triple<>>& fgps, std::string&& modName, int inst) noexcept {
+
         if(utils::contains(modName,"PORT")) {
             aliasGenerate = true;
         }
@@ -405,60 +457,70 @@ public:
 
         auto funcctr = countDistinct(fgps);
         if(funcctr == 1){ //special case when there is only 1 function (e.g. ports)
-            std::vector<details::Struct> toAdd{};
+            std::vector<details::TemplateStruct> toAdd{};
+            auto ctr = 0;
+            std::string typestr = "Meta::List<";
             for(auto& elem : groups){
-                details::Struct temp = details::Struct(utils::toCamelCase(elem.str1));
+                details::TemplateStruct temp = details::TemplateStruct("alt",std::to_string(ctr++), "dummy1");
                 auto i = 0;
                 for(auto& ele : elem.str2){
+                    typestr += (i == 0 ? "" : ", ");
+                    //typestr += elem.str1+"::";
+                    typestr += "pin"+std::to_string(i);
                     auto tmp = details::TypePin(std::string{ele[1]}, std::string{ele[2]}, std::to_string(i++));
                     temp.addMember(tmp);
                 }
                 toAdd.push_back(temp);
             }
+            typestr+=">";
             for(auto& elem: toAdd){
-                auto i = find(instances,modName);
-                if(i >= 0) {
-                    instances[i].addMember(elem);
-                }
+                elem.addTypeAlias("list",typestr+"");
+                instances[inst].addMember(elem);
             }
         } else if(funcctr > 1){
 
             std::vector<std::string> processed;
             std::vector<std::string> temp{};
-            std::vector<details::Struct> funcs{};
+            std::vector<utils::tuple<  details::TemplateStruct, std::string>> funcs{};
             for (auto &ele : fgps) {
                 const auto &search = ele.str1;
                 if (!utils::contains(processed, search)) {
                     processed.push_back(search);
-                    funcs.emplace_back(utils::toCamelCase(search+""));
+                    funcs.emplace_back(details::TemplateStruct("alt",std::to_string(--funcctr), "dummy1"),search);
                 }
             }
-
             std::vector<details::Struct> toAdd{};
             for(auto& elem : funcs){
-
+                std::string typestr = "Meta::List<typename ";
+                bool first = true;
                 for(auto& ele : groups){
                     details::Struct group = details::Struct(utils::toCamelCase(ele.str1));
                     bool filled = false;
                     auto i = 0;
                     for(auto& el : ele.str2) {
-                        if (sameRow13(fgps, elem.name(), el)) {
+                        if (sameRow13(fgps, elem.str2, el)) {
+                            typestr += (first ? "" : ", typename ");
+                            first = false;
+                            typestr += group.name()+"::";
+                            typestr += "pin"+std::to_string(i);
                             auto tmp = details::TypePin(std::string{el[1]}, std::string{el[2]}, std::to_string(i++));
                             group.addMember(tmp);
                             filled = true;
                         }
                     }
                     if(filled)
-                    elem.addMember(group);
+                        elem.str1.addMember(group);
                 }
-                toAdd.push_back(elem);
+                typestr += ">";
+                elem.str1.addTypeAlias("list",typestr+"");
+                toAdd.push_back(elem.str1);
             }
 
             for(auto& func : funcs) {
-                auto i = find(instances,modName);
-                if(i >= 0) {
-                    instances[i].addMember(func);
-                }
+                //auto i = find(instances,modName);
+                //if(i >= 0) {
+                    instances[inst].addMember(func.str1);
+                //}
             }
 
         } else std::cerr << "no function found, sth went wrong\n";
@@ -470,16 +532,20 @@ public:
             compStruct.addMember(elem);
         }
         compStruct.addMember(regs);
-        nameSpace.addMember(compStruct);
+        details::Namespace ns{utils::toLowerCase(compname)+"_details"};
+ns.addMember(compStruct);
         if(aliasGenerate){
             auto alias = details::portAlias{};
-            nameSpace.addMember(alias);
+            ns.addMember(alias);
         }
         auto ins = details::Struct(utils::toLowerCase(compname)+"s");
+        auto inst_decl = details::Declaraction("inst","auto","N", "dummy");
+        ins.addMember(inst_decl);
         for (auto &elem : instances) {
             ins.addMember(elem);
         }
-        nameSpace.addMember(ins);
+        ns.addMember(ins);
+        nameSpace.addMember(ns);
         tmp += nameSpace.generate();
 
         std::string outName = utils::toHigherCase(path)+ deviceName + compname + ".hpp";
