@@ -197,7 +197,7 @@ namespace details {
 #pragma GCC diagnostic pop
         //using pin ## number = AVR::port::details::PortPin<P,number>
         [[nodiscard]] std::string generate() noexcept override {
-            std::string tmp = "using pin" + count + " = AVR::port::details::PortPin<port<ports::port"+utils::toLowerCase(port)+">,"+number+">;";
+            std::string tmp = "using pin" + count + " = AVR::port::details::PortPin<port_details::port<port_details::ports::port"+utils::toLowerCase(port)+">,"+number+">;";
             return tmp;
         }
 
@@ -362,7 +362,8 @@ class MCUStructureBuilder {
     details::Struct compStruct, regs;
     details::Namespace nameSpace;
     std::vector<details::Enum> enums;
-    std::vector<details::TemplateStruct> instances;
+    std::vector<details::Struct*> instances;
+    bool multifunction = false;
 
     [[nodiscard]] int find(const std::vector<details::Struct>& container, std::string str){
         for(int i = 0; static_cast<unsigned long long>(i) < container.size(); i++){
@@ -413,11 +414,20 @@ public:
     }
 
     void addInstance(std::string& mname,std::string &&number) {
+
         f.changeContent("return "+mname+";");
-        auto tmp = details::TemplateStruct("inst",number, "dummy");
+        details::Struct* tmp = new details::TemplateStruct("inst",number, "dummy");
         auto decl = details::Declaraction("alt","auto","N","dummy1");
-        tmp.addMember(decl);
-        tmp.addMember(f);
+        tmp->addMember(decl);
+        tmp->addMember(f);
+        instances.push_back(tmp);
+    }
+
+    void addInstance(std::string& name) {
+
+        f.changeContent("return "+name+";");
+        details::Struct* tmp = new details::Struct(utils::toLowerCase(name));
+        tmp->addMember(f);
         instances.push_back(tmp);
     }
 
@@ -457,11 +467,13 @@ public:
 
         auto funcctr = countDistinct(fgps);
         if(funcctr == 1){ //special case when there is only 1 function (e.g. ports)
-            std::vector<details::TemplateStruct> toAdd{};
-            auto ctr = 0;
+            auto tmpstr = modName;
+            addInstance(tmpstr);
+            std::vector<details::Struct> toAdd{};
+
             std::string typestr = "Meta::List<";
             for(auto& elem : groups){
-                details::TemplateStruct temp = details::TemplateStruct("alt",std::to_string(ctr++), "dummy1");
+                details::Struct temp = details::Struct("Pin");
                 auto i = 0;
                 for(auto& ele : elem.str2){
                     typestr += (i == 0 ? "" : ", ");
@@ -475,10 +487,12 @@ public:
             typestr+=">";
             for(auto& elem: toAdd){
                 elem.addTypeAlias("list",typestr+"");
-                instances[inst].addMember(elem);
+                instances[inst]->addMember(elem);
             }
         } else if(funcctr > 1){
-
+            multifunction = true;
+            auto tmpstr = modName;
+            addInstance(tmpstr,std::to_string(inst));
             std::vector<std::string> processed;
             std::vector<std::string> temp{};
             std::vector<utils::tuple<  details::TemplateStruct, std::string>> funcs{};
@@ -519,7 +533,7 @@ public:
             for(auto& func : funcs) {
                 //auto i = find(instances,modName);
                 //if(i >= 0) {
-                    instances[inst].addMember(func.str1);
+                    instances[inst]->addMember(func.str1);
                 //}
             }
 
@@ -539,11 +553,14 @@ ns.addMember(compStruct);
             ns.addMember(alias);
         }
         auto ins = details::Struct(utils::toLowerCase(compname)+"s");
-        auto inst_decl = details::Declaraction("inst","auto","N", "dummy");
-        ins.addMember(inst_decl);
-        for (auto &elem : instances) {
-            ins.addMember(elem);
+        if(multifunction) {
+            auto inst_decl = details::Declaraction("inst", "auto", "N", "dummy");
+            ins.addMember(inst_decl);
         }
+        for (details::Struct* elem : instances) {
+            ins.addMember(*elem);
+        }
+
         ns.addMember(ins);
         nameSpace.addMember(ns);
         tmp += nameSpace.generate();

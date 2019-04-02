@@ -35,20 +35,19 @@ namespace mega4808 {
 		friend class AVR::rc::ResController;
 		
 		public:
-		
+		 
 		static constexpr auto clockFrequenzy = frequenzy::value;
 		
 		NoConstructors(Atmega4808);
 		
-		using port_registers = typename mega4808::portComponent::registers;
 		
 		template<typename p>
 		struct Ports {
 
-			using portX = typename utils::condEqual<AVR::port::A,p, port<ports::porta>,
-			typename utils::condEqual<AVR::port::C,p, port<ports::portc>,
-			typename utils::condEqual<AVR::port::D,p, port<ports::portd>,
-			typename utils::condEqual<AVR::port::F,p, port<ports::portf>,void
+			using portX = typename utils::condEqual<AVR::port::A,p, port_details::port<port_details::ports::porta>,
+			typename utils::condEqual<AVR::port::C,p, port_details::port<port_details::ports::portc>,
+			typename utils::condEqual<AVR::port::D,p, port_details::port<port_details::ports::portd>,
+			typename utils::condEqual<AVR::port::F,p, port_details::port<port_details::ports::portf>,void
 			>::type
 			>::type
 			>::type
