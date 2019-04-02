@@ -7,7 +7,7 @@
 */
 
 #pragma once
-
+#include <avr/io.h>
 //type informations for the templates in the hw includes
 using mem_width = uint8_t;
 using ptr_t = uintptr_t;
@@ -109,7 +109,6 @@ namespace mega4808 {
 			using SDAHold = twi_details::SDAHold;
 			using SDASetup = twi_details::SDASetup;
 			using MasterTimeout = twi_details::MasterTimeout;
-			using Components = twi_details::twis;
 			using Component = twi_details::twiComponent;
 
 			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut, mem_width baudRate>
