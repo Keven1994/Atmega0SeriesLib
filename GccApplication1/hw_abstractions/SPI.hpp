@@ -150,25 +150,32 @@ namespace AVR {
 		}
 
 		template<typename mcu = DEFAULT_MCU>
-		using TransferMode =  typename mcu::SPI::TransferMode;
+		using Basic_TransferMode =  typename mcu::SPI::TransferMode;
+		using TransferMode = Basic_TransferMode<>;
 		
 		template<typename mcu = DEFAULT_MCU>
-		using Prescaler = typename mcu::SPI::Prescaler;
+		using Basic_Prescaler = typename mcu::SPI::Prescaler;
+		using Prescaler = Basic_Prescaler<>;
 		
 		template<typename mcu = DEFAULT_MCU>
-		using SPI_Comp = typename mcu::SPI;
+		using Basic_SPI_Comp = typename mcu::SPI;
+		using SPI_Comp = Basic_SPI_Comp<>;
 		
-		template<typename mcu = DEFAULT_MCU>
-		using Component = AVR::rc::details::Component<typename mcu::SPI,utils::autoConstant<0>::value, utils::autoConstant<0>::value>;
-		
-		using defRC = rc::RessourceController<Component<>>;
-		using defInst = typename defRC::getRessource<Component<>>::type;
+		namespace details{
+			using defComponent = AVR::rc::Instance<
+			SPI_Comp, // using ressource SPI
+			AVR::rc::Number<0>, //using instance '0'
+			AVR::portmux::PortMux<0>>; // using portmux 0 alternative
+			
+			using defRC = rc::RessourceController<defComponent>;
+			using defInst = typename defRC::getRessource<defComponent>::type;
+		}
 
-		template<typename accesstype = blocking,typename instance = defInst,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode<> tmode = TransferMode<>::Mode0,
-		bool buffered = false,bool waitForReceive = false, Prescaler<> prescaler = Prescaler<>::Div4, typename bit_width = mem_width>
-		using SPIMaster = AVR::spi::details::SPIMaster<accesstype,typename DEFAULT_MCU::SPI::Component_t,typename instance::t1, typename instance::t2, typename DEFAULT_MCU::SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
+		template<typename accesstype = blocking,typename instance = details::defInst,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
+		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, typename bit_width = mem_width>
+		using SPIMaster = AVR::spi::details::SPIMaster<accesstype, SPI_Comp::Component_t,typename instance::t1, typename instance::t2, SPI_Comp::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
 		
-		template<typename accesstype = blocking,typename instance = defInst, bool msb = true, TransferMode<> tmode = TransferMode<>::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
+		template<typename accesstype = blocking,typename instance = details::defInst, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
 		using SPISlave = AVR::spi::details::SPISlave<accesstype,typename DEFAULT_MCU::SPI::Component_t,typename instance::t1, typename instance::t2,typename DEFAULT_MCU::SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
 
 	}

@@ -36,13 +36,14 @@ using namespace AVR::port;
 
 using PortA = Port<AVR::port::A>;
 using PortC = Port<AVR::port::C>;
+
 using spiRessource = AVR::rc::Instance<
-AVR::spi::SPI_Comp<>, // using ressource SPI
+AVR::spi::SPI_Comp, // using ressource SPI
 AVR::rc::Number<0>, //using instance '0'
 AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 using twiRessource = AVR::rc::Instance<
-AVR::twi::TWI_Comp<>, // using ressource SPI
+AVR::twi::TWI_Comp, // using ressource SPI
 AVR::rc::Number<0>, //using instance '0'
 AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
