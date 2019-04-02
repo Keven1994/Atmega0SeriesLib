@@ -102,22 +102,22 @@ namespace mega4808 {
 			};
 		};
 		
-		struct TWI {
+		struct TWI : public AVR::rc::details::RCComponent<twi_details::twis>  {
 			
 			template<typename Alias>
 			friend struct resolveComponent;
 			
-			using SDAHold = mega4808::SDAHold;
-			using SDASetup = mega4808::SDASetup;
-			using MasterTimeout = mega4808::MasterTimeout;
-			using Components = mega4808::twis;
-			using Component = mega4808::twiComponent;
+			using SDAHold = twi_details::SDAHold;
+			using SDASetup = twi_details::SDASetup;
+			using MasterTimeout = twi_details::MasterTimeout;
+			using Components = twi_details::twis;
+			using Component = twi_details::twiComponent;
 
 			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut, mem_width baudRate>
 			struct TWIMasterSetting{
 
-				using AConf = twiComponent::CTRLAMasks;
-				using MAConf = twiComponent::MCTRLAMasks;
+				using AConf = twi_details::twiComponent::CTRLAMasks;
+				using MAConf = twi_details::twiComponent::MCTRLAMasks;
 				
 				static constexpr AConf fastmode = fastModePlus ? AConf::Fmpen : static_cast<AConf>(0);
 				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
@@ -131,9 +131,9 @@ namespace mega4808 {
 			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup>
 			struct TWISlaveSetting{
 
-				using AConf = twiComponent::CTRLAMasks;
-				using SAConf = twiComponent::SCTRLAMasks;
-				using SBConf = twiComponent::SCTRLBMasks;
+				using AConf = twi_details::twiComponent::CTRLAMasks;
+				using SAConf = twi_details::twiComponent::SCTRLAMasks;
+				using SBConf = twi_details::twiComponent::SCTRLBMasks;
 				
 				static constexpr AConf fastmode = fastModePlus ? AConf::Fmpen : static_cast<AConf>(0);
 				static constexpr AConf holdtime = static_cast<AConf>(holdTime);

@@ -37,21 +37,28 @@ using namespace AVR::port;
 using PortA = Port<AVR::port::A>;
 using PortC = Port<AVR::port::C>;
 using spiRessource = AVR::rc::Instance<
-	AVR::spi::SPI_Comp<>, // using ressource SPI
-	AVR::rc::Number<0>, //using instance '0'
-	AVR::portmux::PortMux<0>>; // using portmux 0 alternative
+AVR::spi::SPI_Comp<>, // using ressource SPI
+AVR::rc::Number<0>, //using instance '0'
+AVR::portmux::PortMux<0>>; // using portmux 0 alternative
+
+using twiRessource = AVR::rc::Instance<
+AVR::twi::TWI_Comp<>, // using ressource SPI
+AVR::rc::Number<0>, //using instance '0'
+AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 
-using RC = AVR::rc::RessourceController<spiRessource>; //acquire ressource
+using RC = AVR::rc::RessourceController<spiRessource,twiRessource>; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
+using twires = RC::getRessource_t<twiRessource>;
 using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking,res>; // put spi ressource in
+using twi = AVR::twi::TWIMaster<AVR::twi::notBlocking,twires>;
 
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
 using ch0 = AVR::eventsystem::Channel<0>;
 
 
-using twi = AVR::twi::TWIMaster<>;
+
 
 static constexpr auto funcref = []() {return spi::receive(); };
 
@@ -66,7 +73,7 @@ static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction:
 
 int main() {
 	twi::init();
-
+	spi::init();
 		while(true){
 			auto err = twi::doIfAnySet<lam>(twi::status_bits::Busstate_idle , twi::status_bits::Busstate_owner);
 

@@ -8,6 +8,7 @@
 #pragma once
 #include "Port.hpp"
 #include "../MCUSelect.hpp"
+#include "RessourceController.hpp"
 #include <util/twi.h>
 
 namespace AVR {
@@ -193,14 +194,23 @@ namespace AVR {
 		using SDAHold =  typename DEFAULT_MCU::TWI::SDAHold;
 		using SDASetup = typename DEFAULT_MCU::TWI::SDASetup;
 		using MasterTimeout = typename DEFAULT_MCU::TWI::MasterTimeout;
-		using Twis = typename DEFAULT_MCU::TWI::Components;
-
-		template<typename accesstype = blocking,typename instance = Twis::twi0, typename alternative = typename instance::I2c, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,
-		bool quickCommand = true, bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
-		using TWIMaster = AVR::twi::details::TWIMaster<accesstype,typename DEFAULT_MCU::TWI::Component,instance,alternative, typename DEFAULT_MCU::TWI::template TWIMasterSetting<fastModePlus,holdTime,sdaSetup,quickCommand,smartMode,timeOut,21>, bit_width>;
 		
-		template<typename accesstype = blocking,typename instance = Twis::twi0,typename alternative = typename instance::I2c, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,typename bit_width = mem_width>
-		using TWISlave = AVR::twi::details::TWISlave<accesstype,typename DEFAULT_MCU::TWI::Component,instance,alternative,typename DEFAULT_MCU::TWI::template TWISlaveSetting<fastModePlus,holdTime,sdaSetup>,bit_width>;
+				template<typename mcu = DEFAULT_MCU>
+				using TWI_Comp = typename mcu::TWI;
+				
+				template<typename mcu = DEFAULT_MCU>
+				using Component = AVR::rc::details::Component<typename mcu::TWI,utils::autoConstant<0>::value, utils::autoConstant<0>::value>;
+				
+				using defRC = rc::RessourceController<Component<>>;
+				using defInst = typename defRC::getRessource<Component<>>::type;
+
+
+		template<typename accesstype = blocking,typename instance = defInst, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,
+		bool quickCommand = true, bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
+		using TWIMaster = AVR::twi::details::TWIMaster<accesstype,typename DEFAULT_MCU::TWI::Component,typename instance::t1, typename instance::t2, typename DEFAULT_MCU::TWI::template TWIMasterSetting<fastModePlus,holdTime,sdaSetup,quickCommand,smartMode,timeOut,21>, bit_width>;
+		
+		template<typename accesstype = blocking,typename instance = defInst, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,typename bit_width = mem_width>
+		using TWISlave = AVR::twi::details::TWISlave<accesstype,typename DEFAULT_MCU::TWI::Component,typename instance::t1, typename instance::t2,typename DEFAULT_MCU::TWI::template TWISlaveSetting<fastModePlus,holdTime,sdaSetup>,bit_width>;
 
 		
 		
