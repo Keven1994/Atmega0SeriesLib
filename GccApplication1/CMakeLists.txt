@@ -16,28 +16,28 @@ add_definitions(-DF_CPU=${F_CPU})
 set(AVR_DIR "C:/Users/keven/dev/toolchains/avr-gcc-8.2.0-x64-mingw/bin/")
 set(AVR_INC "C:/Users/keven/dev/toolchains/avr-gcc-8.2.0-x64-mingw/avr/include")
 set(AVR_LIB "C:/Users/keven/dev/toolchains/avr-gcc-8.2.0-x64-mingw/avr/lib")
-set(AVRCPP   avr-g++.exe)
-set(AVRC     avr-gcc.exe)
-set(AVRSTRIP avr-strip.exe)
-set(OBJCOPY  avr-objcopy.exe)
-set(OBJDUMP  avr-objdump.exe)
-set(AVRSIZE  avr-size.exe)
-set(AVRDUDE  avrdude.exe)
+set(AVRCPP   avr-g++)
+set(AVRC     avr-gcc)
+set(AVRSTRIP avr-strip)
+set(OBJCOPY  avr-objcopy)
+set(OBJDUMP  avr-objdump)
+set(AVRSIZE  avr-size)
+set(AVRDUDE  avrdude)
 
 # Sets the compiler
 # Needs to come before the project function
 set(CMAKE_SYSTEM_NAME  Generic)
-set(CMAKE_CXX_COMPILER ${AVR_DIR}${AVRCPP})
-set(CMAKE_C_COMPILER   ${AVR_DIR}${AVRC})
-set(CMAKE_ASM_COMPILER   ${AVR_DIR}${AVRC})
+set(CMAKE_CXX_COMPILER ${AVRCPP})
+set(CMAKE_C_COMPILER   ${AVRC})
+set(CMAKE_ASM_COMPILER   ${AVRC})
 
 project (test)
 
 # Important project paths
 set(BASE_PATH    "${${PROJECT_NAME}_SOURCE_DIR}")
-set(INC_PATH     "${BASE_PATH} ${AVR_INC}")
-set(SRC_PATH     "${BASE_PATH}")
-set(LIB_DIR_PATH "${BASE_PATH} ${AVR_LIB}")
+set(INC_PATH     "${BASE_PATH}/inc")
+set(LIB_DIR_PATH "")
+set(SRC_PATH     "${BASE_PATH}/src")
 
 # Files to be compiled
 file(GLOB SRC_FILES "${SRC_PATH}/*.cpp"
