@@ -6,7 +6,7 @@ namespace mega4808 {
 	namespace twi_details {
 		struct twiComponent {
 			enum class BRIDGECTRLMasks : mem_width {
-				Enable = TWI_ENABLE_bm,
+				Enable = TWI_ENABLE_bm, 
 				Fmpen = TWI_FMPEN_bm,
 				Sdahold_off = TWI_SDAHOLD_enum::TWI_SDAHOLD_OFF_gc,
 				Sdahold_50ns = TWI_SDAHOLD_enum::TWI_SDAHOLD_50NS_gc,
@@ -132,11 +132,11 @@ namespace mega4808 {
 				struct alt<2, dummy1>
 				{
 					struct Scl {
-						using pin0 = AVR::port::details::PortPin<port<ports::portf>,3>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,3>;
 					};
 					
 					struct Sda {
-						using pin0 = AVR::port::details::PortPin<port<ports::portf>,2>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,2>;
 					};
 					
 					using list = Meta::List<typename Scl::pin0, typename Sda::pin0>;
@@ -146,11 +146,11 @@ namespace mega4808 {
 				struct alt<1, dummy1>
 				{
 					struct Scl {
-						using pin0 = AVR::port::details::PortPin<port<ports::portc>,3>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,3>;
 					};
 					
 					struct Sda {
-						using pin0 = AVR::port::details::PortPin<port<ports::portc>,2>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,2>;
 					};
 					
 					using list = Meta::List<typename Scl::pin0, typename Sda::pin0>;
@@ -160,11 +160,11 @@ namespace mega4808 {
 				struct alt<0, dummy1>
 				{
 					struct Scl {
-						using pin0 = AVR::port::details::PortPin<port<ports::porta>,3>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,3>;
 					};
 					
 					struct Sda {
-						using pin0 = AVR::port::details::PortPin<port<ports::porta>,2>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,2>;
 					};
 					
 					using list = Meta::List<typename Scl::pin0, typename Sda::pin0>;

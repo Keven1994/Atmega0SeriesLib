@@ -206,7 +206,6 @@ int main(int argc, const char **argv) {
                 for (auto node2 : node1.node().children()) {
                     std::string instName = node2.attribute("name").as_string();
                     if (modName != "PORT" || utils::contains(ports_available, std::string() + instName[4])) {
-                        mbuilder.addInstance(instName,std::to_string(instNum));
 
                         std::vector<utils::triple<>> tmp;
                         for (auto node3 :node2.child("signals").children()) {
@@ -220,8 +219,9 @@ int main(int argc, const char **argv) {
                                 tmp.push_back(utils::triple<>{sig_func, sig_group, sig_pad});
 
                         }
-                        if (!tmp.empty())
-                            mbuilder.addSignal(tmp, std::move(instName),instNum++);
+                        if (!tmp.empty()) {
+                            mbuilder.addSignal(tmp, std::move(instName), instNum++);
+                        }
                     }
                 }
 

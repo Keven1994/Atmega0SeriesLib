@@ -1,6 +1,5 @@
 #pragma once
 #include "../../hw_abstractions/Port.hpp"
-#include "../../tools/meta.h"
 
 namespace mega4808 {
 	namespace spi_details {
@@ -70,19 +69,19 @@ namespace mega4808 {
 				struct alt<1, dummy1>
 				{
 					struct Miso {
-						using pin0 = AVR::port::details::PortPin<port<ports::portc>,1>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,1>;
 					};
 					
 					struct Mosi {
-						using pin0 = AVR::port::details::PortPin<port<ports::portc>,0>;
-					};
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,0>;
+					}; 
 					
 					struct Sck {
-						using pin0 = AVR::port::details::PortPin<port<ports::portc>,2>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,2>;
 					};
 					
 					struct Ss {
-						using pin0 = AVR::port::details::PortPin<port<ports::portc>,3>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,3>;
 					};
 					
 					using list = Meta::List<typename Miso::pin0, typename Mosi::pin0, typename Sck::pin0, typename Ss::pin0>;
@@ -92,19 +91,19 @@ namespace mega4808 {
 				struct alt<0, dummy1>
 				{
 					struct Miso {
-						using pin0 = AVR::port::details::PortPin<port<ports::porta>,5>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,5>;
 					};
 					
 					struct Mosi {
-						using pin0 = AVR::port::details::PortPin<port<ports::porta>,4>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,4>;
 					};
 					
 					struct Sck {
-						using pin0 = AVR::port::details::PortPin<port<ports::porta>,6>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,6>;
 					};
 					
 					struct Ss {
-						using pin0 = AVR::port::details::PortPin<port<ports::porta>,7>;
+						using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,7>;
 					};
 					
 					using list = Meta::List<typename Miso::pin0, typename Mosi::pin0, typename Sck::pin0, typename Ss::pin0>;
