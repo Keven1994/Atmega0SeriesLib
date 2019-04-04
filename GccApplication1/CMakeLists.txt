@@ -49,7 +49,6 @@ file(GLOB SRC_FILES "${SRC_PATH}/*.cpp"
                     "${SRC_PATH}/*.sx"
                     "${SRC_PATH}/*.asm")
 
-set(LIB_SRC_FILES inc/hw_abstractions/CPU.hpp)
 set(LIB_INC_PATH "${BASE_PATH}/inc/std ")
 file(GLOB LIBRARIES "${LIB_DIR_PATH}/*")
 foreach(subdir ${LIBRARIES})
