@@ -50,7 +50,7 @@ file(GLOB SRC_FILES "${SRC_PATH}/*.cpp"
                     "${SRC_PATH}/*.asm")
 
 set(LIB_SRC_FILES)
-set(LIB_INC_PATH)
+set(LIB_INC_PATH "${BASE_PATH}/inc/std ")
 file(GLOB LIBRARIES "${LIB_DIR_PATH}/*")
 foreach(subdir ${LIBRARIES})
     file(GLOB lib_files "${subdir}/*.cpp"
