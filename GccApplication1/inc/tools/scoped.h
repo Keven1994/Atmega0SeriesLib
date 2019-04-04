@@ -99,7 +99,7 @@ namespace etl {
 
         template<bool Active, typename MCU, typename F1, typename F2>
         class Z_Scoped<EnableInterrupt<RestoreState>, Active, MCU, F1, F2> final {
-            inline static auto& status = AVR::cpu::CPU<>::getStatusRegister();
+            static constexpr auto& status = AVR::cpu::CPU<>::getStatusRegister;
         public:
             inline Z_Scoped() {
                 if constexpr(Active) {
@@ -109,7 +109,7 @@ namespace etl {
 
             inline ~Z_Scoped() {
                 if constexpr(Active) {
-                    if (status.areSet(AVR::cpu::CPU<>::status_bits::I)) {
+                    if (status().areSet(AVR::cpu::CPU<>::status_bits::I)) {
                         cli();
                     }
                 }
@@ -162,7 +162,7 @@ namespace etl {
 
         template<bool Active, typename MCU, typename F1, typename F2>
         class Z_Scoped<DisbaleInterrupt<RestoreState>, Active, MCU, F1, F2> final {
-            inline static auto& status = AVR::cpu::CPU<>::getStatusRegister();
+            static constexpr auto& status = AVR::cpu::CPU<>::getStatusRegister;
         public:
             inline Z_Scoped() {
                 if constexpr(Active) {
@@ -172,7 +172,7 @@ namespace etl {
 
             inline ~Z_Scoped() {
                 if constexpr(Active) {
-                    if (status.areSet(AVR::cpu::CPU<>::status_bits::I)) {
+                    if (status().areSet(AVR::cpu::CPU<>::status_bits::I)) {
                         sei();
                     }
                 }
