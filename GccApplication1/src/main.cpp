@@ -50,7 +50,7 @@ AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 using RC = AVR::rc::RessourceController<spiRessource,twiRessource>; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
-using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res>; // put spi ressource in
+using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
 using twi = AVR::twi::TWIMaster<AVR::twi::notBlocking,twires>;
 
 using led1 = Pin<PortA, 2>;
@@ -73,8 +73,8 @@ int main() {
 		while(true){
             spi::put(42);
             uint8_t l;
-            if(spi::get(l))
-                led1::toggle();
+            //if(spi::get(l))
+              //  led1::toggle();
             spi::periodic();
             if(l > 21)
                 led2::toggle();
