@@ -9,6 +9,7 @@
 #pragma once
 #include "Bit.hpp"
 #include "../tools/utils.h"
+#include <type_traits>
 
 namespace reg {
 	
@@ -129,7 +130,7 @@ namespace reg {
 	
 	template<typename Bits, typename size>
 	class Register<accessmode::RW,specialization::Control,Bits,size> {
-		static_assert(! utils::isEqual<Bits,void>::value, "enum type expected");
+		static_assert(! std::is_same<Bits,void>::value, "enum type expected");
 		volatile size reg;
 		
 		public:
@@ -139,7 +140,7 @@ namespace reg {
 		
 		template<typename... ARGS>
 		inline void on(const ARGS... bits) volatile {
-			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
+			static_assert(std::is_same<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			if constexpr(sizeof...(ARGS) == 0){
 				reg = static_cast<size>(-1);
 			} else
@@ -155,7 +156,7 @@ namespace reg {
 		
 		template<typename... ARGS>
 		inline void off(const ARGS... bits) volatile {
-			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
+			static_assert(std::is_same<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			if constexpr(sizeof...(ARGS) == 0){
 				reg = static_cast<size>(0);
 			} else
@@ -164,7 +165,7 @@ namespace reg {
 
 		template<typename... ARGS>
 		inline void toggle(const ARGS... bits) volatile {
-			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
+			static_assert(std::is_same<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			if constexpr(sizeof...(ARGS) == 0){
 				reg ^= static_cast<size>(-1);
 			} else
@@ -176,7 +177,7 @@ namespace reg {
 
 		template<typename... ARGS>
 		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
-			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
+			static_assert(std::is_same<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
 		
@@ -228,7 +229,7 @@ namespace reg {
 
 		template<typename... ARGS>
 		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
-			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
+			static_assert(std::is_same<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
 		
@@ -273,7 +274,7 @@ namespace reg {
 
 		template<typename... ARGS>
 		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
-			static_assert(utils::isEqual<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
+			static_assert(std::is_same<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
 		

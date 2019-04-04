@@ -8,7 +8,6 @@
 
 #pragma once
 #include "Register.hpp"
-#include "../tools/utils.h"
 #include "../MCUSelect.hpp"
 #include "../tools/AVRConcepts.hpp"
 

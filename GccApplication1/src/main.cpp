@@ -4,10 +4,9 @@
 * Created: 26.01.2019 16:32:01
 * Author : Keven
 */
-#include "../inc/test.hpp"
+#include "../inc/MCUSelect.hpp"
+//#include "../inc/test.hpp"
 #ifndef TEST
-
-#define F_CPU 4000000
 
 #include <stddef.h>
 #include <util/delay.h>
@@ -31,6 +30,7 @@
 #include "../inc/mega4809/Atmega4809.hpp"
 
 #endif
+
 
 using namespace AVR::port;
 
@@ -73,7 +73,7 @@ static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction:
 
 int main() {
 	twi::init();
-	spi::init();
+
 		while(true){
 			auto err = twi::doIfAnySet<lam>(twi::status_bits::Busstate_idle , twi::status_bits::Busstate_owner);
 

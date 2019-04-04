@@ -153,7 +153,7 @@ namespace utils {
 
 		template<typename integral, integral val>
 		struct isPositive {
-			static constexpr bool value = val > 0 ? true : false;
+			static constexpr bool value = val > 0;
 		};
 	}
 

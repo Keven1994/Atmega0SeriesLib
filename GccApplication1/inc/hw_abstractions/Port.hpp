@@ -7,10 +7,11 @@
 
 #pragma once
 #include "Register.hpp"
+#include <type_traits>
 #include "../tools/utils.h"
 #include "../MCUSelect.hpp"
 
-namespace AVR{
+namespace AVR {
 	namespace port {
 		
 		namespace details {
@@ -26,7 +27,7 @@ namespace AVR{
 				if constexpr(sizeof...(T) == 0)
 				return true;
 				else {
-					if constexpr (!utils::isEqual<typename first::port, typename utils::front<T...>::type::port>::value)
+					if constexpr (!std::is_same<typename first::port, typename utils::front<T...>::type::port>::value)
 					return false;
 					else
 					return samePorts<T...>();

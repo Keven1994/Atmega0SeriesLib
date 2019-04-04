@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <optional>
 #include <type_traits>
-#include "scoped.h"
+
 #include "type_traits.h"
 
 namespace etl {

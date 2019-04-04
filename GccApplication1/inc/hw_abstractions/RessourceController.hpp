@@ -11,6 +11,7 @@
 #include "../tools/utils.h"
 #include "PortMux.hpp"
 #include "../MCUSelect.hpp"
+#include <type_traits>
 
 namespace AVR {
 	
@@ -53,25 +54,25 @@ namespace AVR {
 			using resolveInst = typename details::resolveComponent<Alias>::inst;
 			
 			template<typename N, typename First, typename... pins>
-			struct getRessourceHelp {
-				using alt = typename utils::conditional<utils::isEqual<N,First>::value, resolveAlt<First>, typename getRessourceHelp<N, pins...>::alt>::type;
-				using inst = typename utils::conditional<utils::isEqual<N,First>::value,resolveInst<First>, typename getRessourceHelp<N, pins...>::inst>::type;
+			struct get_ressource_help {
+				using alt = typename utils::conditional<utils::isEqual<N,First>::value, resolveAlt<First>, typename get_ressource_help<N, pins...>::alt>::type;
+				using inst = typename utils::conditional<utils::isEqual<N,First>::value,resolveInst<First>, typename get_ressource_help<N, pins...>::inst>::type;
 			};
 			
 			template<typename N, typename First>
-			struct getRessourceHelp<N,First> {
+			struct get_ressource_help<N,First> {
 				using alt = typename utils::conditional<utils::isEqual<N,First>::value, resolveAlt<First>, void>::type;
 				using inst = typename utils::conditional<utils::isEqual<N,First>::value, resolveInst<First>, void>::type;
 			};
 
 			template<Meta::concepts::List first,typename _second, typename... pins>
-			static constexpr bool checkRessource_helper(){
+			static constexpr bool checkRessourceHelper(){
 				
 				using second = typename resolveAlt<_second>::list;
 				
 				if constexpr(sizeof...(pins) > 0){
 					constexpr bool current = !Meta::contains_any<first, second>::value;
-					constexpr bool next =  checkRessource_helper<Meta::concat_t<first,second>, pins...>();
+					constexpr bool next =  checkRessourceHelper<Meta::concat_t<first,second>, pins...>();
 					return  current && next ;
 				}
 				else {
@@ -80,11 +81,11 @@ namespace AVR {
 			}
 			
 			template<Meta::concepts::List first,typename _second, typename... pins>
-			static constexpr bool checkInstance_helper(){
+			static constexpr bool checkInstanceHelper(){
 				using second = Meta::List<resolveInst<_second>>;
 				
 				if constexpr(sizeof...(pins) > 0)
-					return !Meta::contains_any<first,second>::value && checkInstance_helper<typename Meta::concat_t<first,second>, pins...>();
+					return !Meta::contains_any<first,second>::value && checkInstanceHelper<typename Meta::concat_t<first,second>, pins...>();
 				else {
 					return !Meta::contains_any<first,second>::value;
 				}
@@ -96,7 +97,7 @@ namespace AVR {
 								
 				if constexpr(sizeof...(pins) == 0)
 				return true;
-				else return checkRessource_helper<first,pins...>();
+				else return checkRessourceHelper<first,pins...>();
 			}
 			
 			template<typename _first,typename... pins>
@@ -105,7 +106,7 @@ namespace AVR {
 				
 				if constexpr(sizeof...(pins) == 0)
 				return true;
-				else return checkInstance_helper<Meta::List<first>,pins...>();
+				else return checkInstanceHelper<Meta::List<first>,pins...>();
 			}
 			
 				
@@ -114,8 +115,8 @@ namespace AVR {
 			
 			template<typename N>
 			struct getRessource {
-				using type = utils::tuple<typename getRessourceHelp<N, FIRST, PINS...>::inst,typename getRessourceHelp<N, FIRST, PINS...>::alt>;
-				static_assert(!utils::isEqual<typename type::t2,void>::value , "portmux not found");
+				using type = utils::tuple<typename get_ressource_help<N, FIRST, PINS...>::inst,typename get_ressource_help<N, FIRST, PINS...>::alt>;
+				static_assert(!std::is_same<typename type::t2,void>::value , "portmux not found");
 				static_assert(checkRessource<FIRST,PINS...>(), "I/O Pins conflicting");
 				static_assert(checkInstance<FIRST,PINS...>(), "only 1 alternative from a single instance permitted");
 			};

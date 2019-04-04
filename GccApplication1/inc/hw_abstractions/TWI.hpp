@@ -69,8 +69,8 @@ namespace AVR {
 					
 					constexpr mem_width addr = ~(TWI_ADDREN_bm) & (address << 1);
 
-					if constexpr(dir == direction::output) alt::Sda::pin0::setOutput();
-					else alt::Sda::pin0::setInput();
+					//if constexpr(dir == direction::output) alt::Sda::pin0::setOutput();
+					//else alt::Sda::pin0::setInput();
 
 					TWIMaster::template reg<Maddr>().set(addr);
 					while(! (TWIMaster::template reg<Mstatus>().areSet(status_bits::Wif)));
@@ -88,21 +88,21 @@ namespace AVR {
 					singleTransfer(data[n]);
 				}
 				
-				template<bool pinSetting = true, uint8_t address>
+				template</*bool pinSetting = true,*/ uint8_t address>
 				[[nodiscard]] static inline bit_width singleReceive(){
 					static constexpr uint8_t addr = TWI_ADDREN_bm | (address << 1);
-					if constexpr(pinSetting){
+					/*if constexpr(pinSetting){
 						alt::Sda::pin0::setInput();
-					}
+					}*/
 					TWIMaster::template reg<Maddr>().set(addr);
 					while(! (TWIMaster::template reg<Mstatus>().areSet(Mstatus::special_bit::Rif)));
 					return TWIMaster::template reg<Mdata>().raw();
 				}
 				
-				template<bool pinSetting = true>
+				/*template<bool pinSetting = true>*/
 				[[nodiscard]] static inline bit_width* Receive(bit_width* data, uint8_t n){
 					for(uint8_t i = 0; i < n; i++)
-					data[i] = singleReceive<pinSetting>();
+					data[i] = singleReceive/*<pinSetting>*/();
 					
 					return data;
 				}
@@ -127,7 +127,6 @@ namespace AVR {
 				
 				//initialize and start
 				static inline void init(){
-					//alt::Scl::pin0::setOutput();
 					TWIMaster::template reg<Ctrla>().set(Setting::fastmode,Setting::holdtime,Setting::setuptime);
 					TWIMaster::template reg<Mbaud>().set(Setting::baud);
 					TWIMaster::template reg<Mctrla>().set(Setting::quickcommand,Setting::smartmode,Setting::timeout,Mctrla::type::special_bit::Enable);
@@ -169,22 +168,22 @@ namespace AVR {
 					TWISlave::template reg<Saddr>().set(address << 1);
 				}
 				
-				template<bool pinSetting = true>
+				/*template<bool pinSetting = true>*/
 				[[nodiscard]] static inline bit_width singleReceive(){
 					auto& statusreg = TWISlave::template reg<Sstatus>();
-					if constexpr(pinSetting){
+					/*if constexpr(pinSetting){
 						alt::Sda::pin0::setInput();
-					}
+					}*/
 					while(!(statusreg.areSet(status_bits::Dif) && !statusreg.areSet(status_bits::Dir)));
 					return TWISlave::template reg<Sdata>.raw();
 				}
 				
-				template<bool pinSetting = true, uint8_t address>
+				template</*bool pinSetting = true,*/ uint8_t address>
 				[[nodiscard]] static inline bit_width singleTransfer(){
 					auto& statusreg = TWISlave::template reg<Sstatus>();
-					if constexpr(pinSetting){
+					/*if constexpr(pinSetting){
 						alt::Sda::pin0::setInput();
-					}
+					}*/
 					while(!(statusreg.areSet(status_bits::Dif) && !statusreg.areSet(status_bits::Dir)));
 					return TWISlave::template reg<Sdata>.raw();
 				}
@@ -223,8 +222,6 @@ namespace AVR {
 		template<typename accesstype = blocking,typename instance = details::defInst, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,typename bit_width = mem_width>
 		using TWISlave = AVR::twi::details::TWISlave<accesstype, TWI_Comp::Component,typename instance::t1, typename instance::t2, TWI_Comp::template TWISlaveSetting<fastModePlus,holdTime,sdaSetup>,bit_width>;
 
-		
-		
 	}
 	
 }

@@ -9,6 +9,7 @@
 #include "Register.hpp"
 #include "../MCUSelect.hpp"
 #include "RessourceController.hpp"
+//#include "../tools/fifo.h"
 
 namespace AVR {
 	namespace spi {
@@ -19,6 +20,8 @@ namespace AVR {
 			
 			template<typename accesstype, typename component, typename instance, typename bit_width>
 			struct SPI {
+
+			    //static inline etl::FiFo<bit_width,42> fifo{};
 
 				NoConstructors(SPI);
 				
@@ -39,20 +42,24 @@ namespace AVR {
 				
 				public:
 
+			    static inline void periodic(){
+
+			    }
+
 				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,notBlocking>::value, int> = 0>
 				static inline void tranfer(bit_width data)
-				requires(utils::isEqual<notBlocking,accesstype>::value) {
+				requires(std::is_same<notBlocking,accesstype>::value) {
 					reg<Data>().raw() = data;
 				}
 
 				template<typename block = accesstype,utils::enable_if_t<utils::isEqual<block,notBlocking>::value, int> = 0>
 				[[nodiscard]] static inline bit_width receive()
-				requires(utils::isEqual<notBlocking,accesstype>::value) {
+				requires(std::is_same<notBlocking,accesstype>::value) {
 					return reg<Data>().raw();
 				}
 				
 				template<typename... Args>
-				requires(utils::sameTypes<InterruptControlBits,Args...>() && utils::isEqual<accesstype, notBlocking>::value)
+				requires(utils::sameTypes<InterruptControlBits,Args...>() && std::is_same<accesstype, notBlocking>::value)
 				static inline void enableInterrupt(Args... Bits) {
 					reg<InterruptControl>().set(Bits...);
 				}
@@ -75,26 +82,26 @@ namespace AVR {
 					return retType{};
 				}
 
-				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,blocking>::value, int> = 0>
+				template<typename block = accesstype, utils::enable_if_t<std::is_same<block,blocking>::value, int> = 0>
 				[[nodiscard]] static inline bit_width transmit(bit_width data) {
 					reg<Data>().raw() = data;
 					while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Default_if));
 					return reg<Data>().raw();
 				}
 
-				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,blocking>::value, int> = 0>
+				template<typename block = accesstype, std::enable_if_t<std::is_same<block,blocking>::value> = 0>
 				[[nodiscard]] static inline bit_width receive() {
 					while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Default_if));
 					return reg<Data>().raw();
 				}
 
-				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,blocking>::value, int> = 0>
+				template<typename block = accesstype, std::enable_if_t<std::is_same<block,blocking>::value> = 0>
 				static inline void transfer(bit_width data) {
 					reg<Data>().raw() = data;
 					while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Default_if));
 				}
 				
-				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,blocking>::value, int> = 0>
+				template<typename block = accesstype, std::enable_if_t<std::is_same<block,blocking>::value> = 0>
 				[[nodiscard]] static inline bit_width* transmit(bit_width* data, bit_width size) {
 					for(bit_width i = 0; i < size; i++){
 						data[i] = singleTransmit(data[i]);

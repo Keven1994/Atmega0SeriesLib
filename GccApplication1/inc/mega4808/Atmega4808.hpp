@@ -17,9 +17,7 @@ using ptr_t = uintptr_t;
 #include "hal/Atmega4808EVSYS.hpp"
 #include "hal/Atmega4808SPI.hpp"
 #include "hal/ATmega4808TWI.hpp"
-
 #include "../hw_abstractions/RessourceController.hpp"
-
 
 namespace mega4808 {
 	
@@ -40,7 +38,12 @@ namespace mega4808 {
 		
 		NoConstructors(Atmega4808);
 		
-		
+		template<typename T>
+		static inline constexpr bool is_atomic(){
+		    if constexpr (std::is_same<T, uint8_t>::value) return true;
+		    else return false;
+		}
+
 		template<typename p>
 		struct Ports {
 
