@@ -9,24 +9,44 @@
 #include "Register.hpp"
 #include "../MCUSelect.hpp"
 #include "RessourceController.hpp"
+#include "../tools/fifo.h"
 //#include "../tools/fifo.h"
 
 namespace AVR {
 	namespace spi {
 		
-		struct blocking {}; struct notBlocking {};
+		 template<auto N> struct useFifo{static constexpr auto value = N;}; struct noFifo{static constexpr auto value = 0;}; struct blocking {using fifo = noFifo;}; template<typename fifoUse = noFifo> struct notBlocking {using fifo = fifoUse;};
 
 		namespace details{
 			
 			template<typename accesstype, typename component, typename instance, typename bit_width>
-			struct SPI {
+			class SPI {
 
-			    //static inline etl::FiFo<bit_width,42> fifo{};
+                using UseFifo = typename accesstype::fifo;
+                static constexpr bool fifoEnabled = std::is_same_v<accesstype,notBlocking<useFifo<UseFifo::value>>>;
+                static constexpr bool isBlocking = std::is_same_v<accesstype,blocking>;
+                using fifo_t = std::conditional_t<std::is_same_v<UseFifo,noFifo>,noFifo,etl::FiFo< bit_width,UseFifo::value>>;
+                static inline fifo_t fifoOut{};
+                static inline fifo_t fifoIn{};
 
-				NoConstructors(SPI);
-				
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && fifoEnabled>>
+                static inline void transfer(){
+                    bit_width item;
+                    if(fifoOut.pop_front(item)){
+                        reg<Data>().raw() = item;
+                    }
+                }
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && fifoEnabled>>
+                static inline bool receive() {
+                    return fifoIn.push_back(reg<Data>().raw());
+                }
+
+                static inline constexpr auto txFunc = [](){ if constexpr(fifoEnabled) return transfer();};
+                static inline constexpr auto rxFunc = [](){ if constexpr(fifoEnabled) return receive();};
+
 				protected:
-				
+
 				template<typename Reg>
 				[[nodiscard,gnu::always_inline]] static inline auto& reg(){
 					return AVR::port::details::getRegister<Reg,instance::value>();
@@ -39,27 +59,25 @@ namespace AVR {
 				using InterruptFlags = typename component::registers::intflags;
 				using InterruptControlBits = typename InterruptControl::type::special_bit;
 				using InterruptFlagBits = typename InterruptFlags::type::special_bit;
-				
+
 				public:
 
-			    static inline void periodic(){
+                NoConstructors(SPI);
 
-			    }
-
-				template<typename block = accesstype, utils::enable_if_t<utils::isEqual<block,notBlocking>::value, int> = 0>
-				static inline void tranfer(bit_width data)
-				requires(std::is_same<notBlocking,accesstype>::value) {
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && !fifoEnabled && !isBlocking>>
+				static inline void transfer(bit_width data)
+				requires(std::is_same<notBlocking<>,accesstype>::value) {
 					reg<Data>().raw() = data;
 				}
 
-				template<typename block = accesstype,utils::enable_if_t<utils::isEqual<block,notBlocking>::value, int> = 0>
+				template<bool dummy = true,typename T = std::enable_if_t<dummy && !fifoEnabled && !isBlocking>>
 				[[nodiscard]] static inline bit_width receive()
-				requires(std::is_same<notBlocking,accesstype>::value) {
+				requires(std::is_same<notBlocking<>,accesstype>::value) {
 					return reg<Data>().raw();
 				}
 				
 				template<typename... Args>
-				requires(utils::sameTypes<InterruptControlBits,Args...>() && std::is_same<accesstype, notBlocking>::value)
+				requires(utils::sameTypes<InterruptControlBits,Args...>() && std::is_same<accesstype, notBlocking<>>::value)
 				static inline void enableInterrupt(Args... Bits) {
 					reg<InterruptControl>().set(Bits...);
 				}
@@ -70,6 +88,7 @@ namespace AVR {
 					using retType = decltype(funcRef());
 					if (reg<InterruptFlags>().areSet(flags...))
 					return funcRef();
+                    if constexpr (! std::is_same_v<retType,void>)
 					return retType{};
 				}
 				
@@ -78,18 +97,19 @@ namespace AVR {
 				static inline auto doIfAnySet(FlagsToTest... flags) {
 					using retType = decltype(funcRef());
 					if (reg<InterruptFlags>().anySet(flags...))
-					return funcRef();
+					    return funcRef();
+					if constexpr (! std::is_same_v<retType,void>)
 					return retType{};
 				}
 
-				template<typename block = accesstype, utils::enable_if_t<std::is_same<block,blocking>::value, int> = 0>
+				template<typename block = accesstype,typename T = std::enable_if_t<std::is_same<block,blocking>::value>>
 				[[nodiscard]] static inline bit_width transmit(bit_width data) {
 					reg<Data>().raw() = data;
 					while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Default_if));
 					return reg<Data>().raw();
 				}
 
-				template<typename block = accesstype, std::enable_if_t<std::is_same<block,blocking>::value> = 0>
+				template<typename block = accesstype, typename T = std::enable_if_t<std::is_same<block,blocking>::value>>
 				[[nodiscard]] static inline bit_width receive() {
 					while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Default_if));
 					return reg<Data>().raw();
@@ -108,21 +128,39 @@ namespace AVR {
 					}
 					return data;
 				}
-				
+
+				template<bool dummy = true,typename T = std::enable_if_t<dummy && !fifoEnabled>>
 				[[nodiscard]] static inline bit_width* receive(bit_width* data, bit_width size) {
 					for(bit_width i = 0; i < size; i++){
 						data[i] = receive();
 					}
 					return data;
 				}
-				
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && !fifoEnabled>>
 				static inline void transfer(bit_width* data, bit_width size) {
 					for(bit_width i = 0; i < size; i++){
 						transfer(data[i]);
 					}
 				}
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && fifoEnabled>>
+				static inline bool put(bit_width item){
+                    return fifoOut.push_back(item);
+				}
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && fifoEnabled>>
+				static inline bool get(bit_width& item){
+				    return fifoIn.pop_front(item);
+				}
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && fifoEnabled>>
+                static inline void periodic(){
+                    doIfAnySet<txFunc>(InterruptFlagBits::Txcif);
+                    doIfAnySet<rxFunc>(InterruptFlagBits::Rxcif);
+                }
 			};
-			
+
 			template<typename accesstype, typename component, typename instance,typename alt, typename Setting, typename bit_width>
 			struct SPIMaster : public details::SPI<accesstype,component, instance, bit_width> {
 				NoConstructors(SPIMaster);

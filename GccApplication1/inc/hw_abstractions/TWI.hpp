@@ -217,10 +217,10 @@ namespace AVR {
 
 		template<typename accesstype = blocking,typename instance = details::defInst, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,
 		bool quickCommand = true, bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
-		using TWIMaster = AVR::twi::details::TWIMaster<accesstype,TWI_Comp::Component,typename instance::t1, typename instance::t2, TWI_Comp::template TWIMasterSetting<fastModePlus,holdTime,sdaSetup,quickCommand,smartMode,timeOut,21>, bit_width>;
+		using TWIMaster = AVR::twi::details::TWIMaster<accesstype,TWI_Comp::Component_t,typename instance::t1, typename instance::t2, TWI_Comp::template TWIMasterSetting<fastModePlus,holdTime,sdaSetup,quickCommand,smartMode,timeOut,21>, bit_width>;
 		
 		template<typename accesstype = blocking,typename instance = details::defInst, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,typename bit_width = mem_width>
-		using TWISlave = AVR::twi::details::TWISlave<accesstype, TWI_Comp::Component,typename instance::t1, typename instance::t2, TWI_Comp::template TWISlaveSetting<fastModePlus,holdTime,sdaSetup>,bit_width>;
+		using TWISlave = AVR::twi::details::TWISlave<accesstype, TWI_Comp::Component_t,typename instance::t1, typename instance::t2, TWI_Comp::template TWISlaveSetting<fastModePlus,holdTime,sdaSetup>,bit_width>;
 
 	}
 	

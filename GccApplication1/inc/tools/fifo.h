@@ -32,7 +32,7 @@ namespace etl {
     class FiFo final {
     public:
         using size_type = etl::typeForValue_t<Size>;
-        
+
         inline static constexpr bool sizeIsAtomic = DefaultMcuType::template is_atomic<size_type>();
         
         inline bool push_back(volatile const T& item) volatile {

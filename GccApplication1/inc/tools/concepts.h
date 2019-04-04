@@ -23,13 +23,13 @@
 
 namespace etl {
 //    template<Unsigned T, uint8_t Bits> struct Fraction;
-    
+
     namespace Concepts {
         template<typename T, typename... ArgType>
         concept bool Callable = requires(T t) {
                 t(ArgType{}...);
             };
-        
+
         template<typename T>
         concept bool NamedFlag = requires(T) {
                 T::value;
@@ -43,16 +43,16 @@ namespace etl {
             };
 
         template<typename T>
-        concept bool Integral = std::is_integral<T>::value;    
-        
+        concept bool Integral = std::is_integral<T>::value;
+
         template<typename T>
-        concept bool Unsigned = std::is_unsigned<T>::value;    
-        
+        concept bool Unsigned = std::is_unsigned<T>::value;
+
         template<typename T>
-        concept bool Signed = std::is_signed<T>::value;    
+        concept bool Signed = std::is_signed<T>::value;
 
         template<typename R>
-        concept bool Range = requires (R r) { 
+        concept bool Range = requires (R r) {
                 typename R::value_type;
                 r.begin();
                 r.end();
@@ -64,13 +64,20 @@ namespace etl {
             c.size();
             c[0];
         };
-        
+
+        template<typename MCU>
+        concept bool ZeroAVR = requires(MCU) {
+            typename MCU::isZero;
+        };
+        template<typename MCU>
+        concept bool NotZeroAVR = !ZeroAVR<MCU>;
+
         template<typename T>
         concept bool Fundamental = std::is_fundamental<T>::value;
-        
+
         template<typename T>
         concept bool NonFundamental = !std::is_fundamental<T>::value;
-    
+
         template<typename D>
         concept bool Device = requires(D) {
                 D::put(std::byte{0});

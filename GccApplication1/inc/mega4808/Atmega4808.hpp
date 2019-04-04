@@ -17,6 +17,8 @@ using ptr_t = uintptr_t;
 #include "hal/Atmega4808EVSYS.hpp"
 #include "hal/Atmega4808SPI.hpp"
 #include "hal/ATmega4808TWI.hpp"
+#include "hal/ATmega4808CPU.hpp"
+#include "hw_abstractions/CPU.hpp"
 #include "../hw_abstractions/RessourceController.hpp"
 
 namespace mega4808 {
@@ -25,7 +27,7 @@ namespace mega4808 {
 	template<typename frequenzy>
 	requires(utils::isEqual<MHZ4,frequenzy>::value || utils::isEqual<MHZ12,frequenzy>::value || utils::isEqual<MHZ20,frequenzy>::value)
 	class Atmega4808 {
-		
+
 		template<typename Alias>
 		friend struct AVR::rc::details::resolveComponent;
 		
@@ -33,7 +35,9 @@ namespace mega4808 {
 		friend class AVR::rc::ResController;
 		
 		public:
-		 
+
+	    struct isZero{};
+
 		static constexpr auto clockFrequenzy = frequenzy::value;
 		
 		NoConstructors(Atmega4808);
@@ -106,13 +110,10 @@ namespace mega4808 {
 		
 		struct TWI : public AVR::rc::details::RCComponent<twi_details::twis>  {
 			
-			template<typename Alias>
-			friend struct resolveComponent;
-			
 			using SDAHold = twi_details::SDAHold;
 			using SDASetup = twi_details::SDASetup;
 			using MasterTimeout = twi_details::MasterTimeout;
-			using Component = twi_details::twiComponent;
+            using Component_t = mega4808::twi_details::twiComponent;
 
 			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut, mem_width baudRate>
 			struct TWIMasterSetting{
@@ -140,6 +141,12 @@ namespace mega4808 {
 				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
 				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);
 			};
+		};
+
+		class Status {
+
+		    public:
+            using Component_t = cpu_details::cpuComponent;
 		};
 		
 	};
