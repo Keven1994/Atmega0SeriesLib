@@ -209,14 +209,22 @@ int main(int argc, const char **argv) {
 
                         std::vector<utils::triple<>> tmp;
                         for (auto node3 :node2.child("signals").children()) {
-
-                            std::string sig_func = node3.attribute("function").as_string();
+                            bool grpValid = true;
+                            const std::string sig_func = node3.attribute("function").as_string();
                             std::string sig_group = node3.attribute("group").as_string();
                             std::string sig_pad = node3.attribute("pad").as_string();
+
                             instName = node2.attribute("name").as_string();
 
-                            if (/*modName != "PORT" && */utils::contains(pins_available, (sig_pad)))
+                            if (utils::contains(pins_available, (sig_pad)) && grpValid) {
                                 tmp.push_back(utils::triple<>{sig_func, sig_group, sig_pad});
+                            } else {
+#ifdef DEBUG
+                                std::cout << "not available: " << sig_func << " " << sig_group << " " << sig_pad << '\n';
+#endif
+                                tmp.clear();
+                                break;
+                            }
 
                         }
                         if (!tmp.empty()) {
