@@ -50,7 +50,9 @@ AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 using RC = AVR::rc::RessourceController<spiRessource,twiRessource>; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
-using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
+//using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
+using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::noFifo>,res, AVR::spi::WriteOnly>; // put spi ressource in
+
 using twi = AVR::twi::TWIMaster<AVR::twi::notBlocking,twires>;
 
 using led1 = Pin<PortA, 2>;
@@ -64,28 +66,17 @@ enum class error : mem_width {
 };
 
 
-static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction::output>(); twi::singleTransfer(42); twi::stopTransaction(); return static_cast<mem_width>(error::notBusy);};
-
+//static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction::output>(); twi::singleTransfer(42); twi::stopTransaction(); return static_cast<mem_width>(error::notBusy);};
+static constexpr auto spilam = [](){spi::transfer(42);};
 int main() {
-	twi::init();
+
     spi::init();
 
-		while(true){
-            spi::put(42);
-            uint8_t l;
-            //if(spi::get(l))
-              //  led1::toggle();
-            spi::periodic();
-            if(l > 21)
-                led2::toggle();
-			auto err = twi::doIfAnySet<lam>(twi::status_bits::Busstate_idle , twi::status_bits::Busstate_owner);
+        while(true){
 
-			if( err != static_cast<mem_width>(error::notBusy)){
-				/*
-				if bus is busy...
-				*/
-			}
+            spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
 
+            //spi::periodic();
 			_delay_ms(200);
 		
 	}

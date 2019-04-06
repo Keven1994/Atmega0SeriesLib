@@ -189,6 +189,9 @@ namespace AVR {
 				}
 			};
 		}
+
+        using TWI_Comp = typename DEFAULT_MCU::TWI;
+
 		template<typename mcu= DEFAULT_MCU>
 		using Basic_SDAHold =  typename mcu::TWI::SDAHold;
 		using SDAHold = Basic_SDAHold<>;
@@ -200,10 +203,6 @@ namespace AVR {
 		template<typename mcu= DEFAULT_MCU>
 		using Basic_MasterTimeout = typename mcu::TWI::MasterTimeout;
 		using MasterTimeout = Basic_MasterTimeout<>;
-		
-		template<typename mcu = DEFAULT_MCU>
-		using Basic_TWI_Comp = typename mcu::TWI;
-		using TWI_Comp = Basic_TWI_Comp<>;
 		
 		namespace details{
 			using defComponent = AVR::rc::Instance<

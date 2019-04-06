@@ -1,12 +1,20 @@
 #pragma once
 #include "tools/utils.h"
-namespace mega4808{
-		struct MHZ4{static constexpr auto value = 4000000UL;}; struct MHZ12{static constexpr auto value = 12000000UL;}; struct MHZ20{static constexpr auto value = 20000000UL;};
-		
-		template<typename frequenzy = MHZ4>
-		requires(utils::isEqual<MHZ4,frequenzy>::value || utils::isEqual<MHZ12,frequenzy>::value || utils::isEqual<MHZ20,frequenzy>::value)
-	struct Atmega4808;
-}
+#include "MCUs.hpp"
 
-using DEFAULT_MCU = mega4808::Atmega4808<>;
+#ifdef __AVR_DEV_LIB_NAME__
+
+#ifdef _m4808
+    #define _DEFAULT mega4808::Atmega4808<>
+#elif defined(_m4809)
+    #define _DEFAULT mega4809::Atmega4809<>
+#else
+#error "using library with unsupported Device"
+#endif
+
+#else
+#error "using library without an Default MCU Device"
+#endif
+
+using DEFAULT_MCU = _DEFAULT;
 using DefaultMcuType = DEFAULT_MCU;

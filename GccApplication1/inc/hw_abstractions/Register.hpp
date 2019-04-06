@@ -32,7 +32,7 @@ namespace reg {
 		
 		public:
 		NoConstructors(Register);
-		using regSize = size;
+		using reg_size = size;
 		template<typename... ARGS>
 		inline void on(const ARGS... bits) volatile {
 			if constexpr(sizeof...(ARGS) == 0){
@@ -100,7 +100,7 @@ namespace reg {
 		
 		public:
 		NoConstructors(Register);
-		using regSize = size;
+		using reg_size = size;
 		[[nodiscard]] mem_width raw() const volatile {
 			return reg;
 		}
@@ -135,7 +135,7 @@ namespace reg {
 		
 		public:
 		NoConstructors(Register);
-		using regSize = size;
+		using reg_size = size;
 		using special_bit = Bits;
 		
 		template<typename... ARGS>
@@ -216,7 +216,7 @@ namespace reg {
 		
 		NoConstructors(Register);
 		
-		using regSize = size;
+		using reg_size = size;
 		
 		using special_bit = Bits;
 		
@@ -228,7 +228,9 @@ namespace reg {
 		[[nodiscard]] bool areSet() volatile;
 
 		template<typename... ARGS>
-		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
+		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile
+		requires(std::is_same_v<typename utils::front<ARGS...>::type, special_bit> && utils::sameTypes<ARGS...>())
+		{
 			static_assert(std::is_same<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
@@ -236,7 +238,9 @@ namespace reg {
 		[[nodiscard]] bool anySet() volatile;
 
 		template<typename... ARGS>
-		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile {
+		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile
+        requires(std::is_same_v<typename utils::front<ARGS...>::type, special_bit> && utils::sameTypes<ARGS...>())
+		{
 			return (static_cast<size>(bits) | ...) & reg ;
 		}
 		
@@ -257,7 +261,7 @@ namespace reg {
 		
 		NoConstructors(Register);
 		
-		using regSize = size;
+		using reg_size = size;
 		
 		using special_bit = Bits;
 		
@@ -273,7 +277,9 @@ namespace reg {
 		[[nodiscard]] bool areSet() volatile;
 
 		template<typename... ARGS>
-		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile {
+		[[nodiscard]] inline bool areSet(const ARGS...bits) const volatile
+        requires(std::is_same_v<typename utils::front<ARGS...>::type, special_bit> && utils::sameTypes<ARGS...>())
+		{
 			static_assert(std::is_same<special_bit,typename utils::front<ARGS...>::type>::value && utils::sameTypes<ARGS...>(),"only the special bits are allowed");
 			return ((static_cast<size>(bits) | ...) & reg) == (static_cast<size>(bits) | ...);
 		}
@@ -281,13 +287,17 @@ namespace reg {
 		[[nodiscard]] bool anySet() volatile;
 
 		template<typename... ARGS>
-		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile {
+		[[nodiscard]] inline bool anySet(const ARGS...bits) const volatile
+        requires(std::is_same_v<typename utils::front<ARGS...>::type, special_bit> && utils::sameTypes<ARGS...>())
+		{
 			return (static_cast<size>(bits) | ...) & reg;
 		}
 		
 		
 		template<typename... ARGS>
-		inline void toggle(const ARGS... bits) volatile {
+		inline void toggle(const ARGS... bits) volatile
+        requires(std::is_same_v<typename utils::front<ARGS...>::type, special_bit> && utils::sameTypes<ARGS...>())
+		{
 			if constexpr(sizeof...(ARGS) == 0){
 				reg = static_cast<size>(-1);
 			} else
@@ -309,7 +319,7 @@ namespace reg {
 		
 		public:
 		NoConstructors(Register);
-		using regSize = size;
+		using reg_size = size;
 		template<typename... ARGS>
 		inline void toggle(const ARGS... bits) volatile {
 			if constexpr(sizeof...(ARGS) == 0){

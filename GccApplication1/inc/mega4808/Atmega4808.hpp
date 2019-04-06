@@ -18,14 +18,14 @@ using ptr_t = uintptr_t;
 #include "hal/Atmega4808SPI.hpp"
 #include "hal/ATmega4808TWI.hpp"
 #include "hal/ATmega4808CPU.hpp"
-#include "hw_abstractions/CPU.hpp"
+#include "hal/ATmega4808USART.hpp"
+#include "../hw_abstractions/CPU.hpp"
 #include "../hw_abstractions/RessourceController.hpp"
 
 namespace mega4808 {
 	
 
-	template<typename frequenzy>
-	requires(utils::isEqual<MHZ4,frequenzy>::value || utils::isEqual<MHZ12,frequenzy>::value || utils::isEqual<MHZ20,frequenzy>::value)
+	template<auto frequency>
 	class Atmega4808 {
 
 		template<typename Alias>
@@ -38,7 +38,7 @@ namespace mega4808 {
 
 	    struct isZero{};
 
-		static constexpr auto clockFrequenzy = frequenzy::value;
+		static constexpr auto clockFrequency = frequency;
 		
 		NoConstructors(Atmega4808);
 		
@@ -72,10 +72,9 @@ namespace mega4808 {
 		};
 
 		struct SPI : public AVR::rc::details::RCComponent<spi_details::spis> {
-				
+
 			using TransferMode = mega4808::spi_details::TransferMode;
 			using Prescaler = mega4808::spi_details::Prescaler;
-			using Component_t = mega4808::spi_details::spiComponent;
 
 			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered,
 			bool waitForReceive, Prescaler prescaler>
@@ -106,6 +105,9 @@ namespace mega4808 {
 				static constexpr BConf buf = buffered ? BConf::Bufen : static_cast<BConf>(0);
 				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
 			};
+
+		    private:
+		    using Component_t = spi_details::spiComponent;
 		};
 		
 		struct TWI : public AVR::rc::details::RCComponent<twi_details::twis>  {
@@ -113,7 +115,6 @@ namespace mega4808 {
 			using SDAHold = twi_details::SDAHold;
 			using SDASetup = twi_details::SDASetup;
 			using MasterTimeout = twi_details::MasterTimeout;
-            using Component_t = mega4808::twi_details::twiComponent;
 
 			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut, mem_width baudRate>
 			struct TWIMasterSetting{
@@ -141,6 +142,13 @@ namespace mega4808 {
 				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
 				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);
 			};
+
+		private:
+            using Component_t = mega4808::twi_details::twiComponent;
+		};
+
+		struct USART : public AVR::rc::details::RCComponent<usart_details::usarts> {
+
 		};
 
 		class Status {

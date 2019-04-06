@@ -14,7 +14,7 @@
 
 namespace AVR {
 	namespace spi {
-		
+
 	    template<auto N> struct useFifo{static constexpr auto value = N;}; struct noFifo{static constexpr auto value = 0;}; struct blocking {using fifo = noFifo;}; template<typename fifoUse = noFifo> struct notBlocking {using fifo = fifoUse;};
         struct ReadOnly{}; struct WriteOnly{}; struct ReadWrite{};
 
@@ -61,11 +61,11 @@ namespace AVR {
 				using InterruptControl = typename component::registers::intctrl;
 				using Data = typename component::registers::data;
 				using InterruptFlags = typename component::registers::intflags;
-				using InterruptControlBits = typename InterruptControl::type::special_bit;
-				using InterruptFlagBits = typename InterruptFlags::type::special_bit;
+
 
 				public:
-
+                using InterruptControlBits = typename InterruptControl::type::special_bit;
+                using InterruptFlagBits = typename InterruptFlags::type::special_bit;
                 NoConstructors(SPI);
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && !fifoEnabled && !isBlocking && !isReadOnly>>
@@ -160,10 +160,8 @@ namespace AVR {
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && fifoEnabled>>
                 static inline void periodic(){
-                    if constexpr(! isReadOnly)
-                    doIfAnySet<txFunc>(InterruptFlagBits::Txcif);
-                    if constexpr(! isWriteOnly)
-                    doIfAnySet<rxFunc>(InterruptFlagBits::Rxcif);
+                    if constexpr(! isReadOnly) txFunc();
+                    if constexpr(! isWriteOnly) rxFunc();
                 }
 			};
 
@@ -202,17 +200,11 @@ namespace AVR {
 			};
 		}
 
-		template<typename mcu = DEFAULT_MCU>
-		using Basic_TransferMode =  typename mcu::SPI::TransferMode;
-		using TransferMode = Basic_TransferMode<>;
-		
-		template<typename mcu = DEFAULT_MCU>
-		using Basic_Prescaler = typename mcu::SPI::Prescaler;
-		using Prescaler = Basic_Prescaler<>;
-		
-		template<typename mcu = DEFAULT_MCU>
-		using Basic_SPI_Comp = typename mcu::SPI;
-		using SPI_Comp = Basic_SPI_Comp<>;
+        using SPI_Comp = typename DEFAULT_MCU ::SPI;
+
+		using TransferMode = typename SPI_Comp::TransferMode;
+
+		using Prescaler = typename SPI_Comp::Prescaler;
 		
 		namespace details{
 			using defComponent = AVR::rc::Instance<
@@ -221,15 +213,15 @@ namespace AVR {
 			AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 			
 			using defRC = rc::RessourceController<defComponent>;
-			using defInst = typename defRC::getRessource<defComponent>::type;
+			using defInst = defRC::getRessource_t<defComponent>;
 		}
 
 		template<typename accesstype = blocking,typename instance = details::defInst,typename RW = ReadWrite,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
 		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, typename bit_width = mem_width>
-		using SPIMaster = AVR::spi::details::SPIMaster<RW,accesstype, SPI_Comp::Component_t,typename instance::t1, typename instance::t2, SPI_Comp::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
+		using SPIMaster = AVR::spi::details::SPIMaster<RW,accesstype, typename SPI_Comp::Component_t,typename instance::t1, typename instance::t2, SPI_Comp::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
 		
 		template<typename accesstype = blocking,typename instance = details::defInst,typename RW = ReadWrite, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
-		using SPISlave = AVR::spi::details::SPISlave<RW,accesstype,typename DEFAULT_MCU::SPI::Component_t,typename instance::t1, typename instance::t2,typename DEFAULT_MCU::SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
+		using SPISlave = AVR::spi::details::SPISlave<RW,accesstype,typename SPI_Comp::Component_t,typename instance::t1, typename instance::t2,typename DEFAULT_MCU::SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
 
 	}
 }

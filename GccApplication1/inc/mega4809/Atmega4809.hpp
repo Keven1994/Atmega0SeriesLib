@@ -17,9 +17,15 @@ using ptr_t = uintptr_t;
 #include "hal/Atmega4809SPI.hpp"
 
 
-namespace mega4809 {	
+namespace mega4809 {
+
+    template<auto frequency>
 	struct Atmega4809 {
-		
+
+	    NoConstructors(Atmega4809);
+
+	    static auto constexpr clockFrequency = frequency;
+
 		struct Ports {
 
 			Ports() = delete;
