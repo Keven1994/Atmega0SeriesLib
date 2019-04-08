@@ -8,6 +8,7 @@
 
 #pragma once
 #include <avr/io.h>
+#include <hw_abstractions/Basics.hpp>
 //type informations for the templates in the hw includes
 using mem_width = uint8_t;
 using ptr_t = uintptr_t;
@@ -44,24 +45,24 @@ namespace mega4808 {
 		
 		template<typename T>
 		static inline constexpr bool is_atomic(){
-		    if constexpr (std::is_same<T, uint8_t>::value) return true;
-		    else return false;
+            return false;
 		}
 
 		template<typename p>
-		struct Ports {
+	struct Port {
 
-			using portX = typename utils::condEqual<AVR::port::A,p, port_details::port<port_details::ports::porta>,
-			typename utils::condEqual<AVR::port::C,p, port_details::port<port_details::ports::portc>,
-			typename utils::condEqual<AVR::port::D,p, port_details::port<port_details::ports::portd>,
-			typename utils::condEqual<AVR::port::F,p, port_details::port<port_details::ports::portf>,void
-			>::type
-			>::type
-			>::type
-			>::type;
-			
-			static_assert(! utils::isEqual<portX,void>::value,"port not available");
-		};
+            using port = typename utils::condEqual<AVR::port::A, p, port_details::port<port_details::ports::porta>,
+                    typename utils::condEqual<AVR::port::C, p, port_details::port<port_details::ports::portc>,
+                            typename utils::condEqual<AVR::port::D, p, port_details::port<port_details::ports::portd>,
+                                    typename utils::condEqual<AVR::port::F, p, port_details::port<port_details::ports::portf>, void
+                                    >::type
+                            >::type
+                    >::type
+            >::type;
+
+            static constexpr auto baseAddress = port::port;
+            using Component_t = port_details::portComponent;
+        };
 		
 		struct EventSystem {
 
@@ -71,7 +72,7 @@ namespace mega4808 {
 			using users = mega4808::details::users;
 		};
 
-		struct SPI : public AVR::rc::details::RCComponent<spi_details::spis> {
+		struct SPI : public AVR::rc::details::RCComponent<spi_details::spis, typename spi_details::spiComponent> {
 
 			using TransferMode = mega4808::spi_details::TransferMode;
 			using Prescaler = mega4808::spi_details::Prescaler;
@@ -110,7 +111,7 @@ namespace mega4808 {
 		    using Component_t = spi_details::spiComponent;
 		};
 		
-		struct TWI : public AVR::rc::details::RCComponent<twi_details::twis>  {
+		struct TWI : public AVR::rc::details::RCComponent<twi_details::twis, twi_details::twiComponent>  {
 			
 			using SDAHold = twi_details::SDAHold;
 			using SDASetup = twi_details::SDASetup;
@@ -147,7 +148,7 @@ namespace mega4808 {
             using Component_t = mega4808::twi_details::twiComponent;
 		};
 
-		struct USART : public AVR::rc::details::RCComponent<usart_details::usarts> {
+		struct USART : public AVR::rc::details::RCComponent<usart_details::usarts, usart_details::usartComponent> {
 
 		};
 

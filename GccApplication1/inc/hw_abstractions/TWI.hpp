@@ -20,7 +20,7 @@ namespace AVR {
 		namespace details {
 			
 			template<typename component, typename instance>
-			struct TWI {
+			struct _TWI {
 				protected:
 				template<typename Reg>
 				[[nodiscard,gnu::always_inline]] static inline auto& reg(){
@@ -29,7 +29,7 @@ namespace AVR {
 			};
 			
 			template<typename accesstype,  typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-			class TWIMaster : protected TWI<component, instance> {
+			class TWIMaster : protected _TWI<component, instance> {
 				using Bridgectrl = typename component::registers::bridgectrl;
 				using Ctrla =  typename component::registers::ctrla;
 				using Dbgctrl = typename component::registers::dbgctrl;
@@ -136,7 +136,7 @@ namespace AVR {
 			};
 			
 			template<typename accesstype,  typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-			class TWISlave : public TWI<component,instance>  {
+			class TWISlave : public _TWI<component,instance>  {
 				
 				using Bridgectrl = typename component::registers::bridgectrl;
 				using Ctrla =  typename component::registers::ctrla;
@@ -190,7 +190,7 @@ namespace AVR {
 			};
 		}
 
-        using TWI_Comp = typename DEFAULT_MCU::TWI;
+        using TWI = typename DEFAULT_MCU::TWI;
 
 		template<typename mcu= DEFAULT_MCU>
 		using Basic_SDAHold =  typename mcu::TWI::SDAHold;
@@ -206,7 +206,7 @@ namespace AVR {
 		
 		namespace details{
 			using defComponent = AVR::rc::Instance<
-			TWI_Comp, // using ressource SPI
+			TWI, // using ressource SPI
 			AVR::rc::Number<0>, //using instance '0'
 			AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 			
@@ -216,10 +216,10 @@ namespace AVR {
 
 		template<typename accesstype = blocking,typename instance = details::defInst, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,
 		bool quickCommand = true, bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
-		using TWIMaster = AVR::twi::details::TWIMaster<accesstype,TWI_Comp::Component_t,typename instance::t1, typename instance::t2, TWI_Comp::template TWIMasterSetting<fastModePlus,holdTime,sdaSetup,quickCommand,smartMode,timeOut,21>, bit_width>;
+		using TWIMaster = AVR::twi::details::TWIMaster<accesstype,TWI::Component_t,typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus,holdTime,sdaSetup,quickCommand,smartMode,timeOut,21>, bit_width>;
 		
 		template<typename accesstype = blocking,typename instance = details::defInst, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,typename bit_width = mem_width>
-		using TWISlave = AVR::twi::details::TWISlave<accesstype, TWI_Comp::Component_t,typename instance::t1, typename instance::t2, TWI_Comp::template TWISlaveSetting<fastModePlus,holdTime,sdaSetup>,bit_width>;
+		using TWISlave = AVR::twi::details::TWISlave<accesstype, TWI::Component_t,typename instance::t1, typename instance::t2, TWI::template TWISlaveSetting<fastModePlus,holdTime,sdaSetup>,bit_width>;
 
 	}
 	

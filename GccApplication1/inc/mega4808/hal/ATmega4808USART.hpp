@@ -137,6 +137,21 @@ namespace mega4808 {
                 using txdatah = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,TXDATAHMasks>,0x3>;
                 using txdatal = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,TXDATALMasks>,0x2>;
                 using txplctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,TXPLCTRLMasks>,0xD>;
+                rxdatal::type Rxdatal;
+                rxdatah::type Rxdatah;
+                txdatal::type Txdatal;
+                txdatah::type Txdatah;
+                status::type Status;
+                ctrla::type Ctrla;
+                ctrlb::type Ctrlb;
+                ctrlc::type Ctrlc;
+                baud::type Baud;
+                volatile mem_width reserved9;
+                ctrld::type Ctrld;
+                dbgctrl::type Dbgctrl;
+                evctrl::type Evctrl;
+                txplctrl::type Txplctrl;
+                rxplctrl::type Rxplctrl;
             };
 
         };
@@ -201,6 +216,38 @@ namespace mega4808 {
 
             template<bool dummy>
             struct inst<1, dummy>
+            {
+                template<auto N ,bool dummy1 = true>
+                struct alt;
+
+                [[nodiscard,gnu::always_inline]] static inline auto& value()  { return USART1;}
+
+                template<bool dummy1>
+                struct alt<0, dummy1>
+                {
+                    struct Rxd {
+                        using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,1>;
+                    };
+
+                    struct Txd {
+                        using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,0>;
+                    };
+
+                    struct Xck {
+                        using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,2>;
+                    };
+
+                    struct Xdir {
+                        using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,3>;
+                    };
+
+                    using list = Meta::List<typename Rxd::pin0, typename Txd::pin0, typename Xck::pin0, typename Xdir::pin0>;
+                };
+
+            };
+
+            template<bool dummy>
+            struct inst<2, dummy>
             {
                 template<auto N ,bool dummy1 = true>
                 struct alt;

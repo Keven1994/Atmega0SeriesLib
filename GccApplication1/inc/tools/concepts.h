@@ -73,6 +73,14 @@ namespace etl {
         concept bool NotZeroAVR = !ZeroAVR<MCU>;
 
         template<typename T>
+concept bool RCComponent = requires(T) {
+     T::isRCComponent == true;
+};
+
+        template<typename T>
+        concept bool NotRCComponent = !RCComponent<T>;
+
+        template<typename T>
         concept bool Fundamental = std::is_fundamental<T>::value;
 
         template<typename T>

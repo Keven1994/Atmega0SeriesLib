@@ -32,15 +32,22 @@ namespace AVR {
 				static constexpr auto Alternative = alternative;
 			};
 			
-			template<typename comstr>
+			template<typename instances, typename Component_t>
 			class RCComponent {
 				template<typename Alias>
 				friend struct AVR::rc::details::resolveComponent;
 				template<typename Alias>
 				struct comps{
-					using inst  =typename  comstr::template inst<Alias::Instance>;
+					using inst  =typename  instances::template inst<Alias::Instance>;
 					using alt  =typename  inst::template alt<Alias::Alternative>;
 				};
+			public:
+			    static constexpr bool isRCComponent = true;
+
+                template<auto number>
+                static inline auto getBaseAddress(){
+                    return (typename Component_t::registers*) &instances::template inst<number>::value();
+                }
 				
 			};
 		}

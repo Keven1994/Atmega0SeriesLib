@@ -11,6 +11,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <cassert>
 
 namespace utils {
 
@@ -292,6 +293,18 @@ namespace details {
             mentrys += tmp;
         }
 
+        virtual void addMember(std::string &&gen) noexcept {
+            if (!mentrys.empty())
+                mentrys += "\n";
+            auto tmp = "    " + gen;
+
+            for (uint32_t i = 0; i < tmp.size(); i++) {
+                if (tmp[i] == '\n')
+                    tmp.insert(i + 1, "    ");
+            }
+            mentrys += tmp;
+        }
+
         [[nodiscard]] std::string generate() noexcept override {
             std::string tmp = "struct " + mname + " {\n";
             tmp += mentrys;
@@ -359,7 +372,9 @@ class MCUStructureBuilder {
 
     std::string deviceName;
     std::string compname;
+    std::vector<std::string> registers{};
     details::Struct compStruct, regs;
+    unsigned int highestOffset = 0;
     details::Namespace nameSpace;
     std::vector<details::Enum> enums;
     std::vector<details::Struct*> instances;
@@ -379,7 +394,7 @@ class MCUStructureBuilder {
         return -1;
     }
 
-    [[nodiscard]] int countDistinct(const std::vector<utils::triple<>>& container){
+    [[nodiscard]] int countDistinctFunctions(const std::vector<utils::triple<>>& container){
         int tmp = 0;
         std::vector<std::string> processed{};
         for (const auto &elem : container) {
@@ -387,6 +402,19 @@ class MCUStructureBuilder {
             if(!utils::contains(processed,search)) {
                 tmp++;
                 processed.push_back(search);
+            }
+        }
+        return tmp;
+    }
+
+    [[nodiscard]] int countDistinctGroups(const std::vector<utils::triple<>>& container){
+        int tmp = 0;
+        std::vector<std::string> processed{};
+        for (const auto &elem : container) {
+            auto& search1 = elem.str2;
+            if( ! utils::contains(processed,search1)) {
+                tmp++;
+                processed.push_back(search1);
             }
         }
         return tmp;
@@ -404,10 +432,28 @@ public:
 
     explicit MCUStructureBuilder(std::string &&deviceName, std::string &&ComponentName)
     noexcept : deviceName(deviceName), compname(ComponentName), compStruct(utils::toLowerCase(compname) + "Component"),regs("registers"),
-               nameSpace(deviceName.substr(2)), enums(),instances() {}
+               nameSpace(deviceName.substr(2)), enums(),instances() {registers.reserve(500); for(auto i = 0 ; i < 500; i++)registers.push_back("");}
 
     void addRegister(std::string &&name, std::string &&protection, std::string &&offset, std::string &&size,
                      std::string &&values, reg_type type) noexcept {
+
+        try {
+            auto withoutX = "0"+offset.substr(2,offset.size());
+
+            unsigned int temp = std::stoi(withoutX, 0, 16);
+            assert(temp < 500);
+            if(!registers[temp].empty()){
+
+                std::cout << "doubled offset " << registers[temp] << " " << name << " " <<temp << '\n';
+            }
+            registers[temp] = name;
+            //assert(registers[temp].empty());
+            highestOffset = (highestOffset < temp ? temp : highestOffset);
+
+        } catch (std::exception& e){
+
+            std::cerr << "offset string was not numeric! '\n";
+        }
         auto tmp = details::Reg(std::move(name), std::move(protection), std::move(offset), std::move(size),
                                 std::move(values), type);
         regs.addMember(tmp);
@@ -465,8 +511,10 @@ public:
         }
 
 
-        auto funcctr = countDistinct(fgps);
-        if(funcctr == 1){ //special case when there is only 1 function (e.g. ports)
+        auto funcctr = countDistinctFunctions(fgps);
+        auto grpc=countDistinctGroups(fgps);
+
+        if(funcctr == 1 &&  grpc == 1){ //special case when there is only 1 function (e.g. ports)
             auto tmpstr = modName;
             addInstance(tmpstr);
             std::vector<details::Struct> toAdd{};
@@ -489,7 +537,7 @@ public:
                 elem.addTypeAlias("list",typestr+"");
                 instances[inst]->addMember(elem);
             }
-        } else if(funcctr > 1){
+        } else if(funcctr > 1 || grpc > 1){
             multifunction = true;
             auto tmpstr = modName;
             addInstance(tmpstr,std::to_string(inst));
@@ -544,6 +592,15 @@ public:
         std::string tmp = header;
         for (auto &elem: enums) {
             compStruct.addMember(elem);
+        }
+        for(unsigned int i = 0; i <= highestOffset; i++){
+            if(registers[i].empty()){
+
+                regs.addMember(std::string("volatile mem_width reserved")+std::to_string(i)+";");
+            } else {
+
+                regs.addMember(utils::toLowerCase(registers[i])+ "::type " +utils::toCamelCase(registers[i]) +";");
+            }
         }
         compStruct.addMember(regs);
         details::Namespace ns{utils::toLowerCase(compname)+"_details"};

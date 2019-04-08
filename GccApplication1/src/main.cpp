@@ -37,12 +37,12 @@ using PortA = Port<AVR::port::A>;
 using PortC = Port<AVR::port::C>;
 
 using spiRessource = AVR::rc::Instance<
-AVR::spi::SPI_Comp, // using ressource SPI
+AVR::spi::SPI, // using ressource SPI
 AVR::rc::Number<0>, //using instance '0'
 AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 using twiRessource = AVR::rc::Instance<
-AVR::twi::TWI_Comp, // using ressource SPI
+AVR::twi::TWI, // using ressource SPI
 AVR::rc::Number<0>, //using instance '0'
 AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
@@ -65,10 +65,15 @@ enum class error : mem_width {
 	notBusy = 42	
 };
 
+#include "hw_abstractions/Basics.hpp"
 
 //static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction::output>(); twi::singleTransfer(42); twi::stopTransaction(); return static_cast<mem_width>(error::notBusy);};
 static constexpr auto spilam = [](){spi::transfer(42);};
 int main() {
+    AVR::getBaseAddress<AVR::spi::SPI,0>()->Ctrla.raw() = 0xff;
+    AVR::getBaseAddress<AVR::twi::TWI,0>()->Ctrla.raw() = 0xff;
+    AVR::getBaseAddress<AVR::port::Port,AVR::port::A>()->Out.raw() = 0xff;
+    AVR::getBaseAddress<AVR::port::Port<AVR::port::A>>()->Out.raw() = 0xff;
 
     spi::init();
 

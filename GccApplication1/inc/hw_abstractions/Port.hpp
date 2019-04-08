@@ -149,6 +149,6 @@ namespace AVR {
         };
 
         template<typename p, typename DefaultMCU = DEFAULT_MCU>
-        using Port = typename DefaultMCU::template Ports<p>::portX;
+        using Port = typename DefaultMCU::template Port<p>;
     }
 }

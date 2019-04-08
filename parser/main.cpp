@@ -217,13 +217,9 @@ int main(int argc, const char **argv) {
                             instName = node2.attribute("name").as_string();
 
                             if (utils::contains(pins_available, (sig_pad)) && grpValid) {
+                                if(modName == "USART")
+                                std::cout << sig_func << " " << sig_group << " " << sig_pad << "\n";
                                 tmp.push_back(utils::triple<>{sig_func, sig_group, sig_pad});
-                            } else {
-#ifdef DEBUG
-                                std::cout << "not available: " << sig_func << " " << sig_group << " " << sig_pad << '\n';
-#endif
-                                tmp.clear();
-                                break;
                             }
 
                         }

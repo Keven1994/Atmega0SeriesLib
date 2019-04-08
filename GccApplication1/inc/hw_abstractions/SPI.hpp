@@ -21,7 +21,7 @@ namespace AVR {
 		namespace details{
 			
 			template<typename RW, typename accesstype, typename component, typename instance, typename bit_width>
-			class SPI {
+			class _SPI {
 
                 using UseFifo = typename accesstype::fifo;
                 static constexpr bool fifoEnabled = std::is_same_v<accesstype,notBlocking<useFifo<UseFifo::value>>>;
@@ -66,7 +66,7 @@ namespace AVR {
 				public:
                 using InterruptControlBits = typename InterruptControl::type::special_bit;
                 using InterruptFlagBits = typename InterruptFlags::type::special_bit;
-                NoConstructors(SPI);
+                NoConstructors(_SPI);
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && !fifoEnabled && !isBlocking && !isReadOnly>>
 				static inline void transfer(bit_width data)
@@ -166,7 +166,7 @@ namespace AVR {
 			};
 
 			template<typename RW, typename accesstype, typename component, typename instance,typename alt, typename Setting, typename bit_width>
-			struct SPIMaster : public details::SPI<RW, accesstype,component, instance, bit_width> {
+			struct SPIMaster : public details::_SPI<RW, accesstype,component, instance, bit_width> {
 				NoConstructors(SPIMaster);
 				
 				[[gnu::always_inline]] static inline void init(){
@@ -183,7 +183,7 @@ namespace AVR {
 			};
 
 			template<typename RW, typename accesstype, typename component, typename instance,typename alt,typename Setting, typename bit_width>
-			struct SPISlave : public details::SPI<RW, accesstype,component, instance, bit_width> {
+			struct SPISlave : public details::_SPI<RW, accesstype,component, instance, bit_width> {
 
 				NoConstructors(SPISlave);
 
@@ -200,15 +200,17 @@ namespace AVR {
 			};
 		}
 
-        using SPI_Comp = typename DEFAULT_MCU ::SPI;
+        using SPI = typename DEFAULT_MCU::SPI;
 
-		using TransferMode = typename SPI_Comp::TransferMode;
+		//SPI::_;
 
-		using Prescaler = typename SPI_Comp::Prescaler;
+		using TransferMode = typename SPI::TransferMode;
+
+		using Prescaler = typename SPI::Prescaler;
 		
 		namespace details{
 			using defComponent = AVR::rc::Instance<
-			SPI_Comp, // using ressource SPI
+			        SPI, // using ressource SPI
 			AVR::rc::Number<0>, //using instance '0'
 			AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 			
@@ -218,10 +220,10 @@ namespace AVR {
 
 		template<typename accesstype = blocking,typename instance = details::defInst,typename RW = ReadWrite,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
 		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, typename bit_width = mem_width>
-		using SPIMaster = AVR::spi::details::SPIMaster<RW,accesstype, typename SPI_Comp::Component_t,typename instance::t1, typename instance::t2, SPI_Comp::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
+		using SPIMaster = AVR::spi::details::SPIMaster<RW,accesstype, typename SPI::Component_t,typename instance::t1, typename instance::t2, SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
 		
 		template<typename accesstype = blocking,typename instance = details::defInst,typename RW = ReadWrite, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
-		using SPISlave = AVR::spi::details::SPISlave<RW,accesstype,typename SPI_Comp::Component_t,typename instance::t1, typename instance::t2,typename DEFAULT_MCU::SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
+		using SPISlave = AVR::spi::details::SPISlave<RW,accesstype,typename SPI::Component_t,typename instance::t1, typename instance::t2, SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
 
 	}
 }
