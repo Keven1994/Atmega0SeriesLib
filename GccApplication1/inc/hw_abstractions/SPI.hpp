@@ -158,7 +158,7 @@ namespace AVR {
 				    return _SPI::fifoIn.pop_front(item);
 				}
 
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && _SPI::fifoEnabled && !InterruptEnabled>>
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && _SPI::fifoEnabled && !_SPI::InterruptEnabled>>
                 static inline void periodic(){
                     if constexpr(! _SPI::isReadOnly) txFunc();
                     if constexpr(! _SPI::isWriteOnly) rxFunc();
