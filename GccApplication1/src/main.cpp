@@ -13,7 +13,8 @@
 #include <avr/interrupt.h>
 
 #define MEGA4808
-
+//CMake define AVR Makro ???????????????????????????? wtf
+#undef AVR
 #ifdef MEGA4808
 //fix unavailable ports
 #undef PORTB
@@ -47,13 +48,21 @@ AVR::rc::Number<0>, //using instance '0'
 AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 
+struct testPA {
+
+    static inline bool process(std::byte b){
+        return true;
+    }
+
+};
+
 using RC = AVR::rc::RessourceController<spiRessource,twiRessource>; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
 //using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
-using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::noFifo>,res, AVR::spi::WriteOnly>; // put spi ressource in
+using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrupts<> >,res, AVR::ReadWrite>; // put spi ressource in
 
-using twi = AVR::twi::TWIMaster<AVR::twi::notBlocking,twires>;
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<>,twires>;
 
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
@@ -65,15 +74,11 @@ enum class error : mem_width {
 	notBusy = 42	
 };
 
-#include "hw_abstractions/Basics.hpp"
 
 //static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction::output>(); twi::singleTransfer(42); twi::stopTransaction(); return static_cast<mem_width>(error::notBusy);};
-static constexpr auto spilam = [](){spi::transfer(42);};
+static constexpr auto spilam = [](){ spi::put(42);};
+
 int main() {
-    AVR::getBaseAddress<AVR::spi::SPI,0>()->Ctrla.raw() = 0xff;
-    AVR::getBaseAddress<AVR::twi::TWI,0>()->Ctrla.raw() = 0xff;
-    AVR::getBaseAddress<AVR::port::Port,AVR::port::A>()->Out.raw() = 0xff;
-    AVR::getBaseAddress<AVR::port::Port<AVR::port::A>>()->Out.raw() = 0xff;
 
     spi::init();
 

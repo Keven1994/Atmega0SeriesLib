@@ -25,6 +25,7 @@ namespace etl {
 //    template<Unsigned T, uint8_t Bits> struct Fraction;
 
     namespace Concepts {
+
         template<typename T, typename... ArgType>
         concept bool Callable = requires(T t) {
                 t(ArgType{}...);
@@ -69,13 +70,29 @@ namespace etl {
         concept bool ZeroAVR = requires(MCU) {
             typename MCU::isZero;
         };
+
         template<typename MCU>
         concept bool NotZeroAVR = !ZeroAVR<MCU>;
 
         template<typename T>
-concept bool RCComponent = requires(T) {
-     T::isRCComponent == true;
+        concept bool ProtocolAdapter = requires(T){
+            {T::process(std::byte{0})} -> bool;
+        };
+
+template<typename T>
+concept bool hasRxHandler = requires(T){
+    {T::rxHandler()}->void;
 };
+
+template<typename T>
+concept bool hasTxHandler = requires(T){
+    T::txHandler() ;
+};
+
+        template<typename T>
+        concept bool RCComponent = requires(T) {
+             T::isRCComponent == true;
+        };
 
         template<typename T>
         concept bool NotRCComponent = !RCComponent<T>;

@@ -24,7 +24,6 @@ using ptr_t = uintptr_t;
 #include "../hw_abstractions/RessourceController.hpp"
 
 namespace mega4808 {
-	
 
 	template<auto frequency>
 	class Atmega4808 {
@@ -49,7 +48,7 @@ namespace mega4808 {
 		}
 
 		template<typename p>
-	struct Port {
+	    struct Port {
 
             using port = typename utils::condEqual<AVR::port::A, p, port_details::port<port_details::ports::porta>,
                     typename utils::condEqual<AVR::port::C, p, port_details::port<port_details::ports::portc>,
@@ -153,7 +152,6 @@ namespace mega4808 {
 		};
 
 		class Status {
-
 		    public:
             using Component_t = cpu_details::cpuComponent;
 		};

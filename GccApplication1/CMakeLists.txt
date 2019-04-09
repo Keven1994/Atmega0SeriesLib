@@ -10,12 +10,10 @@ set(MCU   atmega4808)
 set(AVR_DEV_LIB_NAME m4808)
 set(F_CPU 4000000)
 set(BAUD  9600)
+set(CMAKE_CXX_STANDARD 20)
 add_definitions(-DF_CPU=${F_CPU})
 
 # program names
-set(AVR_DIR "C:/Users/keven/dev/toolchains/avr-gcc-8.2.0-x64-mingw/bin/")
-set(AVR_INC "C:/Users/keven/dev/toolchains/avr-gcc-8.2.0-x64-mingw/avr/include")
-set(AVR_LIB "C:/Users/keven/dev/toolchains/avr-gcc-8.2.0-x64-mingw/avr/lib")
 set(AVRCPP   avr-g++)
 set(AVRC     avr-gcc)
 set(AVRSTRIP avr-strip)
@@ -73,14 +71,13 @@ set(CWARN     "-Wall -Wstrict-prototypes -Wl,--gc-sections -Wl,--relax")
 set(CTUNING   "-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections")
 set(COPT      "-Os -lm -lprintf_flt")
 set(CMCU      "-mmcu=${MCU}")
-set(CDEFS     "-DF_CPU=${F_CPU} -DBAUD_RATE=${BAUD}-D__AVR_DEV_LIB_NAME__=${AVR_DEV_LIB_NAME} -D_${AVR_DEV_LIB_NAME}")
 set(CXXOPTS   "-std=c++2a -fconcepts")
 
-set(CFLAGS   "${CMCU} ${CDEFS} ${COPT} ${CWARN} ${CSTANDARD} ${CTUNING}")
-set(CXXFLAGS "${CMCU} ${CDEFS} ${COPT} ${CTUNING} ${CXXOPTS}")
+set(CFLAGS   "${CMCU} ${COPT} ${CWARN} ${CSTANDARD} ${CTUNING}")
+set(CXXFLAGS "${CMCU} ${COPT} ${CTUNING} ${CXXOPTS} -D_${AVR_DEV_LIB_NAME}")
 
 set(CMAKE_C_FLAGS   "${CFLAGS}")
-set(CMAKE_CXX_FLAGS "${CXXFLAGS}")
+set(CMAKE_CXX_FLAGS "${CXXFLAGS} ${CXXOPTS}")
 set(CMAKE_ASM_FLAGS   "${CFLAGS}")
 
 # Project setup
