@@ -298,6 +298,15 @@ namespace mega4808 {
 
         };
 
+        enum class CharacterSize : mem_width {
+            Bit5 = 0x0,
+            Bit6 = 0x1,
+            Bit7 = 0x2,
+            Bit8 = 0x3,
+            Bit9LowFirst = 0x6,
+            Bit9HighFirst = 0x7
+        };
+
         enum class CommunicationMode: mem_width {
             Asynchronous = static_cast<mem_width>(usartComponent::CTRLCMasks::Cmode_asynchronous),
             Synchronous = static_cast<mem_width>(usartComponent::CTRLCMasks::Cmode_synchronous) ,

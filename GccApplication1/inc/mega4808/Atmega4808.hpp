@@ -135,8 +135,6 @@ namespace mega4808 {
 			struct TWISlaveSetting{
 
 				using AConf = twi_details::twiComponent::CTRLAMasks;
-				using SAConf = twi_details::twiComponent::SCTRLAMasks;
-				using SBConf = twi_details::twiComponent::SCTRLBMasks;
 				
 				static constexpr AConf fastmode = fastModePlus ? AConf::Fmpen : static_cast<AConf>(0);
 				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
@@ -149,11 +147,35 @@ namespace mega4808 {
 
 		struct USART : public AVR::rc::details::RCComponent<usart_details::usarts, usart_details::usartComponent> {
 
-		    //template<
+		    using RS485Mode = usart_details::RS485Mode;
+		    using ReceiverMode = usart_details::ReceiverMode;
+		    using CommunicationMode = usart_details::CommunicationMode;
+		    using StopBitMode = usart_details::StopBitMode;
+		    using ParityMode = usart_details::ParityMode;
+		    using CharacterSize = usart_details::CharacterSize;
+
+		    template<usart_details::RS485Mode RSMode, usart_details::ReceiverMode receiverMode,
+		            usart_details::CommunicationMode ComMode, usart_details::ParityMode parityMode,
+		            usart_details::StopBitMode stopBitMode, usart_details::CharacterSize CharSize,
+		            bool StartFrameDetection, bool OpenDrainMode, bool MultiProcessor , bool LoopBackMode>
 		    struct USARTSetting {
+                using AConf = usart_details::usartComponent::CTRLAMasks;
+                using BConf = usart_details::usartComponent::CTRLBMasks;
+                using CConf = usart_details::usartComponent::CTRLCMasks;
 
+                static constexpr AConf rsmode = static_cast<AConf>(RSMode);
+                static constexpr AConf loopback = LoopBackMode ? AConf::Lbme : static_cast<AConf>(0);
+                static constexpr BConf opendrainmode = OpenDrainMode ? BConf::Odme : static_cast<BConf>(0);
+                static constexpr BConf startframedetection = StartFrameDetection ? BConf::Sfden : static_cast<BConf>(0);
+                static constexpr BConf multiprocessor = MultiProcessor ? BConf::Mpcm : static_cast<BConf>(0);
+                static constexpr BConf receivermode = static_cast<BConf>(receiverMode);
+                static constexpr CConf commode = static_cast<CConf>(ComMode);
+                static constexpr CConf paritymode = static_cast<CConf>(parityMode);
+                static constexpr CConf stoppbitmode = static_cast<CConf>(stopBitMode);
+                static constexpr CConf charsize = static_cast<CConf>(CharSize);
 		    };
-
+		private:
+		    using Component_t = usart_details::usartComponent;
 		};
 
 		class Status {

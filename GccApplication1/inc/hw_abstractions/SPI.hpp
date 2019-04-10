@@ -49,7 +49,7 @@ namespace AVR {
 
                 static inline void init(){
                     if constexpr(_SPI::InterruptEnabled){
-                        constexpr bool both = _SPI::isReadOnly && _SPI::isWriteOnly;
+                        constexpr bool both = !_SPI::isReadOnly && !_SPI::isWriteOnly;
                         if constexpr(_SPI::isReadOnly || both){
                             reg<InterruptControl>().on(InterruptControl::special_bit::Rxcie);
                         }
@@ -206,7 +206,8 @@ namespace AVR {
 			template<typename RW, typename accesstype, typename component, typename instance,typename alt, typename Setting, typename bit_width>
 			struct SPIMaster final : public details::_SPI<RW, accesstype,component, instance, bit_width> {
 				NoConstructors(SPIMaster);
-				
+
+				//init and enable
 				[[gnu::always_inline]] static inline void init(){
 
                     details::_SPI<RW, accesstype,component, instance, bit_width>::init();
@@ -227,6 +228,7 @@ namespace AVR {
 
 				NoConstructors(SPISlave);
 
+                //init and enable
 				[[gnu::always_inline]] static inline void init(){
 
                     details::_SPI<RW, accesstype,component, instance, bit_width>::init();

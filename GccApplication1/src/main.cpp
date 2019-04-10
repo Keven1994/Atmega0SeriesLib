@@ -25,7 +25,7 @@
 #include "../inc/hw_abstractions/Port.hpp"
 #include "../inc/hw_abstractions/Eventsystem.hpp"
 #include "../inc/hw_abstractions/TWI.hpp"
-
+#include "../inc/hw_abstractions/USART.hpp"
 #elif defined(MEGA4809)
 #include "../inc/mega4809/Atmega4809.hpp"
 
@@ -61,7 +61,7 @@ using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
 //using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
 using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>; // put spi ressource in
-
+using usart =AVR::usart::USART<>;
 using twi = AVR::twi::TWIMaster<AVR::notBlocking<>,twires>;
 
 using led1 = Pin<PortA, 2>;
@@ -79,7 +79,7 @@ enum class error : mem_width {
 static constexpr auto spilam = [](){ spi::put(42);};
 
 int main() {
-
+    usart::put(42);
     spi::init();
 
         while(true){
