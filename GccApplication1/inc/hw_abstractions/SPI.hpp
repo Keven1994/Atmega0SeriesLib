@@ -65,7 +65,7 @@ namespace AVR {
             static auto constexpr rxHelp = [](){receive();};
 
             public:
-		    
+
             template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled>>
             static inline void rxHandler(){
                 const auto c = reg<Data>.raw();

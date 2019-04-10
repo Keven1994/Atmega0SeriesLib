@@ -442,18 +442,15 @@ public:
 
             unsigned int temp = std::stoi(withoutX, 0, 16);
             assert(temp < 500);
-            if(!registers[temp].empty()){
 
-                std::cout << "doubled offset " << registers[temp] << " " << name << " " <<temp << '\n';
-            }
             registers[temp] = name;
-            //assert(registers[temp].empty());
             highestOffset = (highestOffset < temp ? temp : highestOffset);
 
         } catch (std::exception& e){
 
             std::cerr << "offset string was not numeric! '\n";
         }
+
         auto tmp = details::Reg(std::move(name), std::move(protection), std::move(offset), std::move(size),
                                 std::move(values), type);
         regs.addMember(tmp);
@@ -525,7 +522,6 @@ public:
                 auto i = 0;
                 for(auto& ele : elem.str2){
                     typestr += (i == 0 ? "" : ", ");
-                    //typestr += elem.str1+"::";
                     typestr += "pin"+std::to_string(i);
                     auto tmp = details::TypePin(std::string{ele[1]}, std::string{ele[2]}, std::to_string(i++));
                     temp.addMember(tmp);
@@ -579,10 +575,9 @@ public:
             }
 
             for(auto& func : funcs) {
-                //auto i = find(instances,modName);
-                //if(i >= 0) {
+
                     instances[inst]->addMember(func.str1);
-                //}
+
             }
 
         } else std::cerr << "no function found, sth went wrong\n";
