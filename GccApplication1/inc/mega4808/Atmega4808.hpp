@@ -149,6 +149,11 @@ namespace mega4808 {
 
 		struct USART : public AVR::rc::details::RCComponent<usart_details::usarts, usart_details::usartComponent> {
 
+		    //template<
+		    struct USARTSetting {
+
+		    };
+
 		};
 
 		class Status {

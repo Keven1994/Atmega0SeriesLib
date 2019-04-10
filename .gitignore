@@ -362,3 +362,5 @@ GccApplication1/Project1/Project1\.sln
 GccApplication1/Project1/Project1/Project1\.vcxproj
 
 GccApplication1/avrProject\.cbp
+
+GccApplication1/inc/mcu/

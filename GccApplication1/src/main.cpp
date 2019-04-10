@@ -60,7 +60,7 @@ using RC = AVR::rc::RessourceController<spiRessource,twiRessource>; //acquire re
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
 //using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
-using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrupts<> >,res, AVR::ReadWrite>; // put spi ressource in
+using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>; // put spi ressource in
 
 using twi = AVR::twi::TWIMaster<AVR::notBlocking<>,twires>;
 
@@ -84,9 +84,9 @@ int main() {
 
         while(true){
 
-            spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
-
-            //spi::periodic();
+            //spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
+            spi::put(42);
+            spi::periodic();
 			_delay_ms(200);
 		
 	}

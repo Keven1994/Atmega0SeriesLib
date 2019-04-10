@@ -34,9 +34,6 @@ namespace AVR {
                     return _SPI::fifoIn.push_back(reg<Data>().raw());
                 }
 
-                static inline constexpr auto txFunc = [](){ if constexpr(_SPI::fifoEnabled && !_SPI::isReadOnly) return transfer();};
-                static inline constexpr auto rxFunc = [](){ if constexpr(_SPI::fifoEnabled && !_SPI::isWriteOnly) return receive();};
-
 				protected:
 
 				template<typename Reg>
@@ -50,17 +47,58 @@ namespace AVR {
 				using Data = typename component::registers::data;
                 using InterruptFlags = typename component::registers::intflags;
 
-                template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled>>
-                static inline void rxHandler(){
-
+                static inline void init(){
+                    if constexpr(_SPI::InterruptEnabled){
+                        constexpr bool both = _SPI::isReadOnly && _SPI::isWriteOnly;
+                        if constexpr(_SPI::isReadOnly || both){
+                            reg<InterruptControl>().on(InterruptControl::special_bit::Rxcie);
+                        }
+                        if constexpr (_SPI::isWriteOnly || both){
+                            //reg<InterruptControl>().on(InterruptControl::special_bit::Txcie);
+                        }
+                    }
                 }
 
-                template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled>>
-                static inline void txHandler(){
 
-                }
+
+            static auto constexpr txHelp = [](){transfer();};
+            static auto constexpr rxHelp = [](){receive();};
 
             public:
+		    
+            template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled>>
+            static inline void rxHandler(){
+                const auto c = reg<Data>.raw();
+                if constexpr (_SPI::fifoIn::value > 0) {
+                    static_assert(std::is_same_v<typename accesstype::Adapter, External::Hal::NullProtocollAdapter>, "recvQueue is used, no need for PA");
+                    _SPI::fifoIn.push_back(c);
+                }
+                else {
+                    static_assert(_SPI::fifoIn::value == 0);
+                    if constexpr(!std::is_same_v<typename accesstype::Adapter, External::Hal::NullProtocollAdapter>) {
+                        if (!accesstype::Adapter::process(c)) {
+#ifdef DEBUG
+                            assert("input not handled by protocoll adapter");
+#endif
+                        }
+                    }
+                    else {
+                        static_assert(!dummy, "no recvQueue, no PA -> wrong configuration");
+                    }
+                }
+            }
+
+            template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled>>
+            static inline void txHandler(){
+                if (const auto c = _SPI::fifoOut.pop_front()) {
+                    reg<Data>.raw() = *c;;
+                }
+                else {
+                    if constexpr(_SPI::InterruptEnabled) {
+                        reg<ControlB>().off(ControlB::type::special_bit::Udrie);
+                    }
+                }
+            }
 
                 using InterruptControlBits = typename InterruptControl::type::special_bit;
                 using InterruptFlagBits = typename InterruptFlags::type::special_bit;
@@ -160,8 +198,8 @@ namespace AVR {
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _SPI::fifoEnabled && !_SPI::InterruptEnabled>>
                 static inline void periodic(){
-                    if constexpr(! _SPI::isReadOnly) txFunc();
-                    if constexpr(! _SPI::isWriteOnly) rxFunc();
+                    if constexpr(! _SPI::isReadOnly) doIfSet<rxHelp>(InterruptFlagBits::Txcif);
+                    if constexpr(! _SPI::isWriteOnly) doIfSet<txHelp>(InterruptFlagBits::Rxcif);
                 }
 			};
 
@@ -170,6 +208,8 @@ namespace AVR {
 				NoConstructors(SPIMaster);
 				
 				[[gnu::always_inline]] static inline void init(){
+
+                    details::_SPI<RW, accesstype,component, instance, bit_width>::init();
 
                     constexpr auto mBit = component::CTRLAMasks::Master ;
 					AVR::port::PinsDirOut<typename alt::Mosi::pin0,typename alt::Sck::pin0>();
@@ -188,6 +228,8 @@ namespace AVR {
 				NoConstructors(SPISlave);
 
 				[[gnu::always_inline]] static inline void init(){
+
+                    details::_SPI<RW, accesstype,component, instance, bit_width>::init();
 
 					AVR::port::PinsDirIn<typename alt::Mosi::pin0,typename alt::Sck::pin0>();
                     alt::Miso::pin0::setOutput();

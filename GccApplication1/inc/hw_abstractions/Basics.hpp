@@ -30,7 +30,7 @@ namespace AVR {
     template<typename interrupt>
     struct notBlocking<NoFifo,interrupt> {
         static constexpr bool intEnabled = true;
-
+        using Adapter = typename interrupt::Adapter;
         using fifo = NoFifo;
     };
 
