@@ -50,6 +50,10 @@ namespace AVR::usart {
                     return (((1.0 * fcpu) / (8 * baud)) + 0.5) - 1;
                 }
 
+                inline static constexpr uint16_t ubrrValueSync(uint32_t fcpu, uint32_t baud) {
+                    return (((1.0 * fcpu) / (2 * baud)) + 0.5) - 1;
+                }
+
             protected:
 
                 template<typename Reg>
@@ -67,17 +71,27 @@ namespace AVR::usart {
                 using TxDataH = typename component::registers::txdatah;
                 using InterruptFlags = typename component::registers::status;
 
+                static auto constexpr txHelp = [](){transfer();};
+                static auto constexpr rxHelp = [](){receive();};
+
+            public:
+
                 template<uint32_t baud = 115200>
                 [[gnu::always_inline]] static inline void init(){
 
-                    if constexpr (setting::receivermode == ReceiverMode::Normal
-                    || setting::receivermode == ReceiverMode::Double) {
+                    if constexpr (setting::receivermode == static_cast<decltype(setting::receivermode) >(ReceiverMode::Normal)
+                                  || setting::receivermode == static_cast<decltype(setting::receivermode) >(ReceiverMode::Double)) {
                         if constexpr (baud > 100000) {
-                            reg<ControlB>().on(ReceiverMode::Double);
-                            reg<Baud>().raw() = ubrrValue2(DEFAULT_MCU::clockFrequency, baud);
+                            reg<ControlB>().on(static_cast<decltype(setting::receivermode) >(ReceiverMode::Double));
+                            if constexpr(CommunicationMode::Synchronous != static_cast<CommunicationMode >(setting::commode))
+                                reg<Baud>().raw() = ubrrValue2(DEFAULT_MCU::clockFrequency, baud);
+                            else
+                                reg<Baud>().raw() = ubrrValueSync(DEFAULT_MCU::clockFrequency, baud);
                         } else {
-                            constexpr auto ubrr = ubrrValue(DEFAULT_MCU::clockFrequency, baud);
-                            reg<Baud>().raw() = ubrrValue(DEFAULT_MCU::clockFrequency, baud);
+                            if constexpr(CommunicationMode::Synchronous != static_cast<CommunicationMode>(setting::commode))
+                                reg<Baud>().raw() = ubrrValue(DEFAULT_MCU::clockFrequency, baud);
+                            else
+                                reg<Baud>().raw() = ubrrValueSync(DEFAULT_MCU::clockFrequency, baud);
                         }
                     } else {
                         reg<ControlB>().on(setting::receivermode);
@@ -85,18 +99,13 @@ namespace AVR::usart {
                     if constexpr(_USART::InterruptEnabled){
                         constexpr bool both = !_USART::isReadOnly && !_USART::isWriteOnly;
                         if constexpr(_USART::isReadOnly || both){
-                           // reg<InterruptControl>().on(InterruptControl::special_bit::Rxcie);
+                            reg<ControlA>().on(ControlA::type::special_bit::Rxcie);
                         }
                         if constexpr (_USART::isWriteOnly || both){
                             //reg<InterruptControl>().on(InterruptControl::special_bit::Txcie);
                         }
                     }
                 }
-
-                static auto constexpr txHelp = [](){transfer();};
-                static auto constexpr rxHelp = [](){receive();};
-
-            public:
 
                 template<bool dummy = true, typename T = std::enable_if_t<_USART::InterruptEnabled>>
                 static inline void rxHandler(){

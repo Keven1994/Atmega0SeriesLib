@@ -79,6 +79,7 @@ enum class error : mem_width {
 static constexpr auto spilam = [](){ spi::put(42);};
 
 int main() {
+    usart::init();
     usart::put(42);
     spi::init();
 
@@ -86,7 +87,7 @@ int main() {
 
             //spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
             spi::put(42);
-            spi::periodic();
+            usart::periodic();
 			_delay_ms(200);
 		
 	}
