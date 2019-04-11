@@ -76,10 +76,26 @@ namespace AVR::usart {
                 //using TxDataH = typename component::registers::txdatah;
                 using InterruptFlags = typename component::registers::status;
 
-                static auto constexpr txHelp = [](){transfer();};
-                static auto constexpr rxHelp = [](){receive();};
+                static auto constexpr txHelp = [](){if constexpr(! _USART::isReadOnly)transfer();};
+                static auto constexpr rxHelp = [](){if constexpr(! _USART::isWriteOnly)receive();};
 
             public:
+
+                [[nodiscard]] static inline bool outputEmpty(){
+                    return _USART::fifoOut.empty();
+                }
+
+                [[nodiscard]] static inline bool inputEmpty(){
+                    return _USART::fifoOut.empty();
+                }
+
+                [[nodiscard]] static inline auto outputSize(){
+                    return _USART::fifoOut.size();
+                }
+
+                [[nodiscard]] static inline auto inputSize(){
+                    return _USART::fifoOut.size();
+                }
 
                 using InterruptFlagBits = typename InterruptFlags::type::special_bit;
 
@@ -253,8 +269,8 @@ namespace AVR::usart {
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::InterruptEnabled>>
                 static inline void periodic(){
-                    if constexpr(! _USART::isReadOnly) doIfSet<rxHelp>(InterruptFlagBits::Rxcif);
-                    if constexpr(! _USART::isWriteOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
+                    if constexpr(! _USART::isWriteOnly) doIfSet<rxHelp>(InterruptFlagBits::Rxcif);
+                    if constexpr(! _USART::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
                 }
             };
 

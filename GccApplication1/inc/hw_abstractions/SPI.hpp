@@ -61,8 +61,8 @@ namespace AVR {
 
 
 
-            static auto constexpr txHelp = [](){transfer();};
-            static auto constexpr rxHelp = [](){receive();};
+            static auto constexpr txHelp = [](){if constexpr(! _SPI::isReadOnly) transfer();};
+            static auto constexpr rxHelp = [](){if constexpr(! _SPI::isWriteOnly) receive();};
 
             public:
 
@@ -200,8 +200,8 @@ namespace AVR {
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _SPI::fifoEnabled && !_SPI::InterruptEnabled>>
                 static inline void periodic(){
-                    if constexpr(! _SPI::isReadOnly) doIfSet<rxHelp>(InterruptFlagBits::Txcif);
-                    if constexpr(! _SPI::isWriteOnly) doIfSet<txHelp>(InterruptFlagBits::Rxcif);
+                    if constexpr(! _SPI::isWriteOnly) doIfSet<rxHelp>(InterruptFlagBits::Txcif);
+                    if constexpr(! _SPI::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Rxcif);
                 }
 			};
 

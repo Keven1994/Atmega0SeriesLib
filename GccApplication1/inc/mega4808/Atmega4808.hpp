@@ -7,6 +7,9 @@
 */
 
 #pragma once
+#include <stddef.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
 #include <avr/io.h>
 #include "../hw_abstractions/Basics.hpp"
 //type informations for the templates in the hw includes

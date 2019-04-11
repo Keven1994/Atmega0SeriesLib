@@ -7,20 +7,17 @@
 
 #ifndef TEST
 
-#include <stddef.h>
-#include <util/delay.h>
-#include <avr/io.h>
-#include <avr/interrupt.h>
-
 #define MEGA4808
 //CMake define AVR Makro ???????????????????????????? wtf
 #undef AVR
+#undef NDEBUG
 #ifdef MEGA4808
 //fix unavailable ports
 #undef PORTB
 #undef PORTE
 ///////////////////////
 #include "../inc/mega4808/Atmega4808.hpp"
+#include "../inc/Boards/CuriosityNanoIOT.hpp"
 #include "../inc/hw_abstractions/SPI.hpp"
 #include "../inc/hw_abstractions/Port.hpp"
 #include "../inc/hw_abstractions/Eventsystem.hpp"
@@ -79,15 +76,16 @@ static constexpr auto spilam = [](){ spi::put(42);};
 
 int main() {
 
-    usart::init<115200>();
     //spi::init();
-
+    AVR::dbgout::init();
         while(true){
-            usart::put('a');
-			usart::put('\0');
+			AVR::dbgout::put("Hello USART ");
+            AVR::dbgout::flush();
+            //usart::put('a');
+			//usart::put('\0');
             //spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
             //spi::put(42);
-            usart::periodic();
+            //usart::periodic();
 			_delay_ms(200);
 		
 	}
