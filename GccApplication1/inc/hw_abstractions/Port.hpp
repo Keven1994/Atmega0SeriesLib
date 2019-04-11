@@ -26,8 +26,10 @@ namespace AVR {
             template<typename T, auto &inst>
             [[nodiscard, gnu::always_inline]] static inline auto &getRegister() {
                 using reg_t = typename T::type;
-                return reg_t::getRegister(*((typename reg_t::reg_size *) &inst() + T::value));
+                auto offset = (mem_width *) &inst() + T::value;
+                return reg_t::getRegister(*((typename reg_t::reg_size*)offset));
             }
+
 
             template<typename P, typename regs>
             struct Port {

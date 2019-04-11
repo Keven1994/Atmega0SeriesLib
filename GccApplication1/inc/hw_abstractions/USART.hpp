@@ -49,14 +49,14 @@ namespace AVR::usart {
                 }
 
                 inline static constexpr uint16_t ubrrValue(uint32_t fcpu, uint32_t baud) {
-                    return (((1.0 * fcpu) / (16 * baud)) + 0.5) - 1;
+                    return (((64.0 * fcpu) / (16 * baud)) +0.5) -1;
                 }
                 inline static constexpr uint16_t ubrrValue2(uint32_t fcpu, uint32_t baud) {
-                    return (((1.0 * fcpu) / (8 * baud)) + 0.5) - 1;
+                    return (((64.0 * fcpu) / (8 * baud)) +0.5) -1;
                 }
 
                 inline static constexpr uint16_t ubrrValueSync(uint32_t fcpu, uint32_t baud) {
-                    return (((1.0 * fcpu) / (2 * baud)) + 0.5) - 1;
+                    return (((64.0 * fcpu) / (2 * baud)) +0.5)-1;
                 }
 
             protected:
@@ -90,11 +90,15 @@ namespace AVR::usart {
                                   || setting::receivermode == static_cast<decltype(setting::receivermode) >(ReceiverMode::Double)) {
                         if constexpr (baud > 100000) {
                             reg<ControlB>().on(static_cast<decltype(setting::receivermode) >(ReceiverMode::Double));
-                            if constexpr(CommunicationMode::Synchronous != static_cast<CommunicationMode >(setting::commode))
+                            if constexpr(CommunicationMode::Synchronous != static_cast<CommunicationMode >(setting::commode)){
+															//using test = std::integral_constant<uint32_t,ubrrValue2(DEFAULT_MCU::clockFrequency, baud)>;
+															//test::_;
                                 reg<Baud>().raw() = ubrrValue2(DEFAULT_MCU::clockFrequency, baud);
-                            else
+							}
+                           else
                                 reg<Baud>().raw() = ubrrValueSync(DEFAULT_MCU::clockFrequency, baud);
                         } else {
+
                             if constexpr(CommunicationMode::Synchronous != static_cast<CommunicationMode>(setting::commode))
                                 reg<Baud>().raw() = ubrrValue(DEFAULT_MCU::clockFrequency, baud);
                             else

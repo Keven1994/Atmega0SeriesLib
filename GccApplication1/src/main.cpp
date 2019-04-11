@@ -49,17 +49,10 @@ using twiRessource = AVR::rc::Instance<
 
 using usartRessource = AVR::rc::Instance<
         AVR::usart::USART_Comp, // using ressource SPI
-        AVR::rc::Number<1>, //using instance '0'
+        AVR::rc::Number<2>, //using instance '0'
         AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 
-struct testPA {
-
-    static inline bool process(std::byte b){
-        return true;
-    }
-
-};
 
 using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource>; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
@@ -86,12 +79,12 @@ static constexpr auto spilam = [](){ spi::put(42);};
 
 int main() {
 
-    usart::init();
-
+    usart::init<115200>();
     //spi::init();
 
         while(true){
             usart::put('a');
+			usart::put('\0');
             //spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
             //spi::put(42);
             usart::periodic();
