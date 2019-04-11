@@ -43,9 +43,14 @@ AVR::rc::Number<0>, //using instance '0'
 AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 using twiRessource = AVR::rc::Instance<
-AVR::twi::TWI, // using ressource SPI
-AVR::rc::Number<0>, //using instance '0'
-AVR::portmux::PortMux<0>>; // using portmux 0 alternative
+        AVR::twi::TWI, // using ressource SPI
+        AVR::rc::Number<0>, //using instance '0'
+        AVR::portmux::PortMux<0>>; // using portmux 0 alternative
+
+using usartRessource = AVR::rc::Instance<
+        AVR::usart::USART_Comp, // using ressource SPI
+        AVR::rc::Number<1>, //using instance '0'
+        AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 
 struct testPA {
@@ -56,12 +61,13 @@ struct testPA {
 
 };
 
-using RC = AVR::rc::RessourceController<spiRessource,twiRessource>; //acquire ressource
+using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource>; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
+using usartres = RC::getRessource_t<usartRessource>;
 //using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
 using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>; // put spi ressource in
-using usart =AVR::usart::USART<>;
+using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>>,usartres>;
 using twi = AVR::twi::TWIMaster<AVR::notBlocking<>,twires>;
 
 using led1 = Pin<PortA, 2>;
@@ -79,14 +85,15 @@ enum class error : mem_width {
 static constexpr auto spilam = [](){ spi::put(42);};
 
 int main() {
+
     usart::init();
-    usart::put(42);
-    spi::init();
+
+    //spi::init();
 
         while(true){
-
+            usart::put('a');
             //spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
-            spi::put(42);
+            //spi::put(42);
             usart::periodic();
 			_delay_ms(200);
 		

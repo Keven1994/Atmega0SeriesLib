@@ -7,6 +7,7 @@
 */
 #pragma once
 #include "Register.hpp"
+#include "Port.hpp"
 #include "../MCUSelect.hpp"
 #include "RessourceController.hpp"
 #include "../tools/fifo.h"
@@ -24,11 +25,15 @@ namespace AVR::usart {
     using StopBitMode = typename USART_Comp::StopBitMode;
     using ParityMode = typename USART_Comp::ParityMode;
     using CharacterSize = typename USART_Comp::CharacterSize;
+    using Interrupts = typename USART_Comp::Interrupts;
 
         namespace details{
 
             template<typename RW, typename accesstype, typename component, typename instance,typename alt, typename setting, typename bit_width>
             class _USART : protected AVR::details::Communication<RW,accesstype, bit_width> {
+
+                static_assert(setting::charsize != static_cast<typename setting::CConf>(CharacterSize::Bit9HighFirst) && setting::charsize != static_cast<typename setting::CConf>(CharacterSize::Bit9LowFirst),
+                        "9 bit mode not supported");
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly>>
                 static inline void transfer(){
@@ -66,15 +71,17 @@ namespace AVR::usart {
                 using ControlC = typename component::registers::ctrlc;
                 using Baud = typename component::registers::baud;
                 using RxDataL = typename component::registers::rxdatal;
-                using RxDataH = typename component::registers::rxdatah;
+                //using RxDataH = typename component::registers::rxdatah;
                 using TxDataL = typename component::registers::txdatal;
-                using TxDataH = typename component::registers::txdatah;
+                //using TxDataH = typename component::registers::txdatah;
                 using InterruptFlags = typename component::registers::status;
 
                 static auto constexpr txHelp = [](){transfer();};
                 static auto constexpr rxHelp = [](){receive();};
 
             public:
+
+                using InterruptFlagBits = typename InterruptFlags::type::special_bit;
 
                 template<uint32_t baud = 115200>
                 [[gnu::always_inline]] static inline void init(){
@@ -99,11 +106,26 @@ namespace AVR::usart {
                     if constexpr(_USART::InterruptEnabled){
                         constexpr bool both = !_USART::isReadOnly && !_USART::isWriteOnly;
                         if constexpr(_USART::isReadOnly || both){
-                            reg<ControlA>().on(ControlA::type::special_bit::Rxcie);
+                            reg<ControlA>().on(Interrupts::RxIE);
                         }
                         if constexpr (_USART::isWriteOnly || both){
-                            //reg<InterruptControl>().on(InterruptControl::special_bit::Txcie);
+                            //reg<ControlA>().on(Interrupts::TxIE);
                         }
+                    }
+                    if constexpr(_USART::isWriteOnly) {
+                        port::PinsDirOut<typename alt::Txd::pin0>();
+                        port::PinsOn<typename alt::Txd::pin0>();
+                        reg<ControlB>().on(ControlB::type::special_bit::Txen);
+                    }
+                    else if constexpr(_USART::isReadOnly) {
+                        port::PinsDirOut<typename alt::Rxd::pin0>();
+                        port::PinsOn<typename alt::Rxd::pin0>();
+                        reg<ControlB>().on(ControlB::type::special_bit::Rxen);
+                    }
+                    else {
+                        port::PinsDirOut<typename alt::Txd::pin0,typename alt::Rxd::pin0>();
+                        port::PinsOn<typename alt::Txd::pin0,typename alt::Rxd::pin0>();
+                        reg<ControlB>().on(ControlB::type::special_bit::Txen, ControlB::type::special_bit::Rxen);
                     }
                 }
 
@@ -141,7 +163,6 @@ namespace AVR::usart {
                     }
                 }
 
-                using InterruptFlagBits = typename InterruptFlags::type::special_bit;
                 NoConstructors(_USART);
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && !_USART::fifoEnabled && !_USART::isBlocking && !_USART::isReadOnly>>
@@ -154,11 +175,11 @@ namespace AVR::usart {
                     return reg<TxDataL>().raw();
                 }
 
-                /*
+
                 template<typename... Args>
-                requires(utils::sameTypes<InterruptControlBits,Args...>() && std::is_same<accesstype, notBlocking<>>::value)
+                requires(utils::sameTypes<Interrupts,Args...>() && std::is_same<accesstype, notBlocking<>>::value)
                 static inline void enableInterrupt(Args... Bits) {
-                    reg<InterruptControl>().set(Bits...);
+                    reg<ControlA>().set(Bits...);
                 }
 
                 template<auto& funcRef, typename... FlagsToTest>
@@ -168,6 +189,7 @@ namespace AVR::usart {
                     if (reg<InterruptFlags>().areSet(flags...)) {
                         if constexpr (! std::is_same_v<retType,void>)
                             return funcRef();
+						else funcRef();
                     }
                     if constexpr (! std::is_same_v<retType,void>)
                         return retType{};
@@ -180,10 +202,11 @@ namespace AVR::usart {
                     if (reg<InterruptFlags>().anySet(flags...)) {
                         if constexpr (! std::is_same_v<retType,void>)
                             return funcRef();
+							else funcRef();
                     }
                     if constexpr (! std::is_same_v<retType,void>)
                         return retType{};
-                }*/
+                }
 
 
                 template<typename block = accesstype, typename T = std::enable_if_t< _USART::isBlocking && !_USART::isWriteOnly>>
@@ -226,8 +249,8 @@ namespace AVR::usart {
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::InterruptEnabled>>
                 static inline void periodic(){
-                    //if constexpr(! _USART::isReadOnly) doIfSet<rxHelp>(InterruptFlagBits::Txcif);
-                    //if constexpr(! _USART::isWriteOnly) doIfSet<txHelp>(InterruptFlagBits::Rxcif);
+                    if constexpr(! _USART::isReadOnly) doIfSet<rxHelp>(InterruptFlagBits::Rxcif);
+                    if constexpr(! _USART::isWriteOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
                 }
             };
 
@@ -245,11 +268,11 @@ namespace AVR::usart {
 
         template<typename accesstype = notBlocking<UseFifo<42>>,typename instance = details::defInst,typename RW = ReadWrite, RS485Mode RSMode = RS485Mode::Disabled, ReceiverMode receiverMode = ReceiverMode::Normal,
                 CommunicationMode ComMode = CommunicationMode::Asynchronous, ParityMode parityMode = ParityMode::Disabled ,
-                StopBitMode stopBitMode = StopBitMode::OneBit, CharacterSize CharSize = CharacterSize::Bit8,
+                StopBitMode stopBitMode = StopBitMode::OneBit, CharacterSize CharSize = CharacterSize::Bit8, bool msb = true,
                 bool StartFrameDetection = false, bool OpenDrainMode = false, bool MultiProcessor =false, bool LoopBackMode=false, typename bit_width = mem_width>
         using USART = AVR::usart::details::_USART<
                 RW,accesstype, USART_Comp::Component_t,typename instance::t1, typename instance::t2,
                 USART_Comp::template USARTSetting<RSMode,receiverMode,ComMode,parityMode,stopBitMode,
-                CharSize,StartFrameDetection,OpenDrainMode,MultiProcessor,LoopBackMode>, bit_width>;
+                CharSize,msb,StartFrameDetection,OpenDrainMode,MultiProcessor,LoopBackMode>, bit_width>;
 
 }

@@ -299,12 +299,12 @@ namespace mega4808 {
         };
 
         enum class CharacterSize : mem_width {
-            Bit5 = 0x0,
-            Bit6 = 0x1,
-            Bit7 = 0x2,
-            Bit8 = 0x3,
-            Bit9LowFirst = 0x6,
-            Bit9HighFirst = 0x7
+            Bit5 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_5bit),
+            Bit6 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_6bit),
+            Bit7 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_7bit),
+            Bit8 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_8bit),
+            Bit9LowFirst = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_9bitl),
+            Bit9HighFirst = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_9bith)
         };
 
         enum class CommunicationMode: mem_width {

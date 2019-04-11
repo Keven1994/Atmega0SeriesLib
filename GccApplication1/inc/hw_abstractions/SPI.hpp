@@ -127,6 +127,7 @@ namespace AVR {
 					if (reg<InterruptFlags>().areSet(flags...)) {
                         if constexpr (! std::is_same_v<retType,void>)
                             return funcRef();
+							else funcRef();
                     }
                     if constexpr (! std::is_same_v<retType,void>)
 					    return retType{};
@@ -139,6 +140,7 @@ namespace AVR {
 					if (reg<InterruptFlags>().anySet(flags...)) {
                         if constexpr (! std::is_same_v<retType,void>)
                             return funcRef();
+							else funcRef();
                     }
 					if constexpr (! std::is_same_v<retType,void>)
 					    return retType{};

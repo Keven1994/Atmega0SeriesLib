@@ -8,7 +8,7 @@
 
 #pragma once
 #include <avr/io.h>
-#include <hw_abstractions/Basics.hpp>
+#include "../hw_abstractions/Basics.hpp"
 //type informations for the templates in the hw includes
 using mem_width = uint8_t;
 using ptr_t = uintptr_t;
@@ -153,10 +153,11 @@ namespace mega4808 {
 		    using StopBitMode = usart_details::StopBitMode;
 		    using ParityMode = usart_details::ParityMode;
 		    using CharacterSize = usart_details::CharacterSize;
+		    using Interrupts = usart_details::InterruptEnable ;
 
 		    template<usart_details::RS485Mode RSMode, usart_details::ReceiverMode receiverMode,
 		            usart_details::CommunicationMode ComMode, usart_details::ParityMode parityMode,
-		            usart_details::StopBitMode stopBitMode, usart_details::CharacterSize CharSize,
+		            usart_details::StopBitMode stopBitMode, usart_details::CharacterSize CharSize, bool Msb,
 		            bool StartFrameDetection, bool OpenDrainMode, bool MultiProcessor , bool LoopBackMode>
 		    struct USARTSetting {
                 using AConf = usart_details::usartComponent::CTRLAMasks;
@@ -173,6 +174,7 @@ namespace mega4808 {
                 static constexpr CConf paritymode = static_cast<CConf>(parityMode);
                 static constexpr CConf stoppbitmode = static_cast<CConf>(stopBitMode);
                 static constexpr CConf charsize = static_cast<CConf>(CharSize);
+                static constexpr CConf msb = !Msb ? CConf::Udord : static_cast<CConf>(0);
 		    };
 		private:
 		    using Component_t = usart_details::usartComponent;
