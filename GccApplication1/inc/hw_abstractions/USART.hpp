@@ -104,26 +104,31 @@ namespace AVR::usart {
                     static_assert(static_cast<mem_width >(setting::msb) == 0, "msb setting is a master spi option -> currently not supported");
                     static_assert(baud <= (DEFAULT_MCU::clockFrequency/8), "baud rate too high!");
 
-                    if constexpr((! _USART::InterruptEnabled || _USART::isWriteOnly) && (static_cast<mem_width >(setting::loopbackmode) | static_cast<mem_width >(setting::rsmode)) != 0)
+                    if constexpr(! _USART::InterruptEnabled && (static_cast<mem_width >(setting::loopbackmode) | static_cast<mem_width >(setting::rsmode)) != 0)
                         reg<ControlA>().set(setting::loopbackmode, setting::rsmode);
                     else if constexpr(_USART::InterruptEnabled){
-                        constexpr bool both = !_USART::isReadOnly && !_USART::isWriteOnly;
-                        if constexpr(_USART::isReadOnly || both){
+                        if constexpr(_USART::isReadOnly){
                             reg<ControlA>().set(Interrupts::RxIE, setting::loopbackmode, setting::rsmode);
+                        } else if constexpr(_USART::isWriteOnly){
+                            reg<ControlA>().set(Interrupts::TxIE, setting::loopbackmode, setting::rsmode);
+                        } else if constexpr (!_USART::isReadOnly && !_USART::isWriteOnly){
+                            reg<ControlA>().set(Interrupts::RxIE, Interrupts::TxIE, setting::loopbackmode, setting::rsmode);
                         }
                     }
+                    using BConf = typename setting::BConf;
+                    using CConf = typename setting::CConf;
 
                     if constexpr((static_cast<mem_width >(setting::commode) | static_cast<mem_width >(setting::paritymode) | static_cast<mem_width >(setting::stopbitmode) | static_cast<mem_width >(setting::charsize)) != 0)
                         reg<ControlC >().set(setting::commode , setting::paritymode, setting::stopbitmode, setting::charsize);
 
-                    constexpr auto recMode = (setting::receivermode != static_cast<decltype(setting::receivermode) >(ReceiverMode::Normal)
-                                             && setting::receivermode != static_cast<decltype(setting::receivermode) >(ReceiverMode::Double) ?
+                    constexpr auto recMode = (setting::receivermode != static_cast<BConf>(ReceiverMode::Normal)
+                                             && setting::receivermode != static_cast<BConf>(ReceiverMode::Double) ?
                                              setting::receivermode : baud > 100000 ?
-                                                                     static_cast<decltype(setting::receivermode) >(ReceiverMode::Double) :
-                                                                     static_cast<decltype(setting::receivermode) >(ReceiverMode::Normal));
+                                                                     static_cast<BConf>(ReceiverMode::Double) :
+                                                                     static_cast<BConf>(ReceiverMode::Normal));
 
-                    if constexpr (setting::receivermode == static_cast<decltype(setting::receivermode) >(ReceiverMode::Normal)
-                                  || setting::receivermode == static_cast<decltype(setting::receivermode) >(ReceiverMode::Double)) {
+                    if constexpr (setting::receivermode == static_cast<BConf>(ReceiverMode::Normal)
+                                  || setting::receivermode == static_cast<BConf>(ReceiverMode::Double)) {
                         if constexpr (baud > 100000) {
                             if constexpr(CommunicationMode::Synchronous != static_cast<CommunicationMode >(setting::commode)){
                                 reg<Baud>().raw() = ubrrValue2(DEFAULT_MCU::clockFrequency, baud);
@@ -153,6 +158,9 @@ namespace AVR::usart {
                         port::PinsDirOut<typename alt::Txd::pin0,typename alt::Rxd::pin0>();
                         port::PinsOn<typename alt::Txd::pin0,typename alt::Rxd::pin0>();
                         reg<ControlB>().set(recMode,ControlB::type::special_bit::Txen, ControlB::type::special_bit::Rxen, setting::opendrainmode, setting::startframedetection, setting::multiprocessor, setting::receivermode);
+                    }
+                    if constexpr (_USART::InterruptEnabled){
+                        sei();
                     }
                }
 

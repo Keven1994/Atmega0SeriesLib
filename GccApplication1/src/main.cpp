@@ -23,6 +23,7 @@
 #include "../inc/hw_abstractions/Eventsystem.hpp"
 #include "../inc/hw_abstractions/TWI.hpp"
 #include "../inc/hw_abstractions/USART.hpp"
+#include "hw_abstractions/Delay.hpp"
 #elif defined(MEGA4809)
 #include "../inc/mega4809/Atmega4809.hpp"
 
@@ -71,43 +72,24 @@ enum class error : mem_width {
 };
 
 ISR(USART2_TXC_vect){
-
 		usart::txHandler();
-		//usart::put('g');
 }
-//static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction::output>(); twi::singleTransfer(42); twi::stopTransaction(); return static_cast<mem_width>(error::notBusy);};
-static constexpr auto spilam = [](){ spi::put(42);};
 
 
 int main() {
-    //spi::init();
-    //AVR::dbgout::init();
-
     usart::init();
-	    USART2.CTRLA |= USART_TXCIE_bm;
-        sei();
-		PORTC.DIR |= 1;
-        while(true){
-			PORTC.OUTTGL = 1;
-						cli();
-						_delay_ms(200);
-						sei();
-				            usart::put('h');
-				            usart::put('e');
-				            usart::put('l');
-				            usart::put('l');
-				            usart::put('o');
-							usart::put('o');
-							//sei();
-		//sei();
-	//		AVR::dbgout::put("Hello USART ");
-      //      AVR::dbgout::flush();
 
-			//usart::put('\0');
-            //spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
-            //spi::put(42);
+        while(true){
+
+			usart::put('h');
+			usart::put('e');
+			usart::put('l');
+			usart::put('l');
+			usart::put('o');
+
             usart::periodic();
-		
+
+            AVR::safeDelay<AVR::ms,200>();
 	}
 	
 }

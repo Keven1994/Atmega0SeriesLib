@@ -5,7 +5,6 @@
 #ifdef __AVR_DEV_LIB_NAME__
 
 #ifdef _m4808
-    #include "mega4808/Atmega4808.hpp"
     #define _DEFAULT mega4808::Atmega4808<>
 #elif defined(_m4809)
     #define _DEFAULT mega4809::Atmega4809<>
