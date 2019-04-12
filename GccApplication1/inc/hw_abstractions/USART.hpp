@@ -76,8 +76,8 @@ namespace AVR::usart {
                 //using TxDataH = typename component::registers::txdatah;
                 using InterruptFlags = typename component::registers::status;
 
-                static auto constexpr txHelp = [](){if constexpr(! _USART::isReadOnly)transfer();};
-                static auto constexpr rxHelp = [](){if constexpr(! _USART::isWriteOnly)receive();};
+                static auto constexpr txHelp = [](){if constexpr(! _USART::isReadOnly && _USART::fifoEnabled)transfer();};
+                static auto constexpr rxHelp = [](){if constexpr(! _USART::isWriteOnly&& _USART::fifoEnabled)receive();};
 
             public:
 
@@ -181,23 +181,29 @@ namespace AVR::usart {
                     }
                 }
 
-                template<bool dummy = true, typename T = std::enable_if_t<_USART::InterruptEnabled>>
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && _USART::InterruptEnabled && _USART::fifoEnabled>>
                 static inline void txHandler(){
-                    if (const auto c = _USART::fifoOut.pop_front()) {
-                        reg<TxDataL>.raw() = *c;
+                    uint8_t item;
+                    if (_USART::fifoOut.pop_front(item)) {
+                        reg<TxDataL>().raw() = item;
                     }
                     else {
                         if constexpr(_USART::InterruptEnabled) {
-                            reg<ControlB>().off(ControlB::type::special_bit::Udrie);
+                            reg<InterruptFlags>().toggle(InterruptFlags::type::special_bit::Dreif);
                         }
                     }
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && _USART::InterruptEnabled && !_USART::fifoEnabled>>
+                static inline void txHandler(const uint8_t data){
+                        reg<TxDataL>().raw() =data;
                 }
 
                 NoConstructors(_USART);
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && !_USART::fifoEnabled && !_USART::isBlocking && !_USART::isReadOnly>>
                 static inline void transfer(bit_width data) {
-                    reg<RxDataL>().raw() = data;
+                    reg<TxDataL>().raw() = data;
                 }
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && !_USART::fifoEnabled && !_USART::isBlocking && !_USART::isWriteOnly>>
@@ -268,8 +274,8 @@ namespace AVR::usart {
                 }
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly>>
-                static inline bool put(bit_width item){
-                    return _USART::fifoOut.push_back(item);
+                [[gnu::always_inline]] static inline bool put(bit_width item){
+                        return _USART::fifoOut.push_back(item);
                 }
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isWriteOnly>>
@@ -277,10 +283,14 @@ namespace AVR::usart {
                     return _USART::fifoIn.pop_front(item);
                 }
 
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::InterruptEnabled>>
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled>>
                 static inline void periodic(){
-                    if constexpr(! _USART::isWriteOnly) doIfSet<rxHelp>(InterruptFlagBits::Rxcif);
-                    if constexpr(! _USART::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
+                    if constexpr(!_USART::InterruptEnabled) {
+                        if constexpr(!_USART::isWriteOnly) doIfSet < rxHelp > (InterruptFlagBits::Rxcif);
+                        if constexpr(!_USART::isReadOnly) doIfSet < txHelp > (InterruptFlagBits::Dreif);
+                    } else {
+                        transfer();
+                    }
                 }
             };
 

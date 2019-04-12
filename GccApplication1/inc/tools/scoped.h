@@ -163,16 +163,18 @@ namespace etl {
         template<bool Active, typename MCU, typename F1, typename F2>
         class Z_Scoped<DisbaleInterrupt<RestoreState>, Active, MCU, F1, F2> final {
             static constexpr auto& status = AVR::cpu::CPU<>::getStatusRegister;
+			volatile bool wasEnabled;
         public:
             inline Z_Scoped() {
                 if constexpr(Active) {
+					wasEnabled = status().areSet(AVR::cpu::CPU<>::status_bits::I);
                     cli();
                 }
             }
 
             inline ~Z_Scoped() {
                 if constexpr(Active) {
-                    if (status().areSet(AVR::cpu::CPU<>::status_bits::I)) {
+                    if (wasEnabled) {
                         sei();
                     }
                 }

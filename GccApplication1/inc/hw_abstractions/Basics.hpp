@@ -41,6 +41,13 @@ namespace AVR {
         using fifo = NoFifo;
     };
 
+    template<>
+    struct notBlocking<NoFifo,Interrupts<>> {
+        static constexpr bool intEnabled = true;
+
+        using fifo = NoFifo;
+    };
+
     template<etl::Concepts::NamedConstant fifoUse>
     struct notBlocking<fifoUse,NoInterrupts> {
         static constexpr bool intEnabled = false;

@@ -57,7 +57,7 @@ using twires = RC::getRessource_t<twiRessource>;
 using usartres = RC::getRessource_t<usartRessource>;
 //using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
 using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>; // put spi ressource in
-using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>>,usartres>;
+using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
 using twi = AVR::twi::TWIMaster<AVR::notBlocking<>,twires>;
 
 using led1 = Pin<PortA, 2>;
@@ -70,23 +70,43 @@ enum class error : mem_width {
 	notBusy = 42	
 };
 
+ISR(USART2_TXC_vect){
 
+		usart::txHandler();
+		//usart::put('g');
+}
 //static constexpr auto lam = [](){twi::startTransaction<0x0f,AVR::twi::direction::output>(); twi::singleTransfer(42); twi::stopTransaction(); return static_cast<mem_width>(error::notBusy);};
 static constexpr auto spilam = [](){ spi::put(42);};
 
-int main() {
 
+int main() {
     //spi::init();
-    AVR::dbgout::init();
+    //AVR::dbgout::init();
+
+    usart::init();
+	    USART2.CTRLA |= USART_TXCIE_bm;
+        sei();
+		PORTC.DIR |= 1;
         while(true){
-			AVR::dbgout::put("Hello USART ");
-            AVR::dbgout::flush();
-            //usart::put('a');
+			PORTC.OUTTGL = 1;
+						cli();
+						_delay_ms(200);
+						sei();
+				            usart::put('h');
+				            usart::put('e');
+				            usart::put('l');
+				            usart::put('l');
+				            usart::put('o');
+							usart::put('o');
+							//sei();
+		//sei();
+	//		AVR::dbgout::put("Hello USART ");
+      //      AVR::dbgout::flush();
+
 			//usart::put('\0');
             //spi::doIfSet<spilam>(spi::InterruptFlagBits::If);
             //spi::put(42);
-            //usart::periodic();
-			_delay_ms(200);
+            usart::periodic();
 		
 	}
 	
