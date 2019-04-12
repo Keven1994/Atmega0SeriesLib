@@ -101,14 +101,31 @@ namespace AVR::usart {
 
                 template<uint32_t baud = 115200>
                 [[gnu::always_inline]] static inline void init(){
+                    static_assert(static_cast<mem_width >(setting::msb) == 0, "msb setting is a master spi option -> currently not supported");
+                    static_assert(baud <= (DEFAULT_MCU::clockFrequency/8), "baud rate too high!");
+
+                    if constexpr((! _USART::InterruptEnabled || _USART::isWriteOnly) && (static_cast<mem_width >(setting::loopbackmode) | static_cast<mem_width >(setting::rsmode)) != 0)
+                        reg<ControlA>().set(setting::loopbackmode, setting::rsmode);
+                    else if constexpr(_USART::InterruptEnabled){
+                        constexpr bool both = !_USART::isReadOnly && !_USART::isWriteOnly;
+                        if constexpr(_USART::isReadOnly || both){
+                            reg<ControlA>().set(Interrupts::RxIE, setting::loopbackmode, setting::rsmode);
+                        }
+                    }
+
+                    if constexpr((static_cast<mem_width >(setting::commode) | static_cast<mem_width >(setting::paritymode) | static_cast<mem_width >(setting::stopbitmode) | static_cast<mem_width >(setting::charsize)) != 0)
+                        reg<ControlC >().set(setting::commode , setting::paritymode, setting::stopbitmode, setting::charsize);
+
+                    constexpr auto recMode = (setting::receivermode != static_cast<decltype(setting::receivermode) >(ReceiverMode::Normal)
+                                             && setting::receivermode != static_cast<decltype(setting::receivermode) >(ReceiverMode::Double) ?
+                                             setting::receivermode : baud > 100000 ?
+                                                                     static_cast<decltype(setting::receivermode) >(ReceiverMode::Double) :
+                                                                     static_cast<decltype(setting::receivermode) >(ReceiverMode::Normal));
 
                     if constexpr (setting::receivermode == static_cast<decltype(setting::receivermode) >(ReceiverMode::Normal)
                                   || setting::receivermode == static_cast<decltype(setting::receivermode) >(ReceiverMode::Double)) {
                         if constexpr (baud > 100000) {
-                            reg<ControlB>().on(static_cast<decltype(setting::receivermode) >(ReceiverMode::Double));
                             if constexpr(CommunicationMode::Synchronous != static_cast<CommunicationMode >(setting::commode)){
-															//using test = std::integral_constant<uint32_t,ubrrValue2(DEFAULT_MCU::clockFrequency, baud)>;
-															//test::_;
                                 reg<Baud>().raw() = ubrrValue2(DEFAULT_MCU::clockFrequency, baud);
 							}
                            else
@@ -120,34 +137,24 @@ namespace AVR::usart {
                             else
                                 reg<Baud>().raw() = ubrrValueSync(DEFAULT_MCU::clockFrequency, baud);
                         }
-                    } else {
-                        reg<ControlB>().on(setting::receivermode);
                     }
-                    if constexpr(_USART::InterruptEnabled){
-                        constexpr bool both = !_USART::isReadOnly && !_USART::isWriteOnly;
-                        if constexpr(_USART::isReadOnly || both){
-                            reg<ControlA>().on(Interrupts::RxIE);
-                        }
-                        if constexpr (_USART::isWriteOnly || both){
-                            //reg<ControlA>().on(Interrupts::TxIE);
-                        }
-                    }
+
                     if constexpr(_USART::isWriteOnly) {
                         port::PinsDirOut<typename alt::Txd::pin0>();
                         port::PinsOn<typename alt::Txd::pin0>();
-                        reg<ControlB>().on(ControlB::type::special_bit::Txen);
+                        reg<ControlB>().set(recMode,ControlB::type::special_bit::Txen, setting::opendrainmode, setting::startframedetection, setting::multiprocessor, setting::receivermode);
                     }
                     else if constexpr(_USART::isReadOnly) {
                         port::PinsDirOut<typename alt::Rxd::pin0>();
                         port::PinsOn<typename alt::Rxd::pin0>();
-                        reg<ControlB>().on(ControlB::type::special_bit::Rxen);
+                        reg<ControlB>().set(recMode,ControlB::type::special_bit::Rxen, setting::opendrainmode, setting::startframedetection, setting::multiprocessor, setting::receivermode);
                     }
                     else {
                         port::PinsDirOut<typename alt::Txd::pin0,typename alt::Rxd::pin0>();
                         port::PinsOn<typename alt::Txd::pin0,typename alt::Rxd::pin0>();
-                        reg<ControlB>().on(ControlB::type::special_bit::Txen, ControlB::type::special_bit::Rxen);
+                        reg<ControlB>().set(recMode,ControlB::type::special_bit::Txen, ControlB::type::special_bit::Rxen, setting::opendrainmode, setting::startframedetection, setting::multiprocessor, setting::receivermode);
                     }
-                }
+               }
 
                 template<bool dummy = true, typename T = std::enable_if_t<_USART::InterruptEnabled>>
                 static inline void rxHandler(){
@@ -160,9 +167,12 @@ namespace AVR::usart {
                         static_assert(_USART::fifoIn::value == 0);
                         if constexpr(!std::is_same_v<typename accesstype::Adapter, External::Hal::NullProtocollAdapter>) {
                             if (!accesstype::Adapter::process(c)) {
-#ifdef DEBUG
-                                assert("input not handled by protocoll adapter");
+                                if constexpr(Debug) {
+#ifdef DBGOUT
+                                    dbgout::put("input not handled by protocol adapter!");
+                                    dbgout::flush();
 #endif
+                                }
                             }
                         }
                         else {
@@ -174,7 +184,7 @@ namespace AVR::usart {
                 template<bool dummy = true, typename T = std::enable_if_t<_USART::InterruptEnabled>>
                 static inline void txHandler(){
                     if (const auto c = _USART::fifoOut.pop_front()) {
-                        reg<TxDataL>.raw() = *c;;
+                        reg<TxDataL>.raw() = *c;
                     }
                     else {
                         if constexpr(_USART::InterruptEnabled) {

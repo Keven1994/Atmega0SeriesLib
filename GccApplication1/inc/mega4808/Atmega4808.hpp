@@ -168,14 +168,14 @@ namespace mega4808 {
                 using CConf = usart_details::usartComponent::CTRLCMasks;
 
                 static constexpr AConf rsmode = static_cast<AConf>(RSMode);
-                static constexpr AConf loopback = LoopBackMode ? AConf::Lbme : static_cast<AConf>(0);
+                static constexpr AConf loopbackmode = LoopBackMode ? AConf::Lbme : static_cast<AConf>(0);
                 static constexpr BConf opendrainmode = OpenDrainMode ? BConf::Odme : static_cast<BConf>(0);
                 static constexpr BConf startframedetection = StartFrameDetection ? BConf::Sfden : static_cast<BConf>(0);
                 static constexpr BConf multiprocessor = MultiProcessor ? BConf::Mpcm : static_cast<BConf>(0);
                 static constexpr BConf receivermode = static_cast<BConf>(receiverMode);
                 static constexpr CConf commode = static_cast<CConf>(ComMode);
                 static constexpr CConf paritymode = static_cast<CConf>(parityMode);
-                static constexpr CConf stoppbitmode = static_cast<CConf>(stopBitMode);
+                static constexpr CConf stopbitmode = static_cast<CConf>(stopBitMode);
                 static constexpr CConf charsize = static_cast<CConf>(CharSize);
                 static constexpr CConf msb = !Msb ? CConf::Udord : static_cast<CConf>(0);
 		    };
