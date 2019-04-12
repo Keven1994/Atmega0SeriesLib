@@ -23,7 +23,7 @@
 #include "../inc/hw_abstractions/Eventsystem.hpp"
 #include "../inc/hw_abstractions/TWI.hpp"
 #include "../inc/hw_abstractions/USART.hpp"
-#include "hw_abstractions/Delay.hpp"
+#include "../hw_abstractions/Delay.hpp"
 #elif defined(MEGA4809)
 #include "../inc/mega4809/Atmega4809.hpp"
 
@@ -77,15 +77,26 @@ ISR(USART2_TXC_vect){
 
 
 int main() {
+
     usart::init();
 
         while(true){
 
-			usart::put('h');
-			usart::put('e');
-			usart::put('l');
-			usart::put('l');
-			usart::put('o');
+            usart::put('h');
+            usart::put('e');
+            usart::put('l');
+            usart::put('l');
+            usart::put('o');
+            usart::put('h');
+            usart::put('e');
+            usart::put('l');
+            usart::put('l');
+            usart::put('o');
+            usart::put('h');
+            usart::put('e');
+            usart::put('l');
+            usart::put('l');
+            usart::put('o');
 
             usart::periodic();
 

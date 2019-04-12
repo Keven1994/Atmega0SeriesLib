@@ -116,7 +116,6 @@ namespace AVR::usart {
                         }
                     }
                     using BConf = typename setting::BConf;
-                    using CConf = typename setting::CConf;
 
                     if constexpr((static_cast<mem_width >(setting::commode) | static_cast<mem_width >(setting::paritymode) | static_cast<mem_width >(setting::stopbitmode) | static_cast<mem_width >(setting::charsize)) != 0)
                         reg<ControlC >().set(setting::commode , setting::paritymode, setting::stopbitmode, setting::charsize);
@@ -195,11 +194,9 @@ namespace AVR::usart {
                     if (_USART::fifoOut.pop_front(item)) {
                         reg<TxDataL>().raw() = item;
                     }
-                    else {
-                        if constexpr(_USART::InterruptEnabled) {
-                            reg<InterruptFlags>().toggle(InterruptFlags::type::special_bit::Dreif);
-                        }
-                    }
+                    //else {
+                            //reg<InterruptFlags>().toggle(InterruptFlags::type::special_bit::Dreif);
+                    //}
                 }
 
                 template<bool dummy = true, typename T = std::enable_if_t<dummy && _USART::InterruptEnabled && !_USART::fifoEnabled>>
@@ -282,7 +279,7 @@ namespace AVR::usart {
                 }
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly>>
-                [[gnu::always_inline]] static inline bool put(bit_width item){
+                 static inline bool put(bit_width item) {
                         return _USART::fifoOut.push_back(item);
                 }
 
