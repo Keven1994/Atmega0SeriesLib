@@ -74,10 +74,16 @@ namespace etl {
         template<typename MCU>
         concept bool NotZeroAVR = !ZeroAVR<MCU>;
 
+template<typename T>
+concept bool ProtocolAdapter2 = requires(T){
+    {T::process(uint8_t{0})} -> bool;
+};
+
         template<typename T>
         concept bool ProtocolAdapter = requires(T){
             {T::process(std::byte{0})} -> bool;
-        };
+        } || ProtocolAdapter2<T>;
+
 
 template<typename T>
 concept bool hasRxHandler = requires(T){

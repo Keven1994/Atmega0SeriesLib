@@ -51,6 +51,13 @@ using usartRessource = AVR::rc::Instance<
         AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 
+        struct testPA {
+
+            static inline bool process(uint8_t data){
+                return true;
+            }
+
+        };
 
 using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource>; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
@@ -59,6 +66,8 @@ using usartres = RC::getRessource_t<usartRessource>;
 //using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
 using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>; // put spi ressource in
 using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
+using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<testPA>>,usartres, AVR::ReadWrite>;
+using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
 using twi = AVR::twi::TWIMaster<AVR::notBlocking<>,twires>;
 
 using led1 = Pin<PortA, 2>;
@@ -73,15 +82,16 @@ enum class error : mem_width {
 
 ISR(USART2_TXC_vect){
 		usart::txHandler();
+		usart1::txHandler(42);
 }
 
 
 int main() {
-
+    spi::init();
     usart::init();
-
+    usart1::init();
         while(true){
-
+            spi::put('c');
             usart::put('h');
             usart::put('e');
             usart::put('l');
@@ -99,7 +109,7 @@ int main() {
             usart::put('o');
 
             usart::periodic();
-
+            spi::periodic();
             AVR::safeDelay<AVR::ms,200>();
 	}
 	

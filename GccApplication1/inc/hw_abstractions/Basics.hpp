@@ -22,7 +22,7 @@ namespace AVR {
     template<etl::Concepts::ProtocolAdapter adapter = External::Hal::NullProtocollAdapter>
     struct Interrupts : std::true_type {using Adapter = adapter;};
 
-    struct blocking {using fifo = NoFifo; static constexpr bool useInterrupts = false;};
+    struct blocking {using fifo = NoFifo; static constexpr bool intEnabled = false;};
 
     template<etl::Concepts::NamedConstant fifoUse = NoFifo, typename interrupt = NoInterrupts>
     struct notBlocking;
@@ -41,12 +41,9 @@ namespace AVR {
         using fifo = NoFifo;
     };
 
+    /////////no fifo/no PA -> not allowed
     template<>
-    struct notBlocking<NoFifo,Interrupts<>> {
-        static constexpr bool intEnabled = true;
-
-        using fifo = NoFifo;
-    };
+    struct notBlocking<NoFifo,Interrupts<>>;
 
     template<etl::Concepts::NamedConstant fifoUse>
     struct notBlocking<fifoUse,NoInterrupts> {

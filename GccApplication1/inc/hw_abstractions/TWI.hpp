@@ -10,6 +10,7 @@
 #include "../MCUSelect.hpp"
 #include "RessourceController.hpp"
 #include <util/twi.h>
+#include "Components.hpp"
 
 namespace AVR {
 	
@@ -19,8 +20,8 @@ namespace AVR {
 		
 		namespace details {
 			
-			template<typename component, typename instance>
-			struct _TWI {
+			template<typename RW,typename accesstype, typename bit_width>
+			struct _TWI : protected AVR::details::Communication<RW,accesstype, bit_width>  {
 				protected:
 				template<typename Reg>
 				[[nodiscard,gnu::always_inline]] static inline auto& reg(){
@@ -28,8 +29,8 @@ namespace AVR {
 				}
 			};
 			
-			template<typename accesstype,  typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-			class TWIMaster : protected _TWI<component, instance> {
+			template<typename RW,typename accesstype,  typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
+			class TWIMaster : protected _TWI<RW, accesstype, bit_width> {
 				using Bridgectrl = typename component::registers::bridgectrl;
 				using Ctrla =  typename component::registers::ctrla;
 				using Dbgctrl = typename component::registers::dbgctrl;
@@ -124,9 +125,18 @@ namespace AVR {
 					return func();
 					return ret_type{};
 				}
-				
-				//initialize and start
+
+				//initialize and start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 				static inline void init(){
+                    if constexpr(_TWI::InterruptEnabled){
+                        constexpr bool both = !_SPI::isReadOnly && !_SPI::isWriteOnly;
+                        if constexpr(_SPI::isReadOnly || both){
+                            reg<InterruptControl>().on(InterruptControl::type::special_bit::Rxcie);
+                        }
+                        if constexpr (_SPI::isWriteOnly || both){
+                            //reg<InterruptControl>().on(InterruptControl::special_bit::Txcie);
+                        }
+                    }
 					TWIMaster::template reg<Ctrla>().set(Setting::fastmode,Setting::holdtime,Setting::setuptime);
 					TWIMaster::template reg<Mbaud>().set(Setting::baud);
 					TWIMaster::template reg<Mctrla>().set(Setting::quickcommand,Setting::smartmode,Setting::timeout,Mctrla::type::special_bit::Enable);

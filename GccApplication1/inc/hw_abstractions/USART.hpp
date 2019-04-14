@@ -35,6 +35,7 @@ namespace AVR::usart {
                 static_assert(setting::charsize != static_cast<typename setting::CConf>(CharacterSize::Bit9HighFirst) && setting::charsize != static_cast<typename setting::CConf>(CharacterSize::Bit9LowFirst),
                         "9 bit mode not supported");
 
+                //////////////private fifo transfer/receive methods
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly>>
                 static inline void transfer(){
                     bit_width item;
@@ -81,18 +82,24 @@ namespace AVR::usart {
 
             public:
 
+                NoConstructors(_USART);
+
+                template<bool dummy, typename T = std::enable_if_t<! _USART::isReadOnly>>
                 [[nodiscard]] static inline bool outputEmpty(){
                     return _USART::fifoOut.empty();
                 }
 
+                template<bool dummy, typename T = std::enable_if_t<! _USART::isWriteOnly>>
                 [[nodiscard]] static inline bool inputEmpty(){
                     return _USART::fifoOut.empty();
                 }
 
+                template<bool dummy, typename T = std::enable_if_t<! _USART::isReadOnly>>
                 [[nodiscard]] static inline auto outputSize(){
                     return _USART::fifoOut.size();
                 }
 
+                template<bool dummy, typename T = std::enable_if_t<! _USART::isWriteOnly>>
                 [[nodiscard]] static inline auto inputSize(){
                     return _USART::fifoOut.size();
                 }
@@ -163,10 +170,11 @@ namespace AVR::usart {
                     }
                }
 
+               ///////////////////Interrupthandlers
                 template<bool dummy = true, typename T = std::enable_if_t<_USART::InterruptEnabled>>
                 static inline void rxHandler(){
                     const auto c = reg<RxDataL>.raw();
-                    if constexpr (_USART::fifoIn::value > 0) {
+                    if constexpr (_USART::FifoEnabled) {
                         static_assert(std::is_same_v<typename accesstype::Adapter, External::Hal::NullProtocollAdapter>, "recvQueue is used, no need for PA");
                         _USART::fifoIn.push_back(c);
                     }
@@ -194,18 +202,14 @@ namespace AVR::usart {
                     if (_USART::fifoOut.pop_front(item)) {
                         reg<TxDataL>().raw() = item;
                     }
-                    //else {
-                            //reg<InterruptFlags>().toggle(InterruptFlags::type::special_bit::Dreif);
-                    //}
                 }
 
                 template<bool dummy = true, typename T = std::enable_if_t<dummy && _USART::InterruptEnabled && !_USART::fifoEnabled>>
                 static inline void txHandler(const uint8_t data){
-                        reg<TxDataL>().raw() =data;
+                        reg<TxDataL>().raw() = data;
                 }
 
-                NoConstructors(_USART);
-
+                /////////////no fifo/not blocking transfer/receive methods
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && !_USART::fifoEnabled && !_USART::isBlocking && !_USART::isReadOnly>>
                 static inline void transfer(bit_width data) {
                     reg<TxDataL>().raw() = data;
@@ -216,13 +220,64 @@ namespace AVR::usart {
                     return reg<TxDataL>().raw();
                 }
 
+                //////////////blocking receive/transfer methods
+                template<typename block = accesstype, typename T = std::enable_if_t< _USART::isBlocking && !_USART::isWriteOnly && ! _USART::fifoEnabled>>
+                [[nodiscard]] static inline bit_width receive() {
+                    while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Rxcif));
+                    return reg<RxDataL>().raw();
+                }
 
+                template<typename block = accesstype, typename T = std::enable_if_t<_USART::isBlocking && !_USART::isReadOnly && ! _USART::fifoEnabled>>
+                static inline void transfer(bit_width data) {
+                    reg<TxDataL>().raw() = data;
+                    while(! reg<InterruptFlags>().areSet(InterruptFlagBits::Dreif));
+                }
+
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && !_USART::fifoEnabled && !_USART::isWriteOnly>>
+                [[nodiscard]] static inline bit_width* receive(bit_width* data, bit_width size) {
+                    for(bit_width i = 0; i < size; i++){
+                        data[i] = receive();
+                    }
+                    return data;
+                }
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && !_USART::fifoEnabled && !_USART::isReadOnly>>
+                static inline void transfer(bit_width* data, bit_width size) {
+                    for(bit_width i = 0; i < size; i++){
+                        transfer(data[i]);
+                    }
+                }
+
+                //////////public fifo receive/transfer methods
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly>>
+                static inline bool put(bit_width item) {
+                    return _USART::fifoOut.push_back(item);
+                }
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isWriteOnly>>
+                static inline bool get(bit_width& item){
+                    return _USART::fifoIn.pop_front(item);
+                }
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled>>
+                static inline void periodic(){
+                    if constexpr(! _USART::InterruptEnabled) {
+                        if constexpr(!_USART::isWriteOnly) doIfSet<rxHelp>(InterruptFlagBits::Rxcif);
+                        if constexpr(!_USART::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
+                    } else {
+                        if constexpr(!_USART::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
+                    }
+                }
+
+                //convenience method for enabling interrupts
                 template<typename... Args>
-                requires(utils::sameTypes<Interrupts,Args...>() && std::is_same<accesstype, notBlocking<>>::value)
+                requires(utils::sameTypes<Interrupts,Args...>() && _USART::InterruptEnabled)
                 static inline void enableInterrupt(Args... Bits) {
                     reg<ControlA>().set(Bits...);
                 }
 
+                ///////test/execute methods
                 template<auto& funcRef, typename... FlagsToTest>
                 requires(utils::sameTypes<InterruptFlagBits, FlagsToTest...>() && etl::Concepts::Callable<decltype(funcRef)>)
                 static inline auto doIfSet(FlagsToTest... flags) {
@@ -247,55 +302,6 @@ namespace AVR::usart {
                     }
                     if constexpr (! std::is_same_v<retType,void>)
                         return retType{};
-                }
-
-
-                template<typename block = accesstype, typename T = std::enable_if_t< _USART::isBlocking && !_USART::isWriteOnly>>
-                [[nodiscard]] static inline bit_width receive() {
-                    while(! reg<InterruptFlags>().areSet(InterruptFlagBits::If));
-                    return reg<RxDataL>().raw();
-                }
-
-                template<typename block = accesstype, typename T = std::enable_if_t<_USART::isBlocking && !_USART::isReadOnly>>
-                static inline void transfer(bit_width data) {
-                    reg<TxDataL>().raw() = data;
-                    while(! reg<InterruptFlags>().areSet(InterruptFlagBits::If));
-                }
-
-
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && !_USART::fifoEnabled && !_USART::isWriteOnly>>
-                [[nodiscard]] static inline bit_width* receive(bit_width* data, bit_width size) {
-                    for(bit_width i = 0; i < size; i++){
-                        data[i] = receive();
-                    }
-                    return data;
-                }
-
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && !_USART::fifoEnabled && !_USART::isReadOnly>>
-                static inline void transfer(bit_width* data, bit_width size) {
-                    for(bit_width i = 0; i < size; i++){
-                        transfer(data[i]);
-                    }
-                }
-
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly>>
-                 static inline bool put(bit_width item) {
-                        return _USART::fifoOut.push_back(item);
-                }
-
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isWriteOnly>>
-                static inline bool get(bit_width& item){
-                    return _USART::fifoIn.pop_front(item);
-                }
-
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled>>
-                static inline void periodic(){
-                    if constexpr(!_USART::InterruptEnabled) {
-                        if constexpr(!_USART::isWriteOnly) doIfSet < rxHelp > (InterruptFlagBits::Rxcif);
-                        if constexpr(!_USART::isReadOnly) doIfSet < txHelp > (InterruptFlagBits::Dreif);
-                    } else {
-                        transfer();
-                    }
                 }
             };
 
