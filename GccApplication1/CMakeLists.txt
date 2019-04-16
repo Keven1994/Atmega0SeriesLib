@@ -98,7 +98,7 @@ add_custom_target(atmega4808 COMMAND untitled "${DEVICEFILE_4808}" "${HWFOLDER_4
         WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
 
 
-add_custom_target(hwfiles DEPENDS atmega4808 atmega4809 )
+add_custom_target(hwfiles ALL DEPENDS atmega4808 atmega4809 )
 add_custom_target(hwfilesexe COMMAND make all
         WORKING_DIRECTORY ${PARSER_PATH}
         DEPENDS hwfilescmake
@@ -108,7 +108,7 @@ add_custom_target(hwfilescmake COMMAND cmake -G "MinGW Makefiles" ./
         )
 
 #add_custom_target(hwfiles ALL   ${PARSER_PATH}/make ${PARSER_PATH})
-add_dependencies(${PROJECT_NAME} hwfiles)
+#add_dependencies(${PROJECT_NAME} hwfiles)
 # Compiling targets
 add_custom_target(strip ALL     ${AVRSTRIP} "${PROJECT_NAME}.elf" DEPENDS ${PROJECT_NAME})
 add_custom_target(hex   ALL     ${OBJCOPY} -R .eeprom -O ihex "${PROJECT_NAME}.elf" "${PROJECT_NAME}.hex" DEPENDS strip)

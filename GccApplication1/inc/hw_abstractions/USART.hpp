@@ -117,9 +117,9 @@ namespace AVR::usart {
                         if constexpr(_USART::isReadOnly){
                             reg<ControlA>().set(Interrupts::RxIE, setting::loopbackmode, setting::rsmode);
                         } else if constexpr(_USART::isWriteOnly){
-                            reg<ControlA>().set(Interrupts::TxIE, setting::loopbackmode, setting::rsmode);
-                        } else if constexpr (!_USART::isReadOnly && !_USART::isWriteOnly){
-                            reg<ControlA>().set(Interrupts::RxIE, Interrupts::TxIE, setting::loopbackmode, setting::rsmode);
+                            reg<ControlA>().set(Interrupts::DreIE, setting::loopbackmode, setting::rsmode);
+                        } else {
+                            reg<ControlA>().set(Interrupts::RxIE, Interrupts::DreIE, setting::loopbackmode, setting::rsmode);
                         }
                     }
                     using BConf = typename setting::BConf;
@@ -201,7 +201,7 @@ namespace AVR::usart {
                     uint8_t item;
                     if (_USART::fifoOut.pop_front(item)) {
                         reg<TxDataL>().raw() = item;
-                    }
+                    } else  disableInterrupt(Interrupts::DreIE);
                 }
 
                 template<bool dummy = true, typename T = std::enable_if_t<dummy && _USART::InterruptEnabled && !_USART::fifoEnabled>>
@@ -250,9 +250,16 @@ namespace AVR::usart {
                 }
 
                 //////////public fifo receive/transfer methods
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly>>
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly && !_USART::InterruptEnabled>>
                 static inline bool put(bit_width item) {
                     return _USART::fifoOut.push_back(item);
+                }
+
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isReadOnly && _USART::InterruptEnabled>>
+                static inline void put(bit_width item) {
+                    if(_USART::fifoOut.push_back(item)) {
+                        enableInterrupt(Interrupts::DreIE);
+                    }
                 }
 
                 template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::isWriteOnly>>
@@ -260,21 +267,25 @@ namespace AVR::usart {
                     return _USART::fifoIn.pop_front(item);
                 }
 
-                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled>>
+                template<bool dummy = true,typename T = std::enable_if_t<dummy && _USART::fifoEnabled && !_USART::InterruptEnabled>>
                 static inline void periodic(){
                     if constexpr(! _USART::InterruptEnabled) {
                         if constexpr(!_USART::isWriteOnly) doIfSet<rxHelp>(InterruptFlagBits::Rxcif);
                         if constexpr(!_USART::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
-                    } else {
-                        if constexpr(!_USART::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
                     }
                 }
 
-                //convenience method for enabling interrupts
+                //convenience methods for en/disabling interrupts
                 template<typename... Args>
                 requires(utils::sameTypes<Interrupts,Args...>() && _USART::InterruptEnabled)
                 static inline void enableInterrupt(Args... Bits) {
-                    reg<ControlA>().set(Bits...);
+                    reg<ControlA>().on(static_cast<typename ControlA::type::special_bit>(Bits)...);
+                }
+
+                template<typename... Args>
+                requires(utils::sameTypes<Interrupts,Args...>() && _USART::InterruptEnabled)
+                static inline void disableInterrupt(Args... Bits) {
+                    reg<ControlA>().off(static_cast<typename ControlA::type::special_bit>(Bits)...);
                 }
 
                 ///////test/execute methods

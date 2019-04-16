@@ -81,7 +81,7 @@ namespace AVR {
                 enum class Interrupts : mem_width {
                     RxIE = static_cast<mem_width>(usartComponent::CTRLAMasks ::Rxcie),
                     TxIE = static_cast<mem_width>(usartComponent::CTRLAMasks ::Txcie),
-                    DataRegisterEmpty = static_cast<mem_width>(usartComponent::CTRLAMasks ::Dreie),
+                    DreIE = static_cast<mem_width>(usartComponent::CTRLAMasks ::Dreie),
                     ReceiverStartFrameDetection = static_cast<mem_width>(usartComponent::CTRLAMasks ::Rxsie),
                     AutoBaudError = static_cast<mem_width>(usartComponent::CTRLAMasks ::Abeie)
                 };

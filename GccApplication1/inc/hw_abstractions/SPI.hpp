@@ -54,7 +54,7 @@ namespace AVR {
                     if constexpr(_SPI::InterruptEnabled){
                         constexpr bool both = !_SPI::isReadOnly && !_SPI::isWriteOnly;
                         if constexpr(_SPI::isReadOnly || both){
-                            reg<InterruptControl>().on(InterruptControl::type::special_bit::Rxcie);
+                            reg<InterruptControl>().on(InterruptControl::type::special_bit::Ie);
                         }
                         if constexpr (_SPI::isWriteOnly || both){
                             //reg<InterruptControl>().on(InterruptControl::special_bit::Txcie);
@@ -88,7 +88,6 @@ namespace AVR {
             [[nodiscard]] static inline auto inputSize(){
                 return _SPI::fifoOut.size();
             }
-
 
             ///////////////////Interrupthandlers
             template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled>>
@@ -186,7 +185,7 @@ namespace AVR {
                     if constexpr(!_SPI::isWriteOnly) doIfSet<rxHelp>(InterruptFlagBits::Rxcif);
                     if constexpr(!_SPI::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
                 } else {
-                    if constexpr(!_SPI::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Dreif);
+                    if constexpr(!_SPI::isReadOnly) doIfSet<txHelp>(InterruptFlagBits::Ie);
                 }
             }
 
@@ -229,7 +228,7 @@ namespace AVR {
 			template<typename RW, typename accesstype, typename component, typename instance,typename alt, typename Setting, typename bit_width>
 			struct SPIMaster final : public details::_SPI<RW, accesstype,component, instance, bit_width> {
 				NoConstructors(SPIMaster);
-
+                static_assert(static_cast<mem_width >(Setting::buf) == 0, "buffered mode not supported");
 				//init and enable
 				[[gnu::always_inline]] static inline void init(){
 
@@ -251,7 +250,7 @@ namespace AVR {
 
 			template<typename RW, typename accesstype, typename component, typename instance,typename alt,typename Setting, typename bit_width>
 			struct SPISlave final : public details::_SPI<RW, accesstype,component, instance, bit_width> {
-
+                static_assert(static_cast<mem_width >(Setting::buf) == 0, "buffered mode not supported");
 				NoConstructors(SPISlave);
 
                 //init and enable

@@ -80,18 +80,19 @@ enum class error : mem_width {
 	notBusy = 42	
 };
 
-ISR(USART2_TXC_vect){
+ISR(USART2_DRE_vect){
 		usart::txHandler();
-		usart1::txHandler(42);
+		PORTA.OUTTGL = 1 <<4;
 }
 
 
 int main() {
-    spi::init();
+    PORTA.DIR |= 1 << 4;
+    //spi::init();
     usart::init();
-    usart1::init();
+    //usart1::init();
         while(true){
-            spi::put('c');
+            //spi::put('c');
             usart::put('h');
             usart::put('e');
             usart::put('l');
@@ -108,9 +109,8 @@ int main() {
             usart::put('l');
             usart::put('o');
 
-            usart::periodic();
-            spi::periodic();
-            AVR::safeDelay<AVR::ms,200>();
+            //spi::periodic();
+            AVR::delay<AVR::ms,200>();
 	}
 	
 }
