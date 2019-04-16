@@ -84,7 +84,7 @@ namespace AVR {
         static inline void PinsDirOut() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().DIR;
-            Pval |= (Pins::pinValue | ...);
+            Pval |= (static_cast<mem_width >(Pins::pinValue) | ...);
         }
 
         template<typename... Pins>
