@@ -35,6 +35,12 @@ set(BASE_PATH    "${${PROJECT_NAME}_SOURCE_DIR}")
 set(INC_PATH     "${BASE_PATH}/inc")
 set(LIB_DIR_PATH "${BASE_PATH}/lib")
 set(SRC_PATH     "${BASE_PATH}/src")
+set(PARSER_PATH "${BASE_PATH}/parser")
+
+set(DEVICEFILE_4808 "${PARSER_PATH}/ATmega4808.atdf")
+set(DEVICEFILE_4809 "${PARSER_PATH}/ATmega4809.atdf")
+set(HWFOLDER_4808 "${INC_PATH}/mega4808/hal")
+set(HWFOLDER_4809 "${INC_PATH}/mega4809/hal")
 
 # Files to be compiled
 file(GLOB SRC_FILES "${SRC_PATH}/*.cpp"
@@ -84,6 +90,25 @@ include_directories(${INC_PATH} ${LIB_INC_PATH})
 add_executable(${PROJECT_NAME} ${SRC_FILES} ${LIB_SRC_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.elf")
 
+add_custom_target(atmega4809 COMMAND untitled ${DEVICEFILE_4809} ${HWFOLDER_4809}
+        WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
+
+
+add_custom_target(atmega4808 COMMAND untitled "${DEVICEFILE_4808}" "${HWFOLDER_4808}"
+        WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
+
+
+add_custom_target(hwfiles DEPENDS atmega4808 atmega4809 )
+add_custom_target(hwfilesexe COMMAND make all
+        WORKING_DIRECTORY ${PARSER_PATH}
+        DEPENDS hwfilescmake
+        )
+add_custom_target(hwfilescmake COMMAND cmake -G "MinGW Makefiles" ./
+        WORKING_DIRECTORY ${PARSER_PATH}
+        )
+
+#add_custom_target(hwfiles ALL   ${PARSER_PATH}/make ${PARSER_PATH})
+add_dependencies(${PROJECT_NAME} hwfiles)
 # Compiling targets
 add_custom_target(strip ALL     ${AVRSTRIP} "${PROJECT_NAME}.elf" DEPENDS ${PROJECT_NAME})
 add_custom_target(hex   ALL     ${OBJCOPY} -R .eeprom -O ihex "${PROJECT_NAME}.elf" "${PROJECT_NAME}.hex" DEPENDS strip)
@@ -111,6 +136,8 @@ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${PROJECT_NAME}
 
 # Config logging
 message("* ")
+message("${DEVICEFILE_4808}")
+message("${HWFOLDER_4808}")
 message("* Project Name:\t ${PROJECT_NAME}")
 message("* Project Source:\t ${SRC_PATH}")
 message("* Project Include:\t ${INC_PATH}")

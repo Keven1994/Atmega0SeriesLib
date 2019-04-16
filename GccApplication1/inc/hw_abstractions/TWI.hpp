@@ -20,7 +20,7 @@ namespace AVR {
 		
 		namespace details {
 			
-			template<typename RW,typename accesstype, typename bit_width>
+			template<typename RW,typename accesstype, typename instance, typename bit_width>
 			struct _TWI : protected AVR::details::Communication<RW,accesstype, bit_width>  {
 				protected:
 				template<typename Reg>
@@ -30,7 +30,7 @@ namespace AVR {
 			};
 			
 			template<typename RW,typename accesstype,  typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-			class TWIMaster : protected _TWI<RW, accesstype, bit_width> {
+			class TWIMaster : protected _TWI<RW, accesstype, instance, bit_width> {
 				using Bridgectrl = typename component::registers::bridgectrl;
 				using Ctrla =  typename component::registers::ctrla;
 				using Dbgctrl = typename component::registers::dbgctrl;
@@ -128,12 +128,12 @@ namespace AVR {
 
 				//initialize and start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 				static inline void init(){
-                    if constexpr(_TWI::InterruptEnabled){
-                        constexpr bool both = !_SPI::isReadOnly && !_SPI::isWriteOnly;
-                        if constexpr(_SPI::isReadOnly || both){
-                            reg<InterruptControl>().on(InterruptControl::type::special_bit::Rxcie);
+                    if constexpr(TWIMaster::InterruptEnabled){
+                        constexpr bool both = !TWIMaster::isReadOnly && !TWIMaster::isWriteOnly;
+                        if constexpr(TWIMaster::isReadOnly || both){
+                            //TWIMaster::template reg<InterruptControl>().on(InterruptControl::type::special_bit::Rxcie);
                         }
-                        if constexpr (_SPI::isWriteOnly || both){
+                        if constexpr (TWIMaster::isWriteOnly || both){
                             //reg<InterruptControl>().on(InterruptControl::special_bit::Txcie);
                         }
                     }
@@ -146,7 +146,7 @@ namespace AVR {
 			};
 			
 			template<typename accesstype,  typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-			class TWISlave : public _TWI<component,instance>  {
+			class TWISlave : public _TWI<component,accesstype, instance, bit_width>  {
 				
 				using Bridgectrl = typename component::registers::bridgectrl;
 				using Ctrla =  typename component::registers::ctrla;

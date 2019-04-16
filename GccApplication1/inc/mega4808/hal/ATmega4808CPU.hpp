@@ -1,5 +1,6 @@
 #pragma once
  #include "../../hw_abstractions/Port.hpp"
+ #include "../../tools/meta.h"
 
 namespace mega4808 {
     namespace cpu_details {
@@ -26,10 +27,30 @@ namespace mega4808 {
                 using sph = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0xE>;
                 using spl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0xD>;
                 using sreg = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Flag,SREGMasks>,0xF>;
+                volatile mem_width reserved0;
+                volatile mem_width reserved1;
+                volatile mem_width reserved2;
+                volatile mem_width reserved3;
+                ccp::type Ccp;
+                volatile mem_width reserved5;
+                volatile mem_width reserved6;
+                volatile mem_width reserved7;
+                volatile mem_width reserved8;
+                volatile mem_width reserved9;
+                volatile mem_width reserved10;
+                rampz::type Rampz;
+                volatile mem_width reserved12;
+                spl::type Spl;
+                sph::type Sph;
+                sreg::type Sreg;
             };
         
         };
-
+    
+        struct cpus {
+        
+        };
+    
     }
 
 }

@@ -368,3 +368,13 @@ GccApplication1/inc/mcu/
 *.lst
 
 *.map
+
+GccApplication1/parser/CMakeFiles/
+
+GccApplication1/parser/Makefile
+
+GccApplication1/inc/mega4808/hal/
+
+GccApplication1/parser/cmake_install\.cmake
+
+GccApplication1/parser/CMakeCache\.txt

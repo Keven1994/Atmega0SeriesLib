@@ -18,13 +18,14 @@ using ptr_t = uintptr_t;
 
 //hw includes
 #include "hal/Atmega4808Port.hpp"
-#include "hal/Atmega4808EVSYS.hpp"
+#include "mega4808/hal/Atmega4808eventSystem.hpp"
 #include "hal/Atmega4808SPI.hpp"
 #include "hal/ATmega4808TWI.hpp"
 #include "hal/ATmega4808CPU.hpp"
 #include "hal/ATmega4808USART.hpp"
 #include "../hw_abstractions/CPU.hpp"
 #include "../hw_abstractions/RessourceController.hpp"
+#include "../DeviceFamilys/ATmegaZero.hpp"
 
 namespace mega4808 {
 
@@ -74,10 +75,9 @@ namespace mega4808 {
 			using users = mega4808::details::users;
 		};
 
-		struct SPI : public AVR::rc::details::RCComponent<spi_details::spis, typename spi_details::spiComponent> {
+		struct SPI : public AVR::rc::details::RCComponent<spi_details::spis, spi_details::spiComponent>
+	, public AVR::details::AtmegaZero::template SPI_C< spi_details::spiComponent>{
 
-			using TransferMode = mega4808::spi_details::TransferMode;
-			using Prescaler = mega4808::spi_details::Prescaler;
 
 			template<bool msb,  bool clockDoubled, bool slaveSelectDisable,TransferMode transferMode, bool buffered,
 			bool waitForReceive, Prescaler prescaler>
@@ -113,11 +113,8 @@ namespace mega4808 {
 		    using Component_t = spi_details::spiComponent;
 		};
 		
-		struct TWI : public AVR::rc::details::RCComponent<twi_details::twis, twi_details::twiComponent>  {
-			
-			using SDAHold = twi_details::SDAHold;
-			using SDASetup = twi_details::SDASetup;
-			using MasterTimeout = twi_details::MasterTimeout;
+		struct TWI : public AVR::rc::details::RCComponent<twi_details::twis, twi_details::twiComponent> ,
+		        public AVR::details::AtmegaZero::template TWI_C< twi_details::twiComponent> {
 
 			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut, mem_width baudRate>
 			struct TWIMasterSetting{
@@ -148,19 +145,12 @@ namespace mega4808 {
             using Component_t = mega4808::twi_details::twiComponent;
 		};
 
-		struct USART : public AVR::rc::details::RCComponent<usart_details::usarts, usart_details::usartComponent> {
+		struct USART : public AVR::rc::details::RCComponent<usart_details::usarts, usart_details::usartComponent>,
+                       public AVR::details::AtmegaZero::template USART_C< usart_details::usartComponent> {
 
-		    using RS485Mode = usart_details::RS485Mode;
-		    using ReceiverMode = usart_details::ReceiverMode;
-		    using CommunicationMode = usart_details::CommunicationMode;
-		    using StopBitMode = usart_details::StopBitMode;
-		    using ParityMode = usart_details::ParityMode;
-		    using CharacterSize = usart_details::CharacterSize;
-		    using Interrupts = usart_details::InterruptEnable ;
-
-		    template<usart_details::RS485Mode RSMode, usart_details::ReceiverMode receiverMode,
-		            usart_details::CommunicationMode ComMode, usart_details::ParityMode parityMode,
-		            usart_details::StopBitMode stopBitMode, usart_details::CharacterSize CharSize, bool Msb,
+		    template<USART::RS485Mode RSMode, USART::ReceiverMode receiverMode,
+                    USART::CommunicationMode ComMode, USART::ParityMode parityMode,
+                    USART::StopBitMode stopBitMode, USART::CharacterSize CharSize, bool Msb,
 		            bool StartFrameDetection, bool OpenDrainMode, bool MultiProcessor , bool LoopBackMode>
 		    struct USARTSetting {
                 using AConf = usart_details::usartComponent::CTRLAMasks;

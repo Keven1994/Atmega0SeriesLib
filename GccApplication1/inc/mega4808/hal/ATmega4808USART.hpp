@@ -1,5 +1,6 @@
 #pragma once
-#include "../../hw_abstractions/Port.hpp"
+ #include "../../hw_abstractions/Port.hpp"
+ #include "../../tools/meta.h"
 
 namespace mega4808 {
     namespace usart_details {
@@ -15,7 +16,7 @@ namespace mega4808 {
                 Rs485_ext = USART_RS485_enum::USART_RS485_EXT_gc,
                 Rs485_int = USART_RS485_enum::USART_RS485_INT_gc
             };
-
+        
             enum class CTRLBMasks : mem_width {
                 Mpcm = USART_MPCM_bm,
                 Odme = USART_ODME_bm,
@@ -27,7 +28,7 @@ namespace mega4808 {
                 Rxmode_genauto = USART_RXMODE_enum::USART_RXMODE_GENAUTO_gc,
                 Rxmode_linauto = USART_RXMODE_enum::USART_RXMODE_LINAUTO_gc
             };
-
+        
             enum class CTRLCMasks : mem_width {
                 Ucpha = USART_UCPHA_bm,
                 Udord = USART_UDORD_bm,
@@ -47,16 +48,16 @@ namespace mega4808 {
                 Sbmode_1bit = USART_SBMODE_enum::USART_SBMODE_1BIT_gc,
                 Sbmode_2bit = USART_SBMODE_enum::USART_SBMODE_2BIT_gc
             };
-
+        
             enum class DBGCTRLMasks : mem_width {
                 Abmbp = USART_ABMBP_bm,
                 Dbgrun = USART_DBGRUN_bm
             };
-
+        
             enum class EVCTRLMasks : mem_width {
                 Irei = USART_IREI_bm
             };
-
+        
             enum class RXDATAHMasks : mem_width {
                 Bufovf = USART_BUFOVF_bm,
                 Data8 = USART_DATA8_bm,
@@ -64,7 +65,7 @@ namespace mega4808 {
                 Perr = USART_PERR_bm,
                 Rxcif = USART_RXCIF_bm
             };
-
+        
             enum class RXDATALMasks : mem_width {
                 Data0 = USART_DATA0_bm,
                 Data1 = USART_DATA1_bm,
@@ -75,7 +76,7 @@ namespace mega4808 {
                 Data6 = USART_DATA6_bm,
                 Data7 = USART_DATA7_bm
             };
-
+        
             enum class RXPLCTRLMasks : mem_width {
                 Rxpl0 = USART_RXPL0_bm,
                 Rxpl1 = USART_RXPL1_bm,
@@ -85,7 +86,7 @@ namespace mega4808 {
                 Rxpl5 = USART_RXPL5_bm,
                 Rxpl6 = USART_RXPL6_bm
             };
-
+        
             enum class STATUSMasks : mem_width {
                 Bdf = USART_BDF_bm,
                 Dreif = USART_DREIF_bm,
@@ -95,11 +96,11 @@ namespace mega4808 {
                 Txcif = USART_TXCIF_bm,
                 Wfb = USART_WFB_bm
             };
-
+        
             enum class TXDATAHMasks : mem_width {
                 Data8 = USART_DATA8_bm
             };
-
+        
             enum class TXDATALMasks : mem_width {
                 Data0 = USART_DATA0_bm,
                 Data1 = USART_DATA1_bm,
@@ -110,7 +111,7 @@ namespace mega4808 {
                 Data6 = USART_DATA6_bm,
                 Data7 = USART_DATA7_bm
             };
-
+        
             enum class TXPLCTRLMasks : mem_width {
                 Txpl0 = USART_TXPL0_bm,
                 Txpl1 = USART_TXPL1_bm,
@@ -121,7 +122,7 @@ namespace mega4808 {
                 Txpl6 = USART_TXPL6_bm,
                 Txpl7 = USART_TXPL7_bm
             };
-
+        
             struct registers {
                 using baud = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data,void,uint16_t>,0x8>;
                 using ctrla = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,CTRLAMasks>,0x5>;
@@ -153,198 +154,151 @@ namespace mega4808 {
                 txplctrl::type Txplctrl;
                 rxplctrl::type Rxplctrl;
             };
-
+        
         };
-
+    
         struct usarts {
             template<auto N ,bool dummy = true>
             struct inst;
-
+        
             template<bool dummy>
             struct inst<0, dummy>
-            {
+             {
                 template<auto N ,bool dummy1 = true>
                 struct alt;
-
+            
                 [[nodiscard,gnu::always_inline]] static inline auto& value()  { return USART0;}
-
+            
                 template<bool dummy1>
                 struct alt<1, dummy1>
-                {
+                 {
                     struct Rxd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,5>;
                     };
-
+                
                     struct Txd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,4>;
                     };
-
+                
                     struct Xck {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,6>;
                     };
-
+                
                     struct Xdir {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,7>;
                     };
-
+                
                     using list = Meta::List<typename Rxd::pin0, typename Txd::pin0, typename Xck::pin0, typename Xdir::pin0>;
                 };
-
+            
                 template<bool dummy1>
                 struct alt<0, dummy1>
-                {
+                 {
                     struct Rxd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,1>;
                     };
-
+                
                     struct Txd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,0>;
                     };
-
+                
                     struct Xck {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,2>;
                     };
-
+                
                     struct Xdir {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,3>;
                     };
-
+                
                     using list = Meta::List<typename Rxd::pin0, typename Txd::pin0, typename Xck::pin0, typename Xdir::pin0>;
                 };
-
+            
             };
-
+        
             template<bool dummy>
             struct inst<1, dummy>
-            {
+             {
                 template<auto N ,bool dummy1 = true>
                 struct alt;
-
+            
                 [[nodiscard,gnu::always_inline]] static inline auto& value()  { return USART1;}
-
+            
                 template<bool dummy1>
                 struct alt<0, dummy1>
-                {
+                 {
                     struct Rxd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,1>;
                     };
-
+                
                     struct Txd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,0>;
                     };
-
+                
                     struct Xck {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,2>;
                     };
-
+                
                     struct Xdir {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,3>;
                     };
-
+                
                     using list = Meta::List<typename Rxd::pin0, typename Txd::pin0, typename Xck::pin0, typename Xdir::pin0>;
                 };
-
+            
             };
-
+        
             template<bool dummy>
             struct inst<2, dummy>
-            {
+             {
                 template<auto N ,bool dummy1 = true>
                 struct alt;
-
+            
                 [[nodiscard,gnu::always_inline]] static inline auto& value()  { return USART2;}
-
+            
                 template<bool dummy1>
                 struct alt<1, dummy1>
-                {
+                 {
                     struct Rxd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,5>;
                     };
-
+                
                     struct Txd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,4>;
                     };
-
+                
                     struct Xck {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,6>;
                     };
-
+                
                     using list = Meta::List<typename Rxd::pin0, typename Txd::pin0, typename Xck::pin0>;
                 };
-
+            
                 template<bool dummy1>
                 struct alt<0, dummy1>
-                {
+                 {
                     struct Rxd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,1>;
                     };
-
+                
                     struct Txd {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,0>;
                     };
-
+                
                     struct Xck {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,2>;
                     };
-
+                
                     struct Xdir {
                         using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,3>;
                     };
-
+                
                     using list = Meta::List<typename Rxd::pin0, typename Txd::pin0, typename Xck::pin0, typename Xdir::pin0>;
                 };
-
+            
             };
-
+        
         };
-
-        enum class CharacterSize : mem_width {
-            Bit5 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_5bit),
-            Bit6 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_6bit),
-            Bit7 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_7bit),
-            Bit8 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_8bit),
-            Bit9LowFirst = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_9bitl),
-            Bit9HighFirst = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_9bith)
-        };
-
-        enum class CommunicationMode: mem_width {
-            Asynchronous = static_cast<mem_width>(usartComponent::CTRLCMasks::Cmode_asynchronous),
-            Synchronous = static_cast<mem_width>(usartComponent::CTRLCMasks::Cmode_synchronous) ,
-            InfraRed = static_cast<mem_width>(usartComponent::CTRLCMasks::Cmode_ircom) ,
-            MSPI = static_cast<mem_width>(usartComponent::CTRLCMasks::Cmode_mspi)
-        };
-
-        enum class ParityMode: mem_width {
-            Disabled = static_cast<mem_width>(usartComponent::CTRLCMasks::Pmode_disabled),
-            Even = static_cast<mem_width>(usartComponent::CTRLCMasks::Pmode_even) ,
-            Odd = static_cast<mem_width>(usartComponent::CTRLCMasks::Pmode_odd)
-        };
-
-        enum class StopBitMode: mem_width {
-            OneBit = static_cast<mem_width>(usartComponent::CTRLCMasks::Sbmode_1bit),
-            TwoBits = static_cast<mem_width>(usartComponent::CTRLCMasks::Sbmode_2bit)
-        };
-
-        enum class ReceiverMode : mem_width {
-            Normal = static_cast<mem_width>(usartComponent::CTRLBMasks::Rxmode_normal),
-            Double = static_cast<mem_width>(usartComponent::CTRLBMasks::Rxmode_clk2x),
-            GenericAutoBaud = static_cast<mem_width>(usartComponent::CTRLBMasks::Rxmode_genauto),
-            LINConstraintAutoBaud = static_cast<mem_width>(usartComponent::CTRLBMasks::Rxmode_linauto)
-        };
-
-        enum class InterruptEnable : mem_width {
-            RxIE = static_cast<mem_width>(usartComponent::CTRLAMasks ::Rxcie),
-            TxIE = static_cast<mem_width>(usartComponent::CTRLAMasks ::Txcie),
-            DataRegisterEmpty = static_cast<mem_width>(usartComponent::CTRLAMasks ::Dreie),
-            ReceiverStartFrameDetection = static_cast<mem_width>(usartComponent::CTRLAMasks ::Rxsie),
-            AutoBaudError = static_cast<mem_width>(usartComponent::CTRLAMasks ::Abeie)
-        };
-
-        enum class RS485Mode : mem_width  {
-            Disabled = static_cast<mem_width>(usartComponent::CTRLAMasks::Rs485_off),
-            InternalTransmitter = static_cast<mem_width>(usartComponent::CTRLAMasks ::Rs485_int),
-            ExternalTransmitter = static_cast<mem_width>(usartComponent::CTRLAMasks ::Rs485_ext)
-        };
+    
     }
 
 }

@@ -77,7 +77,11 @@ int main(int argc, const char **argv) {
     pugi::xml_parse_result result;
     if (argc > 1)
         result = doc.load_file(argv[1]);
-    else result = doc.load_file("../ATmega4808.atdf");
+    else {
+        std::cout << "not enough parameters" << '\n';
+        return -42;
+    }
+        //result = doc.load_file("../ATmega4808.atdf");
 
     if (!result)
         return -1;
@@ -131,15 +135,13 @@ void processSignals(const std::vector<std::string> &ports_available, const std::
 
                 std::vector<triple<>> tmp;
                 for (auto node3 :node2.child("signals").children()) {
-                    bool grpValid = true;
                     const std::string sig_func = node3.attribute("function").as_string();
                     std::string sig_group = node3.attribute("group").as_string();
                     std::string sig_pad = node3.attribute("pad").as_string();
 
                     instName = node2.attribute("name").as_string();
 
-                    if (contains(pins_available, (sig_pad)) && grpValid) {
-                        if (modName == "USART")
+                    if (contains(pins_available, (sig_pad))) {
                         tmp.push_back(triple<>{sig_func, sig_group, sig_pad});
                     }
 
@@ -183,6 +185,7 @@ void processRegisterGroup(const pugi::xml_node &tool, const std::string &modName
 
 void processRegisterValueGroups(const pugi::xml_node &tool, const std::string &modName, MCUStructureBuilder &mbuilder,
                                 std::vector<utils::tuple<>> &val_group) {
+    std::vector<std::string> contained;
     for (auto &valstr : val_group) {
         std::string enumname = modName;
 
@@ -193,6 +196,10 @@ void processRegisterValueGroups(const pugi::xml_node &tool, const std::string &m
         }
         enumname.append("_").append(valstr.str2).append("_enum").append("::").append(
                 modName + "_" + valstr.str2 + "_");
+        if(modName == "CPU" ){
+            enumname = valstr.str2+ "_";
+        }
+
         for (auto node2 : tool.children("value-group")) {
 
             if (node2.attribute("name").as_string() == valstr.str1) {
@@ -200,6 +207,10 @@ void processRegisterValueGroups(const pugi::xml_node &tool, const std::string &m
 
                     std::string noDef = node3.attribute("name").as_string();
                     std::string valname = enumname + noDef + "_gc";
+
+                    if(! utils::contains(contained,valstr.str2 + "_" + noDef))
+                        contained.push_back(valstr.str2 + "_" + noDef);
+                    else break;
 
                     mbuilder.addEnumEntry(
                             toCamelCase(valstr.str2 + "_" + noDef),

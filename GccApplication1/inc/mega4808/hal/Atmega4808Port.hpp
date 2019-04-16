@@ -1,9 +1,9 @@
 #pragma once
-#include "../../hw_abstractions/Port.hpp"
-#include "../../tools/meta.h"
- 
+ #include "../../hw_abstractions/Port.hpp"
+ #include "../../tools/meta.h"
+
 namespace mega4808 {
-	namespace port_details {
+    namespace port_details {
         struct portComponent {
             enum class INTFLAGSMasks : mem_width {
                 Int0 = PORT_INT0_bm,
@@ -15,7 +15,7 @@ namespace mega4808 {
                 Int6 = PORT_INT6_bm,
                 Int7 = PORT_INT7_bm
             };
-
+        
             enum class PIN0CTRLMasks : mem_width {
                 Inven = PORT_INVEN_bm,
                 Pullupen = PORT_PULLUPEN_bm,
@@ -26,7 +26,7 @@ namespace mega4808 {
                 Isc_input_disable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
                 Isc_level = PORT_ISC_enum::PORT_ISC_LEVEL_gc
             };
-
+        
             enum class PIN1CTRLMasks : mem_width {
                 Inven = PORT_INVEN_bm,
                 Pullupen = PORT_PULLUPEN_bm,
@@ -37,7 +37,7 @@ namespace mega4808 {
                 Isc_input_disable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
                 Isc_level = PORT_ISC_enum::PORT_ISC_LEVEL_gc
             };
-
+        
             enum class PIN2CTRLMasks : mem_width {
                 Inven = PORT_INVEN_bm,
                 Pullupen = PORT_PULLUPEN_bm,
@@ -48,7 +48,7 @@ namespace mega4808 {
                 Isc_input_disable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
                 Isc_level = PORT_ISC_enum::PORT_ISC_LEVEL_gc
             };
-
+        
             enum class PIN3CTRLMasks : mem_width {
                 Inven = PORT_INVEN_bm,
                 Pullupen = PORT_PULLUPEN_bm,
@@ -59,7 +59,7 @@ namespace mega4808 {
                 Isc_input_disable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
                 Isc_level = PORT_ISC_enum::PORT_ISC_LEVEL_gc
             };
-
+        
             enum class PIN4CTRLMasks : mem_width {
                 Inven = PORT_INVEN_bm,
                 Pullupen = PORT_PULLUPEN_bm,
@@ -70,7 +70,7 @@ namespace mega4808 {
                 Isc_input_disable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
                 Isc_level = PORT_ISC_enum::PORT_ISC_LEVEL_gc
             };
-
+        
             enum class PIN5CTRLMasks : mem_width {
                 Inven = PORT_INVEN_bm,
                 Pullupen = PORT_PULLUPEN_bm,
@@ -81,7 +81,7 @@ namespace mega4808 {
                 Isc_input_disable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
                 Isc_level = PORT_ISC_enum::PORT_ISC_LEVEL_gc
             };
-
+        
             enum class PIN6CTRLMasks : mem_width {
                 Inven = PORT_INVEN_bm,
                 Pullupen = PORT_PULLUPEN_bm,
@@ -92,7 +92,7 @@ namespace mega4808 {
                 Isc_input_disable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
                 Isc_level = PORT_ISC_enum::PORT_ISC_LEVEL_gc
             };
-
+        
             enum class PIN7CTRLMasks : mem_width {
                 Inven = PORT_INVEN_bm,
                 Pullupen = PORT_PULLUPEN_bm,
@@ -103,11 +103,11 @@ namespace mega4808 {
                 Isc_input_disable = PORT_ISC_enum::PORT_ISC_INPUT_DISABLE_gc,
                 Isc_level = PORT_ISC_enum::PORT_ISC_LEVEL_gc
             };
-
+        
             enum class PORTCTRLMasks : mem_width {
                 Srl = PORT_SRL_bm
             };
-
+        
             struct registers {
                 using dir = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x00>;
                 using dirclr = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x02>;
@@ -153,16 +153,16 @@ namespace mega4808 {
                 pin6ctrl::type Pin6ctrl;
                 pin7ctrl::type Pin7ctrl;
             };
-
+        
         };
-
+    
         template<typename P>
         using port = AVR::port::details::Port<P,portComponent::registers>;
-
+    
         struct ports {
             struct porta {
                 [[nodiscard,gnu::always_inline]] static inline auto& value()  { return PORTA;}
-
+            
                 struct Pin {
                     using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,0>;
                     using pin1 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,1>;
@@ -174,12 +174,12 @@ namespace mega4808 {
                     using pin7 = AVR::port::details::PortPin<port_details::port<port_details::ports::porta>,7>;
                     using list = Meta::List<pin0, pin1, pin2, pin3, pin4, pin5, pin6, pin7>;
                 };
-
+            
             };
-
+        
             struct portc {
                 [[nodiscard,gnu::always_inline]] static inline auto& value()  { return PORTC;}
-
+            
                 struct Pin {
                     using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,0>;
                     using pin1 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,1>;
@@ -187,12 +187,12 @@ namespace mega4808 {
                     using pin3 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,3>;
                     using list = Meta::List<pin0, pin1, pin2, pin3>;
                 };
-
+            
             };
-
+        
             struct portd {
                 [[nodiscard,gnu::always_inline]] static inline auto& value()  { return PORTD;}
-
+            
                 struct Pin {
                     using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,0>;
                     using pin1 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,1>;
@@ -204,12 +204,12 @@ namespace mega4808 {
                     using pin7 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,7>;
                     using list = Meta::List<pin0, pin1, pin2, pin3, pin4, pin5, pin6, pin7>;
                 };
-
+            
             };
-
+        
             struct portf {
                 [[nodiscard,gnu::always_inline]] static inline auto& value()  { return PORTF;}
-
+            
                 struct Pin {
                     using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,0>;
                     using pin1 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,1>;
@@ -220,9 +220,11 @@ namespace mega4808 {
                     using pin6 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,6>;
                     using list = Meta::List<pin0, pin1, pin2, pin3, pin4, pin5, pin6>;
                 };
-
+            
             };
-
+        
         };
-	}
+    
+    }
+
 }
