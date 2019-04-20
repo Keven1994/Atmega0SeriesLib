@@ -84,7 +84,7 @@ namespace AVR::usart {
 
                 NoConstructors(_USART);
 
-                template<bool dummy, typename T = std::enable_if_t<! _USART::isReadOnly>>
+                template<bool dummy= true, typename T = std::enable_if_t<dummy && ! _USART::isReadOnly>>
                 [[nodiscard]] static inline bool outputEmpty(){
                     return _USART::fifoOut.empty();
                 }

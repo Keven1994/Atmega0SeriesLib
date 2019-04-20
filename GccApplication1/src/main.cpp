@@ -68,7 +68,7 @@ using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrup
 using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
 using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<testPA>>,usartres, AVR::ReadWrite>;
 using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
-using twi = AVR::twi::TWIMaster<AVR::notBlocking<>,twires>;
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>, AVR::NoInterrupts>,twires, AVR::ReadWrite>;
 
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
@@ -80,37 +80,25 @@ enum class error : mem_width {
 	notBusy = 42	
 };
 
-ISR(SPI0_INT_vect){
-		spi::txHandler();
-		PORTA.OUTTGL = 1 <<3;
-}
 
 int main() {
 
-    spi::init();
-    PORTA.DIR |= 1 <<3;
-
+    //spi::init();
+    //AVR::dbgout::init();
+    twi::init();
+    PORTA.DIR = 1<<5;
+    PORTA.OUT |= 1 << 5;
     //usart::init();
     //usart1::init();
-        while(true){
-            //spi::put('c');
-            spi::put('h');
-            spi::put('e');
-            spi::put('l');
-            spi::put('l');
-            spi::put('o');
-            /*usart::put('h');
-            usart::put('e');
-            usart::put('l');
-            usart::put('l');
-            usart::put('o');
-            usart::put('h');
-            usart::put('e');
-            usart::put('l');
-            usart::put('l');
-            usart::put('o');*/
 
+
+        while(true){
+            twi::put<21>((uint8_t* )"hello", 5);
+            twi::periodic();
+            twi::periodic();
+            twi::periodic();
             //spi::periodic();
+            //AVR::dbgout::flush();
             AVR::delay<AVR::ms,200>();
 	}
 	

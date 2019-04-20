@@ -43,6 +43,7 @@ namespace mega4808 {
 	    struct isZero{};
 
 		static constexpr auto clockFrequency = frequency;
+        static constexpr auto riseTime = 1.5/1000000000;
 		
 		NoConstructors(Atmega4808);
 		
@@ -116,7 +117,7 @@ namespace mega4808 {
 		struct TWI : public AVR::rc::details::RCComponent<twi_details::twis, twi_details::twiComponent> ,
 		        public AVR::details::AtmegaZero::template TWI_C< twi_details::twiComponent> {
 
-			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut, mem_width baudRate>
+			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup, bool quickCommand, bool smartMode, MasterTimeout timeOut>
 			struct TWIMasterSetting{
 
 				using AConf = twi_details::twiComponent::CTRLAMasks;
@@ -128,7 +129,6 @@ namespace mega4808 {
 				static constexpr MAConf quickcommand = quickCommand ? MAConf::Qcen : static_cast<MAConf>(0);
 				static constexpr MAConf smartmode = smartMode ? MAConf::Smen : static_cast<MAConf>(0);
 				static constexpr MAConf timeout = static_cast<MAConf>(timeOut);
-				static constexpr mem_width baud = baudRate;
 			};
 
 			template<bool fastModePlus, SDAHold holdTime, SDASetup sdaSetup>

@@ -49,6 +49,7 @@ namespace AVR {
                     T_100us = static_cast<mem_width>(twiComponent::MCTRLAMasks::Timeout_100us),
                     T_200us = static_cast<mem_width>(twiComponent::MCTRLAMasks::Timeout_200us)
                 };
+
             };
 
             template<typename usartComponent>
