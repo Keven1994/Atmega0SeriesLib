@@ -1927,7 +1927,7 @@
 	<value caption="Count on positive edge event" name="POSEDGE" value="0x00"/>
 	<value caption="Count on any edge event" name="ANYEDGE" value="0x01"/>
 	<value caption="Count on prescaled clock while event line is 1." name="HIGHLVL" value="0x02"/>
-	<value caption="Count on prescaled clock. Event controls count direction. Up-count when event line is 0, down-count when event line is 1." name="UPDOWN" value="0x03"/>
+	<value caption="Count on prescaled clock. Event controls count access. Up-count when event line is 0, down-count when event line is 1." name="UPDOWN" value="0x03"/>
   </value-group>
   <value-group caption="Clock Selection select" name="TCA_SPLIT_CLKSEL">
 	<value caption="System Clock" name="DIV1" value="0x00"/>
