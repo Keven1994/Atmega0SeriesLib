@@ -7,14 +7,8 @@
 
 #ifndef TEST
 
-#define MEGA4809
-//CMake define AVR Makro ???????????????????????????? wtf
-#ifdef MEGA4808
-//fix unavailable ports
-#undef PORTB
-#undef PORTE
 ///////////////////////
-#include "../inc/mega4808/Atmega4808.hpp"
+#include "MCUSelect.hpp"
 #include "../inc/Boards/CuriosityNanoIOT.hpp"
 #include "../inc/hw_abstractions/SPI.hpp"
 #include "../inc/hw_abstractions/Port.hpp"
@@ -22,15 +16,7 @@
 #include "../inc/hw_abstractions/TWI.hpp"
 #include "../inc/hw_abstractions/USART.hpp"
 #include "../hw_abstractions/Delay.hpp"
-#elif defined(MEGA4809)
-#include "../inc/mega4809/Atmega4809.hpp"
-#include "../inc/hw_abstractions/SPI.hpp"
-#include "../inc/hw_abstractions/Port.hpp"
-#include "../inc/hw_abstractions/Eventsystem.hpp"
-#include "../inc/hw_abstractions/TWI.hpp"
-#include "../inc/hw_abstractions/USART.hpp"
-#include "../hw_abstractions/Delay.hpp"
-#endif
+
 
 
 using namespace AVR::port;

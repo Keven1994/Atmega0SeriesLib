@@ -7,14 +7,8 @@
 */
 
 #pragma once
-#include <stddef.h>
-#include <util/delay.h>
-#include <avr/interrupt.h>
-#include <avr/io.h>
 #include "../hw_abstractions/Basics.hpp"
-//type informations for the templates in the hw includes
-using mem_width = uint8_t;
-using ptr_t = uintptr_t;
+
 
 //hw includes
 #include "hal/Atmega4809Port.hpp"
