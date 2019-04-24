@@ -195,16 +195,6 @@ namespace AVR {
                     TWIMaster::template reg<typename TWIMaster::Status>().toggle(TWIMaster::StatusBits::Busstate_idle);
                 }
 
-                static inline void turnOff() {
-                    TWIMaster::template reg<typename TWIMaster::_Ctrla>().off(
-                            TWIMaster::Mctrla::type::special_bit::Enable);
-                }
-
-                static inline void turnOn() {
-                    TWIMaster::template reg<typename TWIMaster::_Ctrla>().on(
-                            TWIMaster::Mctrla::type::special_bit::Enable);
-                }
-
                 static inline void stopTransaction() {
                     TWIMaster::template reg<typename TWIMaster::_Ctrlb>().on(
                             TWIMaster::_Ctrlb::type::special_bit::Mcmd_stop);
@@ -310,6 +300,16 @@ namespace AVR {
                         return true;
                     }
                     return false;
+                }
+
+                static inline void turnOff() {
+                    TWIMaster::template reg<typename TWIMaster::_Ctrla>().off(
+                            TWIMaster::Mctrla::type::special_bit::Enable);
+                }
+
+                static inline void turnOn() {
+                    TWIMaster::template reg<typename TWIMaster::_Ctrla>().on(
+                            TWIMaster::Mctrla::type::special_bit::Enable);
                 }
 
                 template<bool dummy = true, typename T = std::enable_if_t<
@@ -503,48 +503,166 @@ namespace AVR {
             template<typename RW, typename accesstype, typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
             class TWISlave : public _TWI<RW, accesstype, component, instance, bit_width, true> {
 
-                using Bridgectrl = typename component::registers::bridgectrl;
-                using Ctrla =  typename component::registers::ctrla;
-                using Dbgctrl = typename component::registers::dbgctrl;
-                using Saddr =  typename component::registers::saddr;
-                using Saddrmask =  typename component::registers::saddrmask;
-                using Sctrla =  typename component::registers::sctrla;
-                using Sctrlb =  typename component::registers::sctrlb;
-                using Sdata =  typename component::registers::sdata;
-                using Sstatus =  typename component::registers::sstatus;
-                using status_bits = typename component::registers::sstatus::type::special_bit;
-
             public:
 
-                template<uint8_t address>
-                requires (address<(
 
-                1<<7))
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && !TWISlave::fifoEnabled && !TWISlave::isBlocking && ! TWISlave::isReadOnly>>
+                [[nodiscard]] static inline bool transfer(uint8_t Data){
+                    auto& statereg = TWISlave::template reg<typename TWISlave::Status>();
+                    using statebits = typename TWISlave::Status::type::special_bit;
 
+                    if(statereg.areSet(statebits::Busstate_owner, statebits::Wif)){
+                        TWISlave::template reg<typename TWISlave::Data>().raw() = Data;
+                        return true;
+                    }
+                    return false;
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && !TWISlave::fifoEnabled && !TWISlave::isBlocking && ! TWISlave::isWriteOnly>>
+                [[nodiscard]] static inline bool receive(uint8_t& Data) {
+                    auto& statereg = TWISlave::template reg<typename TWISlave::Status>();
+                    using statebits = typename TWISlave::Status::type::special_bit;
+
+                    if(statereg.areSet(statebits::Busstate_owner, statebits::Rif)){
+                        Data = TWISlave::template reg<typename TWISlave::Data>().raw();
+                        return true;
+                    }
+                    return false;
+                }
+
+
+                static inline void turnOff() {
+                    TWISlave::template reg<typename TWISlave::_Ctrla>().off(
+                            TWISlave::Mctrla::type::special_bit::Enable);
+                }
+
+                static inline void turnOn() {
+                    TWISlave::template reg<typename TWISlave::_Ctrla>().on(
+                            TWISlave::Mctrla::type::special_bit::Enable);
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<
+                        dummy && TWISlave::fifoEnabled && !TWISlave::InterruptEnabled> >
+                static inline void periodic() {
+                    auto& statereg = TWISlave::template reg<typename TWISlave::Status>();
+                    using statebits = typename TWISlave::Status::type::special_bit;
+
+                    if constexpr(TWISlave::isReadOnly) {
+                        if (TWISlave::current.bytes > 0) {
+                            static constexpr auto rxMethod = TWISlave::receive;
+                            TWISlave::template doIfSet<rxMethod>(TWISlave::StatusBits::Rif);
+                        } else {
+                            TWISlave::CommandStack.pop_front(TWISlave::current);
+                        }
+                    } else if constexpr(TWISlave::isWriteOnly) {
+                        if (TWISlave::current.bytes > 0) {
+                            static constexpr auto txMethod = TWISlave::transfer;
+                            TWISlave::template doIfSet<txMethod>(TWISlave::StatusBits::Wif);
+                        } else {
+
+                            TWISlave::CommandStack.pop_front(TWISlave::current);
+
+                        }
+                    } else if constexpr(!TWISlave::isWriteOnly && !TWISlave::isReadOnly) {
+                        if (TWISlave::current.bytes > 0) {
+                            static constexpr auto txMethod = TWISlave::_TWI::transfer;
+                            static constexpr auto rxMethod = TWISlave::_TWI::receive;
+                            if (TWISlave::current.access == write) {
+                                TWISlave::template doIfSet<txMethod>(TWISlave::StatusBits::Wif);
+                            } else {
+                                TWISlave::template doIfSet<rxMethod>(TWISlave::StatusBits::Rif);
+                            }
+                        } else {
+
+                                TWISlave::CommandStack.pop_front(TWISlave::current);
+
+                        }
+                    }
+
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWISlave::isBlocking>>
+                static inline void transfer(uint8_t data) {
+                    TWISlave::template reg<TWISlave::Mdata>().set(data);
+                    while (!(TWISlave::template reg<TWISlave::Mstatus>().areSet(TWISlave::InterruptFlagBits::Wif)));
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWISlave::isBlocking>>
+                static inline void transfer(bit_width *data, uint8_t n) {
+                    while (--n >= 0)
+                        transfer(data[n]);
+                }
+
+                template<uint8_t address, bool dummy = true, typename T = std::enable_if_t<dummy && TWISlave::isBlocking>>
+                [[nodiscard]] static inline bit_width receive() {
+                    static constexpr uint8_t addr = TWI_ADDREN_bm | (address << 1);
+
+                    TWISlave::template reg<typename TWISlave::Maddr>().set(addr);
+                    while (!(TWISlave::template reg<TWISlave::Mstatus>().areSet(
+                            TWISlave::Mstatus::special_bit::Rif)));
+                    return TWISlave::template reg<TWISlave::Mdata>().raw();
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWISlave::isBlocking>>
+                [[nodiscard]] static inline bit_width *receive(bit_width *data, uint8_t n) {
+                    for (uint8_t i = 0; i < n; i++)
+                        data[i] = receive();
+
+                    return data;
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWISlave::InterruptEnabled && TWISlave::fifoEnabled && ! TWISlave::isReadOnly>>
+                static inline void intHandler() {
+                    auto& statereg = TWISlave::template reg<typename TWISlave::Status>();
+                    using statebits = typename TWISlave::Status::type::special_bit;
+
+                    if constexpr(TWISlave::isReadOnly) {
+                        if (TWISlave::current.bytes > 0) {
+                            TWISlave::_TWI::receive();
+                        }
+                    } else if constexpr(TWISlave::isWriteOnly) {
+                        if (TWISlave::current.bytes > 0) {
+                            TWISlave::_TWI::transfer();
+                        }
+                    } else {
+                        if (TWISlave::current.bytes > 0) {
+
+                            if (TWISlave::current.access == write) {
+                                TWISlave::_TWI::transfer();
+                            } else {
+                                TWISlave::_TWI::receive();
+                            }
+                        }
+                    }
+                }
+
+                //initialize and start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                template<auto address>
+                requires(address < (1 <<7))
                 static inline void init() {
-                    alt::Scl::pin0::setInput();
-                    TWISlave::template reg<Ctrla>().set(Setting::fastmode, Setting::holdtime, Setting::setuptime);
-                    TWISlave::template reg<Saddr>().set(address << 1);
-                }
 
-                /*template<bool pinSetting = true>*/
-                [[nodiscard]] static inline bit_width singleReceive() {
-                    auto &statusreg = TWISlave::template reg<Sstatus>();
-                    /*if constexpr(pinSetting){
-                        alt::Sda::pin0::setInput();
-                    }*/
-                    while (!(statusreg.areSet(status_bits::Dif) && !statusreg.areSet(status_bits::Dir)));
-                    return TWISlave::template reg<Sdata>.raw();
-                }
+                    TWISlave::template reg<typename TWISlave::Ctrla>().set(Setting::fastmode, Setting::holdtime,
+                                                                           Setting::setuptime);
+                    TWISlave::template reg<typename TWISlave::Addr>().set(address << 1);
 
-                template</*bool pinSetting = true,*/ uint8_t address>
-                [[nodiscard]] static inline bit_width singleTransfer() {
-                    auto &statusreg = TWISlave::template reg<Sstatus>();
-                    /*if constexpr(pinSetting){
-                        alt::Sda::pin0::setInput();
-                    }*/
-                    while (!(statusreg.areSet(status_bits::Dif) && !statusreg.areSet(status_bits::Dir)));
-                    return TWISlave::template reg<Sdata>.raw();
+                    if constexpr(TWISlave::InterruptEnabled) {
+
+                        if constexpr(TWISlave::isReadOnly) {
+                            TWISlave::template reg<typename TWISlave::_Ctrla>().set(TWISlave::_Ctrla::type::special_bit::Rien,
+                                    TWISlave::_Ctrla::type::special_bit::Enable);
+                        }
+                        if constexpr (TWISlave::isWriteOnly) {
+                            TWISlave::template reg<typename TWISlave::_Ctrla>().set(TWISlave::_Ctrla::type::special_bit::Wien,
+                                    TWISlave::_Ctrla::type::special_bit::Enable);
+                        } else {
+                            TWISlave::template reg<typename TWISlave::_Ctrla>().set(TWISlave::_Ctrla::type::special_bit::Wien,
+                                    TWISlave::_Ctrla::type::special_bit::Rien,
+                                    TWISlave::_Ctrla::type::special_bit::Enable);
+                        }
+                    }
+
+                    if constexpr (TWISlave::InterruptEnabled)
+                            sei();
                 }
             };
         }
@@ -581,5 +699,4 @@ namespace AVR {
         using TWISlave = AVR::twi::details::TWISlave<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWISlaveSetting<fastModePlus, holdTime, sdaSetup>, bit_width>;
 
     }
-
 }

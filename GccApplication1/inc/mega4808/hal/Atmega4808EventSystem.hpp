@@ -5,85 +5,77 @@
 namespace mega4808 {
 	namespace details {
 		struct users {
-			struct evporta {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USEREVOUTA;}
-			};
-			
-			struct evportc {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USEREVOUTC;}
-			};
-			
-			struct evportd {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USEREVOUTD;}
-			};
-			
-			struct evportf {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USEREVOUTF;}
-			};
-			
-			struct evtca0 {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERTCA0;}
-			};
-			
-			struct evtcb0 {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERTCB0;}
-			};
-			
-			struct evtcb1 {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERTCB1;}
-			};
-			
-			struct evtcb2 {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERTCB2;}
-			};
-			
-			struct evusart0 {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERUSART0;}
-			};
-			
-			struct evusart1 {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERUSART1;}
-			};
-			
-			struct evusart2 {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERUSART2;}
-			};
-			
-			struct evccllut0a {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT0A;}
-			};
-			
-			struct evccllut0b {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT0B;}
-			};
-			
-			struct evccllut1a {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT1A;}
-			};
-			
-			struct evccllut1b {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT1B;}
-			};
-			
-			struct evccllut2a {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT2A;}
-			};
-			
-			struct evccllut2b {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT2B;}
-			};
-			
-			struct evccllut3a {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT3A;}
-			};
-			
-			struct evccllut3b {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERCCLLUT3B;}
-			};
-			
-			struct evadc0 {
-				[[nodiscard, gnu::always_inline]] static inline auto& value() { return EVSYS.USERADC0;}
-			};
+            struct evporta {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USEREVOUTA;}               };
+
+            struct evportb {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USEREVOUTB;}               };
+
+            struct evportc {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USEREVOUTC;}               };
+
+            struct evportd {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USEREVOUTD;}               };
+
+            struct evporte {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USEREVOUTE;}               };
+
+            struct evportf {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USEREVOUTF;}               };
+
+            struct evtca0 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERTCA0;}               };
+
+            struct evtcb0 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERTCB0;}               };
+
+            struct evtcb1 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERTCB1;}               };
+
+            struct evtcb2 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERTCB2;}               };
+
+            struct evtcb3 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERTCB3;}               };
+
+            struct evusart0 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERUSART0;}               };
+
+            struct evusart1 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERUSART1;}               };
+
+            struct evusart2 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERUSART2;}               };
+
+            struct evusart3 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERUSART3;}               };
+
+            struct evccllut0a {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERCCLLUT0A;}               };
+
+            struct evccllut0b {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERCCLLUT0B;}               };
+
+            struct evccllut1a {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERCCLLUT1A;}               };
+
+            struct evccllut1b {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERCCLLUT1B;}               };
+
+            struct evccllut2a {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERCCLLUT2A;}               };
+
+            struct evccllut2b {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERCCLLUT2B;}               };
+
+            struct evccllut3a {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERCCLLUT3A;}               };
+
+            struct evccllut3b {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERCCLLUT3B;}               };
+
+            struct evadc0 {
+                [[nodiscard, gnu::always_inline]] static inline auto& listener() { return EVSYS.USERADC0;}               };
 			
 		};
 		

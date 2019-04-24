@@ -7,10 +7,8 @@
 
 #ifndef TEST
 
-#define MEGA4808
+#define MEGA4809
 //CMake define AVR Makro ???????????????????????????? wtf
-#undef AVR
-#undef NDEBUG
 #ifdef MEGA4808
 //fix unavailable ports
 #undef PORTB
@@ -26,7 +24,12 @@
 #include "../hw_abstractions/Delay.hpp"
 #elif defined(MEGA4809)
 #include "../inc/mega4809/Atmega4809.hpp"
-
+#include "../inc/hw_abstractions/SPI.hpp"
+#include "../inc/hw_abstractions/Port.hpp"
+#include "../inc/hw_abstractions/Eventsystem.hpp"
+#include "../inc/hw_abstractions/TWI.hpp"
+#include "../inc/hw_abstractions/USART.hpp"
+#include "../hw_abstractions/Delay.hpp"
 #endif
 
 
@@ -63,7 +66,6 @@ using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
 using usartres = RC::getRessource_t<usartRessource>;
-//using spi = AVR::spi::SPIMaster<AVR::spi::notBlocking<AVR::spi::useFifo<42>>,res, AVR::spi::WriteOnly>; // put spi ressource in
 using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrupts<> >,res, AVR::ReadWrite>; // put spi ressource in
 using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
 using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<testPA>>,usartres, AVR::ReadWrite>;

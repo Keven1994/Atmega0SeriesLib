@@ -6,8 +6,9 @@ set(USBPORT /dev/tty.usbmodem411)
 set(PROG_ARGS -b 19200 -P ${USBPORT})
 
 # Variables regarding the AVR chip
-set(MCU   atmega4808)
-set(AVR_DEV_LIB_NAME m4808)
+set(empty "")
+set(MCU   atmega4809)
+set(AVR_DEV_LIB_NAME m4809)
 set(F_CPU 3333333)
 set(CMAKE_CXX_STANDARD 20)
 add_definitions(-DF_CPU=${F_CPU})
@@ -89,7 +90,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 include_directories(${INC_PATH} ${LIB_INC_PATH})
 add_executable(${PROJECT_NAME} ${SRC_FILES} ${LIB_SRC_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.elf")
-
+remove_definitions(-DAVR)
 add_custom_target(atmega4809 COMMAND untitled ${DEVICEFILE_4809} ${HWFOLDER_4809}
         WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
 

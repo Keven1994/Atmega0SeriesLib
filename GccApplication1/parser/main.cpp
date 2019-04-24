@@ -75,9 +75,9 @@ int main(int argc, const char **argv) {
     pugi::xml_document doc;
 
     pugi::xml_parse_result result;
-    if (argc > 1)
+    if (argc > 1) {
         result = doc.load_file(argv[1]);
-    else {
+    }else {
         std::cout << "not enough parameters" << '\n';
         return -42;
     }

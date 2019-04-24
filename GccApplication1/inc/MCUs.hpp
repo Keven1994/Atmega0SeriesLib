@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#undef AVR
 namespace mega4808{
 
     template<auto frequency = F_CPU>
