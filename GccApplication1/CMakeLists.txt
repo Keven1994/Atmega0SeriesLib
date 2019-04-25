@@ -91,7 +91,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 include_directories(${INC_PATH} ${LIB_INC_PATH})
 add_executable(${PROJECT_NAME} ${SRC_FILES} ${LIB_SRC_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.elf")
-remove_definitions(-DAVR)
 add_custom_target(atmega4809 COMMAND untitled ${DEVICEFILE_4809} ${HWFOLDER_4809}
         WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
 
@@ -114,6 +113,7 @@ add_custom_target(hwfilescmake COMMAND cmake -G "MinGW Makefiles" ./
 # Compiling targets
 add_custom_target(strip ALL     ${AVRSTRIP} "${PROJECT_NAME}.elf" DEPENDS ${PROJECT_NAME})
 add_custom_target(hex   ALL     ${OBJCOPY} -R .eeprom -O ihex "${PROJECT_NAME}.elf" "${PROJECT_NAME}.hex" DEPENDS strip)
+add_custom_target(preprocess    ${AVRCPP} -E ${CMCU} -funsigned-char -fno-jump-tables -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -Os -lm -lprintf_flt -std=c++2a -fconcepts -DF_CPU=${F_CPU} -D_${AVR_DEV_LIB_NAME} -Os -I${INC_PATH} -I${INC_PATH}/std ${SRC_FILES} -o "${PROJECT_NAME}_E.cpp" DEPENDS strip)
 add_custom_target(eeprom        ${OBJCOPY} -j .eeprom --change-section-lma .eeprom=0 -O ihex "${PROJECT_NAME}.elf" "${PROJECT_NAME}.eeprom" DEPENDS strip)
 add_custom_target(disassemble   ${OBJDUMP} -S "${PROJECT_NAME}.elf" > "${PROJECT_NAME}.lst" DEPENDS strip)
 # Flashing targets

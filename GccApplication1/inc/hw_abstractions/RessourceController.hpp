@@ -18,6 +18,26 @@ namespace AVR {
 	namespace rc {
 		
 		namespace details{
+
+		    template<typename... PINS>
+		    struct GenericRessource {
+		        using super = GenericRessource;
+                struct inst
+                {
+                    static constexpr auto value = 0;
+                    struct alt
+                    {
+                        static constexpr auto value = 0;
+                        using list = Meta::List<PINS...>;
+                    };
+                };
+
+                template<typename Alias>
+                struct comps{
+                    using inst  = typename GenericRessource::inst;
+                    using alt  = typename GenericRessource::inst::alt;
+                };
+            };
 			
 			template<typename Alias>
 			struct resolveComponent {
@@ -52,7 +72,7 @@ namespace AVR {
 			};
 		}
 		
-		template<typename MCU,typename FIRST,typename... PINS>
+		template<typename MCU,typename FIRST,typename... INSTANCES>
 		class ResController {
 			
 			template<typename Alias>
@@ -122,10 +142,10 @@ namespace AVR {
 			
 			template<typename N>
 			struct getRessource {
-				using type = utils::tuple<typename get_ressource_help<N, FIRST, PINS...>::inst,typename get_ressource_help<N, FIRST, PINS...>::alt>;
+				using type = utils::tuple<typename get_ressource_help<N, FIRST, INSTANCES...>::inst,typename get_ressource_help<N, FIRST, INSTANCES...>::alt>;
 				static_assert(!std::is_same<typename type::t2,void>::value , "portmux not found");
-				static_assert(checkRessource<FIRST,PINS...>(), "I/O Pins conflicting");
-				static_assert(checkInstance<FIRST,PINS...>(), "only 1 alternative from a single instance permitted");
+				static_assert(checkRessource<FIRST,INSTANCES...>(), "I/O Pins conflicting");
+				static_assert(checkInstance<FIRST,INSTANCES...>(), "only 1 alternative from a single instance permitted");
 			};
 
 			template<typename N>

@@ -12,11 +12,12 @@
 
 //hw includes
 #include "hal/Atmega4808Port.hpp"
-#include "mega4808/hal/Atmega4808eventSystem.hpp"
+#include "mega4808/hal/Atmega4808EventSystem.hpp"
 #include "hal/Atmega4808SPI.hpp"
 #include "hal/ATmega4808TWI.hpp"
 #include "hal/ATmega4808CPU.hpp"
 #include "hal/ATmega4808USART.hpp"
+#include "hal/ATmega4808ADC.hpp"
 #include "../hw_abstractions/CPU.hpp"
 #include "../hw_abstractions/RessourceController.hpp"
 #include "../DeviceFamilys/ATmegaZero.hpp"
@@ -167,8 +168,14 @@ namespace mega4808 {
 		    using Component_t = usart_details::usartComponent;
 		};
 
-		class Status {
-		    public:
+		struct ADC/* : public AVR::details::AtmegaZero::template ADC_C< adc_details::adcComponent>*/ {
+            using AConf = adc_details::adcComponent::CTRLAMasks;
+            using BConf = adc_details::adcComponent::CTRLBMasks;
+            using CConf = adc_details::adcComponent::CTRLCMasks;
+            using EConf = adc_details::adcComponent::CTRLEMasks;
+		};
+
+		struct Status {
             using Component_t = cpu_details::cpuComponent;
 		};
 		

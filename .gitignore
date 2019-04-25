@@ -380,3 +380,5 @@ GccApplication1/parser/cmake_install\.cmake
 GccApplication1/parser/CMakeCache\.txt
 
 GccApplication1/inc/mega4809/hal/
+
+GccApplication1/avrProject_E\.cpp

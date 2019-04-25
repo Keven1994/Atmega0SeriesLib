@@ -48,6 +48,9 @@ using usartRessource = AVR::rc::Instance<
 
         };
 
+using led1 = Pin<PortA, 2>;
+using led2 = Pin<PortA, 2>;
+
 using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource>; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
@@ -58,8 +61,7 @@ using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<t
 using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
 using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires, AVR::WriteOnly>;
 
-using led1 = Pin<PortA, 2>;
-using led2 = Pin<PortA, 2>;
+
 using ch0 = AVR::eventsystem::Channel<0>;
 
 
@@ -74,6 +76,8 @@ ISR(TWI0_TWIM_vect){
 }
 
 int main() {
+    mega4808::port_details::ports::porta::Pin::pin2::on();
+    led1::on();
     PORTA.DIR = 1<<5;
     PORTA.OUT |= 1 << 5;
 
