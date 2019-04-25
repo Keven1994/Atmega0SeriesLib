@@ -55,6 +55,7 @@ using usartRessource = AVR::rc::Instance<
 
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
+using unsafe = AVR::rc::UncheckedRessource_t<twiRessource>;
 
 using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource,adcRessource >; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
@@ -64,8 +65,7 @@ using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrup
 using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
 using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<testPA>>,usartres, AVR::ReadWrite>;
 using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
-using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires, AVR::WriteOnly>;
-
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,unsafe, AVR::WriteOnly>;
 
 using ch0 = AVR::eventsystem::Channel<0>;
 
