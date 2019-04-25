@@ -52,14 +52,29 @@ namespace AVR {
 				static constexpr auto Alternative = alternative;
 			};
 			
-			template<typename instances, typename Component_t>
+			template<typename instances, typename Component_t, typename instances2 = void>
 			class RCComponent {
+			    static constexpr bool checkAll(){
+			        if constexpr(std::is_same_v<instances2,void>) return true;
+			        else {
+			            return false;
+			        }
+			    }
 				template<typename Alias>
 				friend struct AVR::rc::details::resolveComponent;
+
+                template<typename Alias, typename T = instances2>
+                struct comps {
+                    using inst  = typename  instances::inst;
+                    using alt  = typename  inst::alt;
+
+                    static_assert(Meta::contains_all<typename instances2::template inst<Alias::Instance>::template alt<Alias::Alternative>::list,typename alt::list>::value, "not available pin was set up");
+                };
+
 				template<typename Alias>
-				struct comps{
-					using inst  =typename  instances::template inst<Alias::Instance>;
-					using alt  =typename  inst::template alt<Alias::Alternative>;
+				struct comps<Alias,void>{
+					using inst  = typename  instances::template inst<Alias::Instance>;
+					using alt  = typename  inst::template alt<Alias::Alternative>;
 				};
 			public:
 			    static constexpr bool isRCComponent = true;

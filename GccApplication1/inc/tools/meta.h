@@ -477,8 +477,12 @@ using nth_element = typename detail::nth_element_impl<N, List>::type;
 template<concepts::List List>
 using reverse = typename detail::reverse_impl<List>::type;
 
-template<concepts::List List, typename... T>
-struct containsAll : public std::integral_constant<bool, detail::contains_all_impl<List, Meta::List<T...>>::type::value> {};
+    template<concepts::List List, typename... T>
+    struct containsAll : public std::integral_constant<bool, detail::contains_all_impl<List, Meta::List<T...>>::type::value> {};
+
+    template<concepts::List List, concepts::List List2>
+    struct contains_all : public std::integral_constant<bool, detail::contains_all_impl<List, List2>::type::value> {};
+
 
 template<concepts::List List, typename... T>
 inline static constexpr bool containsAll_v = containsAll<List, T...>::value;

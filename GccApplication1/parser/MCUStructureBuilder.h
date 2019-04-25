@@ -511,7 +511,7 @@ public:
         auto funcctr = countDistinctFunctions(fgps);
         auto grpc=countDistinctGroups(fgps);
 
-        if(funcctr == 1 &&  grpc == 1){ //special case when there is only 1 function (e.g. ports)
+        if(utils::contains(modName,"PORT")){ //special case when there is only 1 function (e.g. ports)
             auto tmpstr = modName;
             addInstance(tmpstr);
             std::vector<details::Struct> toAdd{};
@@ -533,7 +533,7 @@ public:
                 elem.addTypeAlias("list",typestr+"");
                 instances[inst]->addMember(elem);
             }
-        } else if(funcctr > 1 || grpc > 1){
+        } else {
             multifunction = true;
             auto tmpstr = modName;
             addInstance(tmpstr,std::to_string(inst));
@@ -580,7 +580,8 @@ public:
 
             }
 
-        } else std::cerr << "no function found, sth went wrong\n";
+        }
+        //assert(funcctr >= 1);
     }
 
     void parse(const std::string& path) noexcept {

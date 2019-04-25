@@ -175,23 +175,36 @@ namespace mega4808 {
         };
     
         struct adcs {
-            struct adc0 {
+            template<auto N ,bool dummy = true>
+            struct inst;
+        
+            template<bool dummy>
+            struct inst<0, dummy>
+             {
+                template<auto N ,bool dummy1 = true>
+                struct alt;
+            
                 [[nodiscard,gnu::always_inline]] static inline auto& value()  { return ADC0;}
             
-                struct Pin {
-                    using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,0>;
-                    using pin1 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,1>;
-                    using pin2 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,2>;
-                    using pin3 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,3>;
-                    using pin4 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,4>;
-                    using pin5 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,5>;
-                    using pin6 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,6>;
-                    using pin7 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,7>;
-                    using pin8 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,2>;
-                    using pin9 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,3>;
-                    using pin10 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,4>;
-                    using pin11 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,5>;
-                    using list = Meta::List<pin0, pin1, pin2, pin3, pin4, pin5, pin6, pin7, pin8, pin9, pin10, pin11>;
+                template<bool dummy1>
+                struct alt<0, dummy1>
+                 {
+                    struct Ain {
+                        using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,0>;
+                        using pin1 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,1>;
+                        using pin2 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,2>;
+                        using pin3 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,3>;
+                        using pin4 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,4>;
+                        using pin5 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,5>;
+                        using pin6 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,6>;
+                        using pin7 = AVR::port::details::PortPin<port_details::port<port_details::ports::portd>,7>;
+                        using pin8 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,2>;
+                        using pin9 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,3>;
+                        using pin10 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,4>;
+                        using pin11 = AVR::port::details::PortPin<port_details::port<port_details::ports::portf>,5>;
+                    };
+                
+                    using list = Meta::List<typename Ain::pin0, typename Ain::pin1, typename Ain::pin2, typename Ain::pin3, typename Ain::pin4, typename Ain::pin5, typename Ain::pin6, typename Ain::pin7, typename Ain::pin8, typename Ain::pin9, typename Ain::pin10, typename Ain::pin11>;
                 };
             
             };

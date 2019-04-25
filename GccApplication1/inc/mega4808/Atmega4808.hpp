@@ -168,11 +168,18 @@ namespace mega4808 {
 		    using Component_t = usart_details::usartComponent;
 		};
 
-		struct ADC/* : public AVR::details::AtmegaZero::template ADC_C< adc_details::adcComponent>*/ {
+		template<typename... PINS>
+		requires(sizeof...(PINS) > 0)
+	struct ADC : public AVR::rc::details::RCComponent<AVR::rc::details::GenericRessource<PINS...>, adc_details::adcComponent, adc_details::adcs>
+		        /* : public AVR::details::AtmegaZero::template ADC_C< adc_details::adcComponent>*/ {
             using AConf = adc_details::adcComponent::CTRLAMasks;
             using BConf = adc_details::adcComponent::CTRLBMasks;
             using CConf = adc_details::adcComponent::CTRLCMasks;
             using EConf = adc_details::adcComponent::CTRLEMasks;
+
+            static constexpr bool test(){
+                return true;
+            }
 		};
 
 		struct Status {

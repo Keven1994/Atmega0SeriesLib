@@ -33,6 +33,11 @@ using twiRessource = AVR::rc::Instance<
         AVR::twi::TWI, // using ressource SPI
         AVR::rc::Number<0>, //using instance '0'
         AVR::portmux::PortMux<0>>; // using portmux 0 alternative
+using test = typename mega4808::Atmega4808<>::template ADC<mega4808::port_details::ports::portd::Pin::pin7>;
+using adcRessource = AVR::rc::Instance<
+       test, // using ressource SPI
+        AVR::rc::Number<0>, //using instance '0'
+        AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
 using usartRessource = AVR::rc::Instance<
         AVR::usart::USART_Comp, // using ressource SPI
@@ -51,7 +56,7 @@ using usartRessource = AVR::rc::Instance<
 using led1 = Pin<PortA, 2>;
 using led2 = Pin<PortA, 2>;
 
-using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource>; //acquire ressource
+using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource,adcRessource >; //acquire ressource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
 using usartres = RC::getRessource_t<usartRessource>;
@@ -75,7 +80,9 @@ ISR(TWI0_TWIM_vect){
     PORTA.OUTTGL = 1 <<5;
 }
 
+constexpr bool ttest = test::test();
 int main() {
+
     mega4808::port_details::ports::porta::Pin::pin2::on();
     led1::on();
     PORTA.DIR = 1<<5;
@@ -83,8 +90,6 @@ int main() {
 
     twi::init();
 
-    bool transActive = false;
-    uint8_t i = 0;
         while(true){
             twi::put<21>((uint8_t* )"hello", 5);
 
