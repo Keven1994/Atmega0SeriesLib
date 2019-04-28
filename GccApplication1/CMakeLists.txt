@@ -109,7 +109,7 @@ add_custom_target(hwfilescmake COMMAND cmake -G "MinGW Makefiles" ./
         )
 
 #add_custom_target(hwfiles ALL   ${PARSER_PATH}/make ${PARSER_PATH})
-#add_dependencies(${PROJECT_NAME} hwfiles)
+add_dependencies(${PROJECT_NAME} hwfiles)
 # Compiling targets
 add_custom_target(strip ALL     ${AVRSTRIP} "${PROJECT_NAME}.elf" DEPENDS ${PROJECT_NAME})
 add_custom_target(hex   ALL     ${OBJCOPY} -R .eeprom -O ihex "${PROJECT_NAME}.elf" "${PROJECT_NAME}.hex" DEPENDS strip)

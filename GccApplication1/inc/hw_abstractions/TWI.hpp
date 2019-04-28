@@ -208,11 +208,11 @@ namespace AVR {
 
                 [[nodiscard]] static constexpr uint8_t baudCalculate(long long targetFrequency, bool fmp , bool khz100 ){
                     if (fmp){
-                        return ((DEFAULT_MCU::clockFrequency*1.0/targetFrequency)-10.0 - (DEFAULT_MCU::clockFrequency*1.0*DEFAULT_MCU::riseTime)) / 2.0;
+                        return ((DEFAULT_MCU::clockFrequency*1.0/targetFrequency)-10.0 - (DEFAULT_MCU::clockFrequency*1.0*DEFAULT_MCU::TWI::riseTime)) / 2.0;
                     } else if(! khz100) {
-                        return ((DEFAULT_MCU::clockFrequency*1.0/targetFrequency)-10.0 - (DEFAULT_MCU::clockFrequency*1.0*DEFAULT_MCU::riseTime)) / 2.0;
+                        return ((DEFAULT_MCU::clockFrequency*1.0/targetFrequency)-10.0 - (DEFAULT_MCU::clockFrequency*1.0*DEFAULT_MCU::TWI::riseTime)) / 2.0;
                     } else {
-                        return (((DEFAULT_MCU::clockFrequency*1.0/targetFrequency)-10.0 - (DEFAULT_MCU::clockFrequency*1.0*DEFAULT_MCU::riseTime)) / 2.0 + 0.5)-1.0;
+                        return (((DEFAULT_MCU::clockFrequency*1.0/targetFrequency)-10.0 - (DEFAULT_MCU::clockFrequency*1.0*DEFAULT_MCU::TWI::riseTime)) / 2.0 + 0.5)-1.0;
                     }
                 }
 

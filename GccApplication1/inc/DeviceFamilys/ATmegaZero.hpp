@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../MCUSelect.hpp"
+
 namespace AVR {
     namespace details {
         struct AtmegaZero {
@@ -100,6 +102,68 @@ namespace AVR {
                     Bit8 = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_8bit),
                     Bit9LowFirst = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_9bitl),
                     Bit9HighFirst = static_cast<mem_width>(usartComponent::CTRLCMasks::Chsize_9bith)
+                };
+            };
+
+            template<typename adcComponent>
+            struct ADC_C {
+
+                enum class Accumulations : mem_width {
+                    Accs_1 = static_cast<mem_width>(adcComponent::CTRLBMasks::Sampnum_acc1),
+                    Accs_2 = static_cast<mem_width>(adcComponent::CTRLBMasks::Sampnum_acc2),
+                    Accs_4 = static_cast<mem_width>(adcComponent::CTRLBMasks::Sampnum_acc4),
+                    Accs_8 = static_cast<mem_width>(adcComponent::CTRLBMasks::Sampnum_acc8),
+                    Accs_16 = static_cast<mem_width>(adcComponent::CTRLBMasks::Sampnum_acc16),
+                    Accs_32 = static_cast<mem_width>(adcComponent::CTRLBMasks::Sampnum_acc32),
+                    Accs_64 = static_cast<mem_width>(adcComponent::CTRLBMasks::Sampnum_acc64)
+                };
+
+                enum class Prescaler : mem_width {
+                    Div2 = static_cast<mem_width>(adcComponent::CTRLCMasks::Presc_div2),
+                    Div4 = static_cast<mem_width>(adcComponent::CTRLCMasks::Presc_div4),
+                    Div8 = static_cast<mem_width>(adcComponent::CTRLCMasks::Presc_div8),
+                    Div16 = static_cast<mem_width>(adcComponent::CTRLCMasks::Presc_div16),
+                    Div32 = static_cast<mem_width>(adcComponent::CTRLCMasks::Presc_div32),
+                    Div64 = static_cast<mem_width>(adcComponent::CTRLCMasks::Presc_div64),
+                    Div128 = static_cast<mem_width>(adcComponent::CTRLCMasks::Presc_div128),
+                    Div256 = static_cast<mem_width>(adcComponent::CTRLCMasks::Presc_div256)
+                };
+
+                enum class ReferenceSelection : mem_width {
+                    Internal = static_cast<mem_width>(adcComponent::CTRLCMasks::Refsel_intref),
+                    External = static_cast<mem_width>(adcComponent::CTRLCMasks::Refsel_vrefa),
+                    VDD = static_cast<mem_width>(adcComponent::CTRLCMasks::Refsel_vddref),
+                };
+
+
+                enum class WindowComparation : mem_width {
+                    None = static_cast<mem_width>(adcComponent::CTRLEMasks::Wincm_none),
+                    Below = static_cast<mem_width>(adcComponent::CTRLEMasks::Wincm_below),
+                    Above = static_cast<mem_width>(adcComponent::CTRLEMasks::Wincm_above),
+                    Inside = static_cast<mem_width>(adcComponent::CTRLEMasks::Wincm_inside),
+                    Outside = static_cast<mem_width>(adcComponent::CTRLEMasks::Wincm_outside),
+                };
+
+                enum class ADCRessource : mem_width {
+                    AIN0 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain0),
+                    AIN1 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain1),
+                    AIN2 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain2),
+                    AIN3 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain3),
+                    AIN4 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain4),
+                    AIN5 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain5),
+                    AIN6 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain6),
+                    AIN7 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain7),
+                    AIN8 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain8),
+                    AIN9 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain9),
+                    AIN10 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain10),
+                    AIN11 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain11),
+                    AIN12 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain12),
+                    AIN13 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain13),
+                    AIN14 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain14),
+                    AIN15 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain15)//,
+                    //DACRef = static_cast<mem_width>(adcComponent::CTRLEMasks::Muxpos_dacref),
+                    //Temperature = static_cast<mem_width>(adcComponent::CTRLEMasks::Tempsense),
+                    //Ground = static_cast<mem_width>(adcComponent::CTRLEMasks::Muxpos_gnd)
                 };
             };
         };
