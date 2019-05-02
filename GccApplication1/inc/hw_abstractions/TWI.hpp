@@ -264,6 +264,16 @@ namespace AVR {
                     }
                 };
 
+                static inline void sendNack(){
+                    TWIMaster::template reg<typename TWIMaster::_Ctrlb>().on(
+                            TWIMaster::_Ctrlb::type::special_bit::Mcmd_recvtrans, TWIMaster::_Ctrlb::type::special_bit::Ackact_nack);
+                }
+
+                static inline void resetNack(){
+                    TWIMaster::template reg<typename TWIMaster::_Ctrlb>().off(
+                            TWIMaster::_Ctrlb::type::special_bit::Mcmd_recvtrans, TWIMaster::_Ctrlb::type::special_bit::Ackact_nack);
+                }
+
             public:
 
                 template<uint8_t address,bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isReadOnly>>
@@ -355,8 +365,7 @@ namespace AVR {
                         } else if (TWIMaster::current.bytes == 1) {
                             static constexpr auto rxMethod = TWIMaster::_TWI::receive;
                             TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
-                            TWIMaster::template reg<typename TWIMaster::_Ctrlb>().on(
-                                    TWIMaster::_Ctrlb::type::special_bit::Mcmd_recvtrans, TWIMaster::_Ctrlb::type::special_bit::Ackact_nack);
+                            sendNack();
                         } else  {
                             if (statereg.areSet(statebits::Busstate_idle)) {
                                 typename TWIMaster::command tmp;
@@ -367,7 +376,7 @@ namespace AVR {
 
                             } else {
                                 stopTransaction();
-                                TWIMaster::template reg<typename TWIMaster::_Ctrlb>().off(TWIMaster::_Ctrlb::type::special_bit::Mcmd_recvtrans, TWIMaster::_Ctrlb::type::special_bit::Ackact_nack);
+                                resetNack();
                                 TWIMaster::current.Callback();
                             }
                         }
@@ -382,7 +391,7 @@ namespace AVR {
                                         writeCondition();
                                 }
 
-                            } else if (statereg.areSet(statebits::Busstate_owner,TWIMaster::StatusBits::Wif)) {
+                            } else  {
                                 stopTransaction();
                             }
                         }
@@ -393,14 +402,18 @@ namespace AVR {
                             if (TWIMaster::current.access == write) {
                                 TWIMaster::template doIfSet<txMethod>(TWIMaster::StatusBits::Wif);
                             } else {
-                                TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
+                                if(TWIMaster::current.bytes == 1) {
+                                    TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
+                                    sendNack();
+                                }
+                                else
+                                    TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
                             }
                         } else {
                             if (statereg.areSet(statebits::Busstate_idle)) {
-
-                                TWIMaster::current.Callback();
-                                if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
-
+                                typename TWIMaster::command tmp;
+                                if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                    TWIMaster::current = tmp;
                                     if (TWIMaster::current.access == write) {
                                         writeCondition();
                                     } else {
@@ -408,8 +421,10 @@ namespace AVR {
                                     }
                                 }
 
-                            } else if (statereg.areSet(statebits::Busstate_owner)) {
+                            } else {
                                 stopTransaction();
+                                resetNack();
+                                TWIMaster::current.Callback();
                             }
                         }
                     }
@@ -513,11 +528,15 @@ namespace AVR {
                     using statebits = typename TWIMaster::Status::type::special_bit;
 
                     if constexpr(TWIMaster::isReadOnly) {
-                        if (TWIMaster::current.bytes > 0) {
+                        if (TWIMaster::current.bytes > 1) {
                             TWIMaster::_TWI::receive();
+                        } else if(TWIMaster::current.bytes == 1) {
+                            TWIMaster::_TWI::receive();
+                            sendNack();
                         } else {
-                            TWIMaster::current.Callback();
                             stopTransaction();
+                            resetNack();
+                            TWIMaster::current.Callback();
                         }
                     } else if constexpr(TWIMaster::isWriteOnly) {
                         if (TWIMaster::current.bytes > 0) {

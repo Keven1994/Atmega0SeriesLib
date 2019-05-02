@@ -71,11 +71,6 @@ using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::NoInterru
 using ch0 = AVR::eventsystem::Channel<0>;
 
 
-enum class error : mem_width {
-	Busy = 0, 
-	notBusy = 42	
-};
-
 //ISR(TWI0_TWIM_vect){
     //twi::intHandler();
   //  PORTA.OUTTGL = 1 <<5;
@@ -83,27 +78,24 @@ enum class error : mem_width {
 volatile bool wasread = false;
 static inline void Callback (){
     wasread=true;
-    PORTC.OUTTGL = 1 << 3;
     uint8_t item;
-   while(twi::getInputFifo().pop_front(item));
+    while(twi::getInputFifo().pop_front(item))
+        usart2::transfer(item);
 }
 
 int main() {
-    using adc = AVR::adc::ADC<adcRessource>;
+    usart2::init();
 
-    mega4808::port_details::ports::porta::Pin::pin2::on();
-    //led1::on();
-    PORTA.DIR = 1<<5;
-    PORTA.OUT |= 1 << 5;
-    //AVR::dbgout::init();
-    PORTC.DIR = 0xff;
     twi::init();
-   // AVR::delay<AVR::ms,4000>();
+
         while(true){
             twi::get<42,Callback>(12);
             while(!wasread)
                 twi::periodic();
+
+
             AVR::delay<AVR::ms,200>();
+
             wasread = false;
 	}
 	
