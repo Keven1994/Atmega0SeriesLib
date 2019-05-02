@@ -22,7 +22,7 @@ namespace AVR {
             static constexpr bool isBlocking = std::is_same_v<accesstype,blocking>;
             static constexpr bool isReadOnly = std::is_same_v<RW,ReadOnly>;
             static constexpr bool isWriteOnly = std::is_same_v<RW,WriteOnly>;
-
+            static_assert(! (fifoEnabled && isBlocking), "fifo combined with blocking mode is not allowed");
             using fifo_t = std::conditional_t<InterruptEnabled && fifoEnabled,
                     volatile etl::FiFo< bit_width,Use_Fifo::value> ,
                     std::conditional_t<! fifoEnabled,NoFifo,etl::FiFo< bit_width,Use_Fifo::value>>>;

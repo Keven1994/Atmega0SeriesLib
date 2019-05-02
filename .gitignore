@@ -382,3 +382,5 @@ GccApplication1/parser/CMakeCache\.txt
 GccApplication1/inc/mega4809/hal/
 
 GccApplication1/avrProject_E\.cpp
+
+GccApplication1/inc/hw_abstractions/TWI - Kopie\.hpp

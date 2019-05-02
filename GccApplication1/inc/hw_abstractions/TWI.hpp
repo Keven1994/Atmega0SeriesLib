@@ -30,22 +30,37 @@ namespace AVR {
         };
 
         namespace details {
-
-            template<bool singlemode = false>
+            static inline auto noop = []{};
+            template<bool singlemode = false, bool callback = false>
             struct Command {
                 uint8_t address = 0;
                 uint8_t bytes = 0;
                 readWrite access = write;
+                void (*Callback)() = (void (*)()) noop;
 
                 void operator=(const volatile Command &other) volatile {
                     address = other.address;
                     bytes = other.bytes;
                     access = other.access;
+                    Callback = other.Callback;
                 }
             };
 
             template<>
-            struct Command<true> {
+            struct Command<true,true> {
+                uint8_t address = 0;
+                uint8_t bytes = 0;
+                void (*Callback)() = (void (*)()) noop;
+
+                void operator=(const volatile Command &other) volatile {
+                    address = other.address;
+                    bytes = other.bytes;
+                    Callback = other.Callback;
+                }
+            };
+
+            template<>
+            struct Command<true,false> {
                 uint8_t address = 0;
                 uint8_t bytes = 0;
 
@@ -62,8 +77,8 @@ namespace AVR {
             protected:
                 using command = std::conditional_t<!_TWI::fifoEnabled, NoCommand,
                         std::conditional_t<
-                        _TWI::isReadOnly || _TWI::isWriteOnly, Command<true>, Command<false>>>;
-                static inline command current{};
+                        _TWI::isReadOnly || _TWI::isWriteOnly,  std::conditional_t<_TWI::isReadOnly, Command<true,true> ,Command<true,false>>, Command<false>>>;
+                static inline volatile command current{};
                 using Dbgctrl = typename component::registers::dbgctrl;
                 using Bridgectrl = typename component::registers::bridgectrl;
                 using Ctrla =  typename component::registers::ctrla;
@@ -82,7 +97,6 @@ namespace AVR {
                     return AVR::port::details::getRegister<Reg, instance::value>();
                 }
 
-                template<bool dummy = true, typename T = std::enable_if_t<dummy && _TWI::fifoEnabled>>
                 static inline void transfer() {
                     uint8_t item;
                     if (_TWI::fifoOut.pop_front(item)) {
@@ -131,10 +145,22 @@ namespace AVR {
                         return retType{};
                 }
 
-                template<bool dummy = true, typename T = std::enable_if_t<
+                template<uint8_t address, bool dummy = true, typename T = std::enable_if_t<
                         dummy && _TWI::fifoEnabled && !_TWI::isWriteOnly>>
-                static inline bool get(bit_width &item) {
-                    return _TWI::fifoIn.pop_front(item);
+                static inline void get(void (*callback)() ) {
+                    if constexpr(_TWI::isReadOnly)
+                        CommandStack.push_back(command{(address << 1), 1, callback});
+                    else
+                        CommandStack.push_back(command{(address << 1), 1, read, callback});
+                }
+
+                template<uint8_t address, bool dummy = true, typename T = std::enable_if_t<
+                        dummy && _TWI::fifoEnabled && !_TWI::isWriteOnly>>
+                static inline void get(uint8_t size, void (*callback)() ) {
+                    if constexpr(_TWI::isReadOnly)
+                        CommandStack.push_back(command{(address << 1), size, callback});
+                    else
+                        CommandStack.push_back(command{(address << 1), size, read, callback});
                 }
 
                 template<uint8_t address, bool dummy = true, typename T = std::enable_if_t<dummy && _TWI::fifoEnabled> >
@@ -250,6 +276,10 @@ namespace AVR {
                     return ScopedTransaction<address, Read>();
                 }
 
+                static inline auto& getInputFifo() {
+                    return TWIMaster::fifoIn;
+                }
+
                 template<uint8_t address,access dir,bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isReadOnly>>
                 [[nodiscard]] static inline bool startTransaction() requires(address < (1 <<7)) {
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
@@ -304,12 +334,12 @@ namespace AVR {
 
                 static inline void turnOff() {
                     TWIMaster::template reg<typename TWIMaster::_Ctrla>().off(
-                            TWIMaster::Mctrla::type::special_bit::Enable);
+                            TWIMaster::_Ctrla::type::special_bit::Enable);
                 }
 
                 static inline void turnOn() {
                     TWIMaster::template reg<typename TWIMaster::_Ctrla>().on(
-                            TWIMaster::Mctrla::type::special_bit::Enable);
+                            TWIMaster::_Ctrla::type::special_bit::Enable);
                 }
 
                 template<bool dummy = true, typename T = std::enable_if_t<
@@ -319,23 +349,31 @@ namespace AVR {
                     using statebits = typename TWIMaster::Status::type::special_bit;
 
                     if constexpr(TWIMaster::isReadOnly) {
-                        if (TWIMaster::current.bytes > 0) {
-                            static constexpr auto rxMethod = TWIMaster::receive;
+                        if (TWIMaster::current.bytes > 1) {
+                            static constexpr auto rxMethod = TWIMaster::_TWI::receive;
                             TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
-                        } else {
+                        } else if (TWIMaster::current.bytes == 1) {
+                            static constexpr auto rxMethod = TWIMaster::_TWI::receive;
+                            TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
+                            TWIMaster::template reg<typename TWIMaster::_Ctrlb>().on(
+                                    TWIMaster::_Ctrlb::type::special_bit::Mcmd_recvtrans, TWIMaster::_Ctrlb::type::special_bit::Ackact_nack);
+                        } else  {
                             if (statereg.areSet(statebits::Busstate_idle)) {
-
-                                if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
+                                typename TWIMaster::command tmp;
+                                if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                    TWIMaster::current = tmp;
                                     readCondition();
                                 }
 
-                            } else if (statereg.areSet(statebits::Busstate_owner,TWIMaster::StatusBits::Wif)) {
+                            } else {
                                 stopTransaction();
+                                TWIMaster::template reg<typename TWIMaster::_Ctrlb>().off(TWIMaster::_Ctrlb::type::special_bit::Mcmd_recvtrans, TWIMaster::_Ctrlb::type::special_bit::Ackact_nack);
+                                TWIMaster::current.Callback();
                             }
                         }
                     } else if constexpr(TWIMaster::isWriteOnly) {
                         if (TWIMaster::current.bytes > 0) {
-                            static constexpr auto txMethod = TWIMaster::transfer;
+                            static constexpr auto txMethod = TWIMaster::_TWI::transfer;
                             TWIMaster::template doIfSet<txMethod>(TWIMaster::StatusBits::Wif);
                         } else {
                             if (statereg.areSet(statebits::Busstate_idle)) {
@@ -360,6 +398,7 @@ namespace AVR {
                         } else {
                             if (statereg.areSet(statebits::Busstate_idle)) {
 
+                                TWIMaster::current.Callback();
                                 if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
 
                                     if (TWIMaster::current.access == write) {
@@ -369,7 +408,7 @@ namespace AVR {
                                     }
                                 }
 
-                            } else if (statereg.areSet(statebits::Busstate_owner,TWIMaster::StatusBits::Wif)) {
+                            } else if (statereg.areSet(statebits::Busstate_owner)) {
                                 stopTransaction();
                             }
                         }
@@ -424,8 +463,39 @@ namespace AVR {
 
                 template<uint8_t address, bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::fifoEnabled> >
                 requires (address<(1 << 7))
+                static inline void put(bit_width data){
+                    TWIMaster::_TWI::template put<address>(data);
+                    auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
+                    using statebits = typename TWIMaster::Status::type::special_bit;
+                    if constexpr (TWIMaster::InterruptEnabled) {
+                        if (statereg.areSet(statebits::Busstate_idle)) {
+                            if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
+                                writeCondition();
+                            }
+
+                        }
+                    }
+                }
+
+                template<uint8_t address, auto& callback, bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::fifoEnabled> >
+                requires (address<(1 << 7))
                 static inline void get(bit_width data){
-                    TWIMaster::_TWI::template get<address>(data);
+                    TWIMaster::_TWI::template get<address>(data, (void (*)() ) callback);
+                    auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
+                    using statebits = typename TWIMaster::Status::type::special_bit;
+                    if constexpr (TWIMaster::InterruptEnabled) {
+                        if (statereg.areSet(statebits::Busstate_idle)) {
+                            if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
+                                readCondition();
+                            }
+                        }
+                    }
+                }
+
+                template<uint8_t address, auto& callback, bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::fifoEnabled> >
+                requires (address<(1 << 7))
+                static inline void get(){
+                    TWIMaster::_TWI::template get<address>((void (*)() ) callback);
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
                     using statebits = typename TWIMaster::Status::type::special_bit;
                     if constexpr (TWIMaster::InterruptEnabled) {
@@ -446,6 +516,7 @@ namespace AVR {
                         if (TWIMaster::current.bytes > 0) {
                             TWIMaster::_TWI::receive();
                         } else {
+                            TWIMaster::current.Callback();
                             stopTransaction();
                         }
                     } else if constexpr(TWIMaster::isWriteOnly) {
@@ -463,6 +534,7 @@ namespace AVR {
                                 TWIMaster::_TWI::receive();
                             }
                         } else {
+                            TWIMaster::current.Callback();
                             stopTransaction();
                         }
                     }
@@ -546,7 +618,7 @@ namespace AVR {
                 static inline void periodic() {
                     auto& statereg = TWISlave::template reg<typename TWISlave::Status>();
                     using statebits = typename TWISlave::Status::type::special_bit;
-
+                    TWI0.MCTRLB = 0;
                     if constexpr(TWISlave::isReadOnly) {
                         if (TWISlave::current.bytes > 0) {
                             static constexpr auto rxMethod = TWISlave::receive;
@@ -692,7 +764,7 @@ namespace AVR {
         }
 
         template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,
-                bool quickCommand = true, bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
+                bool quickCommand = false, bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
         using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, quickCommand, smartMode, timeOut>, bit_width>;
 
         template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns, typename bit_width = mem_width>

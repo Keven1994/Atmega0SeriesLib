@@ -66,7 +66,7 @@ using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrup
 using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
 using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<testPA>>,usartres, AVR::ReadWrite>;
 using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
-using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::WriteOnly>;
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::NoInterrupts>,twires , AVR::ReadOnly>;
 
 using ch0 = AVR::eventsystem::Channel<0>;
 
@@ -76,26 +76,35 @@ enum class error : mem_width {
 	notBusy = 42	
 };
 
-ISR(TWI0_TWIM_vect){
-    twi::intHandler();
-    PORTA.OUTTGL = 1 <<5;
+//ISR(TWI0_TWIM_vect){
+    //twi::intHandler();
+  //  PORTA.OUTTGL = 1 <<5;
+//}
+volatile bool wasread = false;
+static inline void Callback (){
+    wasread=true;
+    PORTC.OUTTGL = 1 << 3;
+    uint8_t item;
+   while(twi::getInputFifo().pop_front(item));
 }
-
 
 int main() {
     using adc = AVR::adc::ADC<adcRessource>;
 
     mega4808::port_details::ports::porta::Pin::pin2::on();
-    led1::on();
+    //led1::on();
     PORTA.DIR = 1<<5;
     PORTA.OUT |= 1 << 5;
-
+    //AVR::dbgout::init();
+    PORTC.DIR = 0xff;
     twi::init();
-
+   // AVR::delay<AVR::ms,4000>();
         while(true){
-            twi::put<21>((uint8_t* )"hello", 5);
-
+            twi::get<42,Callback>(12);
+            while(!wasread)
+                twi::periodic();
             AVR::delay<AVR::ms,200>();
+            wasread = false;
 	}
 	
 }
