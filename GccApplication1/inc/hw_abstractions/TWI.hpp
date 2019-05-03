@@ -363,9 +363,8 @@ namespace AVR {
                             static constexpr auto rxMethod = TWIMaster::_TWI::receive;
                             TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
                         } else if (TWIMaster::current.bytes == 1) {
-                            static constexpr auto rxMethod = TWIMaster::_TWI::receive;
+                            static constexpr auto rxMethod = []{sendNack(); TWIMaster::_TWI::receive();};
                             TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
-                            sendNack();
                         } else  {
                             if (statereg.areSet(statebits::Busstate_idle)) {
                                 typename TWIMaster::command tmp;
@@ -403,8 +402,8 @@ namespace AVR {
                                 TWIMaster::template doIfSet<txMethod>(TWIMaster::StatusBits::Wif);
                             } else {
                                 if(TWIMaster::current.bytes == 1) {
-                                    TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
-                                    sendNack();
+                                    static constexpr auto rxMethod1 = []{sendNack(); TWIMaster::_TWI::receive();};
+                                    TWIMaster::template doIfSet<rxMethod1>(TWIMaster::StatusBits::Rif);
                                 }
                                 else
                                     TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
