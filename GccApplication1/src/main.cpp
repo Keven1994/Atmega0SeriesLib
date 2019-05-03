@@ -66,14 +66,14 @@ using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrup
 using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
 using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<testPA>>,usartres, AVR::ReadWrite>;
 using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
-using twi = AVR::twi::TWIMaster<AVR::blocking,twires , AVR::ReadOnly>;
 
-using ch0 = AVR::eventsystem::Channel<0>;
 
-//ISR(TWI0_TWIM_vect){
-  // twi::intHandler();
-//}
-/*
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::ReadOnly>;
+
+ISR(TWI0_TWIM_vect){
+    twi::intHandler();
+}
+
 volatile bool wasread = false;
 static inline void Callback (){
     wasread=true;
@@ -81,29 +81,21 @@ static inline void Callback (){
     while(twi::getInputFifo().pop_front(item))
         AVR::dbgout::put(item);
 }
-*/
-uint8_t arr[12];
+
 int main() {
-    PORTC.DIR = 0xff;
     twi::init();
-AVR::dbgout::init();
-        while(true){
-            twi::startTransaction<42,AVR::twi::access::Read>();
-            //twi::get<42,Callback>(12);
-            //while(!wasread);
-            PORTC.OUTTGL = 1 << 3;
-            twi::receive(arr,12);
-            twi::endTransaction();
-            for(uint8_t i = 0; i < 12; i++)
-                AVR::dbgout::put(arr[i]);
+    AVR::dbgout::init();
+    while(true){
+        twi::get<42,Callback>(12);
+        while(!wasread)
+            ;
+        AVR::dbgout::flush();
 
-            AVR::dbgout::flush();
+        AVR::delay<AVR::ms,200>();
 
-            AVR::delay<AVR::ms,200>();
+        wasread = false;
+    }
 
-            //wasread = false;
-	}
-	
 }
 
 #endif

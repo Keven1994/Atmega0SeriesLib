@@ -118,7 +118,8 @@ namespace mega4808 {
 
 				using AConf = twi_details::twiComponent::CTRLAMasks;
 				using MAConf = twi_details::twiComponent::MCTRLAMasks;
-				
+				static constexpr bool isFast = fastModePlus;
+
 				static constexpr AConf fastmode = fastModePlus ? AConf::Fmpen : static_cast<AConf>(0);
 				static constexpr AConf holdtime = static_cast<AConf>(holdTime);
 				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);

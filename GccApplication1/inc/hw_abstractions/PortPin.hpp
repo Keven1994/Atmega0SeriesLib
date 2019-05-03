@@ -44,6 +44,10 @@ namespace AVR {
                     _port().OUT &= ~pinValue;
                 }
 
+                [[nodiscard]] static inline bool isOn(){
+                    return _port().IN & pinValue;
+                }
+
                 static inline void on() {
                     _port().OUT |= pinValue;
                 }
