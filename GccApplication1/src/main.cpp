@@ -66,15 +66,15 @@ using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrup
 using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
 using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<testPA>>,usartres, AVR::ReadWrite>;
 using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
-using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::NoInterrupts>,twires , AVR::ReadOnly>;
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::ReadWrite>;
 
 using ch0 = AVR::eventsystem::Channel<0>;
 
 
-//ISR(TWI0_TWIM_vect){
-    //twi::intHandler();
+ISR(TWI0_TWIM_vect){
+    twi::intHandler();
   //  PORTA.OUTTGL = 1 <<5;
-//}
+}
 volatile bool wasread = false;
 static inline void Callback (){
     wasread=true;
@@ -85,13 +85,13 @@ static inline void Callback (){
 
 int main() {
     usart2::init();
-
+    PORTC.DIR = 0xff;
     twi::init();
 
         while(true){
             twi::get<42,Callback>(12);
             while(!wasread)
-                twi::periodic();
+                ;
 
 
             AVR::delay<AVR::ms,200>();

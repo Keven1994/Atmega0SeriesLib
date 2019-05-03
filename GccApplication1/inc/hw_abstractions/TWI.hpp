@@ -500,7 +500,11 @@ namespace AVR {
                     using statebits = typename TWIMaster::Status::type::special_bit;
                     if constexpr (TWIMaster::InterruptEnabled) {
                         if (statereg.areSet(statebits::Busstate_idle)) {
-                            if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
+                            //PORTC.OUTTGL= 1 <<3;
+                            typename TWIMaster::command tmp;
+                            if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                //PORTC.OUTTGL= 1 <<3;
+                                TWIMaster::current = tmp;
                                 readCondition();
                             }
                         }
@@ -522,39 +526,48 @@ namespace AVR {
                     }
                 }
 
-                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::InterruptEnabled && TWIMaster::fifoEnabled && ! TWIMaster::isReadOnly>>
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::InterruptEnabled && TWIMaster::fifoEnabled>>
                 static inline void intHandler() {
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
                     using statebits = typename TWIMaster::Status::type::special_bit;
 
+
                     if constexpr(TWIMaster::isReadOnly) {
-                        if (TWIMaster::current.bytes > 1) {
+                        if ( TWIMaster::current.bytes > 1) {
                             TWIMaster::_TWI::receive();
-                        } else if(TWIMaster::current.bytes == 1) {
-                            TWIMaster::_TWI::receive();
+                        } else if( TWIMaster::current.bytes == 1) {
                             sendNack();
-                        } else {
+                            TWIMaster::_TWI::receive();
+
+                            TWIMaster::current.bytes = 0;
                             stopTransaction();
                             resetNack();
                             TWIMaster::current.Callback();
                         }
                     } else if constexpr(TWIMaster::isWriteOnly) {
-                        if (TWIMaster::current.bytes > 0) {
+                        if ( TWIMaster::current.bytes > 0) {
                             TWIMaster::_TWI::transfer();
                         } else {
                             stopTransaction();
                         }
                     } else {
-                        if (TWIMaster::current.bytes > 0) {
-
-                            if (TWIMaster::current.access == write) {
-                                TWIMaster::_TWI::transfer();
-                            } else {
+                        if(TWIMaster::current.access == read){
+                            if ( TWIMaster::current.bytes > 1) {
                                 TWIMaster::_TWI::receive();
+                            } else if( TWIMaster::current.bytes == 1) {
+                                sendNack();
+                                TWIMaster::_TWI::receive();
+                                TWIMaster::current.bytes = 0;
+                                stopTransaction();
+                                resetNack();
+                                TWIMaster::current.Callback();
                             }
                         } else {
-                            TWIMaster::current.Callback();
-                            stopTransaction();
+                            if ( TWIMaster::current.bytes > 0) {
+                                TWIMaster::_TWI::transfer();
+                            } else {
+                                stopTransaction();
+                            }
                         }
                     }
                 }
