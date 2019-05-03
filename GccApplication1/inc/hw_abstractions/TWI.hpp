@@ -290,7 +290,7 @@ namespace AVR {
                     return TWIMaster::fifoIn;
                 }
 
-                template<uint8_t address,access dir,bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isReadOnly>>
+                template<uint8_t address,access dir,bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
                 [[nodiscard]] static inline bool startTransaction() requires(address < (1 <<7)) {
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
                     using statebits = typename TWIMaster::Status::type::special_bit;
@@ -301,6 +301,7 @@ namespace AVR {
                         } else {
                             readCondition<address>();
                         }
+
                         return true;
                     }
                     return false;
@@ -318,25 +319,36 @@ namespace AVR {
                     return false;
                 }
 
-                template<bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
-                [[nodiscard]] static inline bool receive(uint8_t& Data) {
+                template<bool nack = true, bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
+                [[nodiscard]] static inline uint8_t receive() {
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
                     using statebits = typename TWIMaster::Status::type::special_bit;
 
-                    if(statereg.areSet(statebits::Busstate_owner, statebits::Rif)){
-                        Data = TWIMaster::template reg<typename TWIMaster::Data>().raw();
-                        return true;
+                    while(! statereg.areSet(statebits::Rif));
+                    if constexpr(nack) {
+                        sendNack();
                     }
-                    return false;
+                    return TWIMaster::template reg<typename TWIMaster::Data>().raw();
+
                 }
 
-                template<bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
+                static inline void receive(uint8_t* Data, uint8_t size) {
+                    for(uint8_t i = 0; i < size-1; i++)
+                        Data[i] = TWIMaster::receive<false>();
+                    Data[size-1] = TWIMaster::receive<true>();
+                    //TODO: sending stop command immediately after results in strange behaviour
+                    _delay_us(25);
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
                 [[nodiscard]] static inline bool endTransaction() {
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
                     using statebits = typename TWIMaster::Status::type::special_bit;
 
                     if(statereg.areSet(statebits::Busstate_owner)){
                         stopTransaction();
+                        resetNack();
                         return true;
                     }
                     return false;
@@ -432,8 +444,8 @@ namespace AVR {
 
                 template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
                 static inline void transfer(uint8_t data) {
-                    TWIMaster::template reg<TWIMaster::Mdata>().set(data);
-                    while (!(TWIMaster::template reg<TWIMaster::Mstatus>().areSet(TWIMaster::InterruptFlagBits::Wif)));
+                    TWIMaster::template reg<typename TWIMaster::Data>().set(data);
+                    while (!(TWIMaster::template reg<typename TWIMaster::Status>().areSet(TWIMaster::InterruptFlagBits::Wif)));
                 }
 
                 template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
@@ -442,23 +454,6 @@ namespace AVR {
                         transfer(data[n]);
                 }
 
-                template<uint8_t address, bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
-                [[nodiscard]] static inline bit_width receive() {
-                    static constexpr uint8_t addr = TWI_ADDREN_bm | (address << 1);
-
-                    TWIMaster::template reg<typename TWIMaster::Maddr>().set(addr);
-                    while (!(TWIMaster::template reg<TWIMaster::Mstatus>().areSet(
-                            TWIMaster::Mstatus::special_bit::Rif)));
-                    return TWIMaster::template reg<TWIMaster::Mdata>().raw();
-                }
-
-                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
-                [[nodiscard]] static inline bit_width *receive(bit_width *data, uint8_t n) {
-                    for (uint8_t i = 0; i < n; i++)
-                        data[i] = receive();
-
-                    return data;
-                }
                 template<uint8_t address, bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::fifoEnabled> >
                 requires (address<(1 << 7))
                 static inline void put(bit_width *data, uint8_t size){
