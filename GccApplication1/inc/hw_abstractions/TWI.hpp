@@ -464,8 +464,9 @@ namespace AVR {
                     using statebits = typename TWIMaster::Status::type::special_bit;
                     if constexpr (TWIMaster::InterruptEnabled) {
                         if (statereg.areSet(statebits::Busstate_idle)) {
-                            if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
-                                writeCondition();
+                            typename TWIMaster::command tmp;
+                            if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                TWIMaster::current = tmp;
                             }
 
                         }
@@ -480,7 +481,9 @@ namespace AVR {
                     using statebits = typename TWIMaster::Status::type::special_bit;
                     if constexpr (TWIMaster::InterruptEnabled) {
                         if (statereg.areSet(statebits::Busstate_idle)) {
-                            if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
+                            typename TWIMaster::command tmp;
+                            if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                TWIMaster::current = tmp;
                                 writeCondition();
                             }
 

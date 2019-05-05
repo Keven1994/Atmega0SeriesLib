@@ -68,7 +68,7 @@ using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<t
 using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
 
 
-using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::ReadOnly>;
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::ReadWrite>;
 
 ISR(TWI0_TWIM_vect){
     twi::intHandler();
@@ -87,10 +87,11 @@ int main() {
     AVR::dbgout::init();
     while(true){
         twi::get<42,Callback>(12);
+
         while(!wasread)
             ;
         AVR::dbgout::flush();
-
+        twi::put<43>('H');
         AVR::delay<AVR::ms,200>();
 
         wasread = false;
