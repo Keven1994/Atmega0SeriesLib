@@ -6,11 +6,10 @@ set(USBPORT /dev/tty.usbmodem411)
 set(PROG_ARGS -b 19200 -P ${USBPORT})
 
 # Variables regarding the AVR chip
-set(empty "")
 set(MNUMBER 4808)
+set(F_CPU 3333333)
 set(MCU   atmega${MNUMBER})
 set(AVR_DEV_LIB_NAME m${MNUMBER})
-set(F_CPU 3333333)
 set(CMAKE_CXX_STANDARD 20)
 add_definitions(-DF_CPU=${F_CPU})
 

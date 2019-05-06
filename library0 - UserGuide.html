@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice 4.1.6  (Win32)">
+	<META NAME="AUTHOR" CONTENT="Keven Kl&ouml;ckner">
+	<META NAME="CREATED" CONTENT="20190505;10514225">
+	<META NAME="CHANGEDBY" CONTENT="Keven Kl&ouml;ckner">
+	<META NAME="CHANGED" CONTENT="20190506;15380837">
+	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { margin: 2cm }
+		P { margin-bottom: 0.21cm }
+		PRE.cjk { font-family: "NSimSun", monospace }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="de-DE" DIR="LTR">
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm"><U><FONT SIZE=5>Atmega 0
+Serie Library User Guide</U></FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Programmierung:</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Um
+die Programme auf die Chips der Atmega 0 Serie zu flashen gibt es
+grunds&auml;tzlich 2 Methoden_</FONT></P>
+<UL>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm"><A HREF="https://github.com/ElTangas/jtag2updi">https://github.com/ElTangas/jtag2updi</A>
+	&rarr; hier wird ein Atmega328 oder ein vergleichbarer Chip zu einem
+	Programmer umfunktioniert, hierzu kann z.B. ein fertiges
+	Arduino-Board genutzt werden.</P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm"><A HREF="https://github.com/mraardvark/pyupdi">https://github.com/mraardvark/pyupdi</A>
+	&rarr; hier wird mithilfe eines USB-UART Adapters geflashed, hier
+	muss darauf geachtet werden dass der Widerstand stimmt, sollte der
+	Widerstand nicht funktionieren muss eine Diode mit der Anode zu UPDI
+	und Kathode zu Tx verbunden werden.</P>
+</UL>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Grunds&auml;tzliches:</FONT></P>
+<UL>
+	<UL>
+		<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+		<FONT SIZE=3>Die Library st&uuml;tzt sich auf den AVR-GCC 8.3+, es
+		werden intern unter anderem Concepts genutzt, die Verwendung eines
+		aktuellen C++ Compilers ist daher notwendig.</FONT></P>
+		<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+		<FONT SIZE=3>Am besten wird das enthaltene CMakefile genutzt um das
+		Projekt zu erstellen, um den UC zu wechseln muss lediglich die
+		Variable Mnumber und F_CPU abge&auml;ndert werden.</FONT></P>
+		<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+		<FONT SIZE=3>Optional: um ein schnelleres Compilieren zu
+		erm&ouml;glichen kann nach dem ersten Compilieren in Zeile 112 im
+		CmakeFile eine Zeile auskommentiert werden welche automatische
+		Dateien generiert.</FONT></P>
+		<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+		<FONT SIZE=3>Es sollten nur die HW-Abstraktionen inkludiert werden,
+		ansonsten kann kein ordnungsgem&auml;&szlig;es funktionieren
+		gew&auml;hrleistet werden.</FONT></P>
+	</UL>
+</UL>
+<UL>
+	<UL>
+		<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+		<FONT SIZE=3>Der Erste Include <B>MUSS </B><SPAN STYLE="font-weight: normal">MCUSelect.hpp
+		sein, hier findet die Auswahl des Ger&auml;tes statt.</SPAN></FONT></P>
+		<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+		<FONT SIZE=3>Port, PortPin und der Ressource Controller sind
+		Standardm&auml;&szlig;ig inkludiert und m&uuml;ssen nicht nochmal
+		explizit inkludiert werden.</FONT></P>
+		<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+		<FONT SIZE=3>Es ist notwendig, dass die von Atmel bereitgestellten
+		header, library-files sowie device-specs der toolchain hinzugef&uuml;gt
+		werden. </FONT>
+		</P>
+	</UL>
+</UL>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<FONT SIZE=3>Basics:</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<FONT SIZE=3>Zun&auml;chst sehen wir uns an wie die Ports oder auch
+spezifische Pins &uuml;ber die Library angesteuert werden:</FONT></P>
+<PRE CLASS="western" STYLE="text-align: left"><FONT COLOR="#a9b7c6">        </FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#bbb529">#include </FONT><FONT COLOR="#6a8759">&quot;MCUSelect.hpp&quot;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#bbb529">#include </FONT><FONT COLOR="#6a8759">&quot;hw_abstractions/Delay.hpp&quot;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>portA = AVR::port::Port&lt;AVR::port::A&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>portC = AVR::port::Port&lt;AVR::port::C&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led1 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">2</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led2 = <FONT COLOR="#cc7832">typename </FONT>portC::pins::pin3<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led3 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">3</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led4 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">4</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led5 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">5</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">portA::setDir&lt;AVR::port::Out&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">led2::setOutput()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">led1::toggle()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">if</FONT></FONT><FONT FACE="Courier New">(led2::isOn())</FONT></FONT>
+<FONT COLOR="#a9b7c6">            <FONT FACE="Courier New">led3::toggle()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">led2::toggle()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::port::pinsOutToggle&lt;led4</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">led5&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">500</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
+<FONT COLOR="#000000"><FONT FACE="Times New Roman, serif">Zun&auml;chst
+werden die Ports ausgew&auml;hlt welche angesprochen werden sollen,
+hier in diesem Falle Port A und C. Sollte bei der Auswahl ein
+Compiler Fehler auftreten wurde ein nicht existenter Port ausgew&auml;hlt
+(der Atmega4808 besitzt z.B. keinen Port B oder E obwohl es Defines
+daf&uuml;r gibt. Der n&auml;chste Schritt ist die Auswahl von
+spezifischen Pins, daf&uuml;r wird dem template-Alias der zuvor
+gew&auml;hlte Port sowie die Pin Nummer angegeben. Hier muss darauf
+geachtet werden dass die spezifischen Pins NICHT auf Verf&uuml;gbarkeit
+gepr&uuml;ft werden, um sicher zu gehen k&ouml;nnen die Pins auch aus
+dem Port entnommen werden (s.a. Led2), die hier enthaltenen Pins sind
+definitiv physikalisch vorhanden. Nachdem die Auswahl f&uuml;r Ports
+und/oder Pins getroffen wurden k&ouml;nnen auf diesen Operationen
+ausgef&uuml;hrt werden. Es k&ouml;nne sowohl auf den Ports als auch
+auf den Pins spezifische Operationen ausgef&uuml;hrt werden (z.B.
+toggle, on, off,setDir &hellip;.). Sollen auf mehreren Pins
+gleichzeitig Operationen ausgef&uuml;hrt werden, so k&ouml;nnen die
+freien Funktionen in AVR::port genutzt werden. Bei den freien
+Funktionen ist zu beachten, dass nur Pins des gleichen Ports
+&uuml;bergeben werden k&ouml;nnen, verschiedene Ports l&ouml;sen
+einen Compiler-Fehler aus. Die Port Klasse besitzt noch die
+Convenience-Methode &bdquo;get&ldquo; um auf Register zuzugreifen,
+damit kann von au&szlig;erhalb auf ein spezifisches Register (z.B.
+pin0ctrl) zugegriffen werden. Wenn m&ouml;glich sollte diese Methode
+aber vermieden und vorhandene abstraktere Klassen-Methoden genutzt
+werden. Im obigen Beispiel findet sich die delay-Methode, diese
+wrappt die C _delay Methoden und rechnet je nach Einheit (us, ms, s)
+korrekt um. Des weiteren gibt es noch eine safeDelay-Methode, diese
+schaltet die Interrupts f&uuml;r die Dauer des wartens ab und
+funktioniert somit immer korrekt (sollten die Interrupts angeschaltet
+gewesen sein werden sie nach Ablauf des delays wieder aktiviert).</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+</BODY>
+</HTML>

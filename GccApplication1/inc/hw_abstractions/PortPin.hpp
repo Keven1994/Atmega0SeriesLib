@@ -24,10 +24,16 @@ namespace AVR {
 
             }
 
+            template<typename val>
+            static constexpr auto pinCount(){
+                return sizeof(val)*8;
+            }
+
             template<typename P, typename regs>
             struct Port;
 
             template<typename P, mem_width number>
+            requires(number < pinCount<mem_width>())
             class PortPin {
 
                 static inline auto &_port = P::port;
@@ -45,23 +51,28 @@ namespace AVR {
                 }
 
                 [[nodiscard]] static inline bool isOn(){
-                    return _port().IN & pinValue;
+                    auto& reg = P::template get<typename P::registers::in>();
+                    return reg.raw() & static_cast<mem_width >(pinValue);
                 }
 
                 static inline void on() {
-                    _port().OUT |= pinValue;
+                    auto& reg = P::template get<typename P::registers::out>();
+                    reg.raw() |= static_cast<mem_width >(pinValue);
                 }
 
                 static inline void toggle() {
-                    _port().OUT ^= pinValue;
+                    auto& reg = P::template get<typename P::registers::outtgl>();
+                    reg.raw() = static_cast<mem_width >(pinValue);
                 }
 
                 static inline void setOutput() { //no option to write as template -> parse error in template argument list, bug?
-                    _port().DIR |= pinValue;
+                    auto& reg = P::template get<typename P::registers::dir>();
+                    reg.raw() |= static_cast<mem_width >(pinValue);
                 }
 
                 static inline void setInput() {
-                    _port().DIR &= ~pinValue;
+                    auto& reg = P::template get<typename P::registers::dir>();
+                    reg.raw() &= ~static_cast<mem_width >(pinValue);
                 }
 
             };
@@ -69,7 +80,7 @@ namespace AVR {
 
         template<typename... Pins>
         requires (details::samePorts<Pins...>())
-        static inline void PinsOn() {
+        static inline void pinsOn() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().OUT;
             Pval |= (Pins::pinValue | ...);
@@ -77,7 +88,7 @@ namespace AVR {
 
         template<typename... Pins>
         requires (details::samePorts<Pins...>())
-        static inline void PinsDirIn() {
+        static inline void pinsDirIn() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().DIR;
             Pval &= ~(Pins::pinValue | ...);
@@ -85,7 +96,7 @@ namespace AVR {
 
         template<typename... Pins>
         requires (details::samePorts<Pins...>())
-        static inline void PinsDirOut() {
+        static inline void pinsDirOut() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().DIR;
             Pval |= (static_cast<mem_width >(Pins::pinValue) | ...);
@@ -93,7 +104,7 @@ namespace AVR {
 
         template<typename... Pins>
         requires (details::samePorts<Pins...>())
-        static inline void PinsDirToggle() {
+        static inline void pinsDirToggle() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().DIRTGL;
             Pval = static_cast<mem_width >((Pins::pinValue | ...));
@@ -101,7 +112,7 @@ namespace AVR {
 
         template<typename... Pins>
         requires (details::samePorts<Pins...>())
-        static inline void PinsOutToggle() {
+        static inline void pinsOutToggle() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().OUTTGL;
             Pval = static_cast<mem_width >((Pins::pinValue | ...));
@@ -109,8 +120,7 @@ namespace AVR {
 
         template<typename... Pins>
         requires (details::samePorts<Pins...>())
-
-        static inline void PinsOff() {
+        static inline void pinsOff() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().OUT;
             Pval &= ~(Pins::pinValue | ...);
@@ -118,6 +128,7 @@ namespace AVR {
 
         template<typename P, mem_width num>
         using Pin = details::PortPin<P,num>;
+
     }
 
 }

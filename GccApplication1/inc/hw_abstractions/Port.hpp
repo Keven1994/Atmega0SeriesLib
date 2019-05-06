@@ -80,7 +80,7 @@ namespace AVR {
                             reg.raw() = static_cast<mem_width >((pins::pinValue | ...));
                 }
 
-                static inline void setOutValue(typename registers::out::type::reg_size value){
+                static inline void setOutValue(mem_width value){
                     get<typename registers::out>().raw() = value;
                 }
 

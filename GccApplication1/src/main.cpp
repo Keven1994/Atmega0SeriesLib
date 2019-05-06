@@ -7,11 +7,11 @@
 
 #ifndef TEST
 
+#ifdef TWITEST
 ///////////////////////
 #include "MCUSelect.hpp"
 #include "../inc/Boards/CuriosityNanoIOT.hpp"
 #include "../inc/hw_abstractions/SPI.hpp"
-#include "../inc/hw_abstractions/Port.hpp"
 #include "../inc/hw_abstractions/Eventsystem.hpp"
 #include "../inc/hw_abstractions/TWI.hpp"
 #include "../inc/hw_abstractions/USART.hpp"
@@ -98,5 +98,33 @@ int main() {
     }
 
 }
+#else
+
+#include "MCUSelect.hpp"
+#include "hw_abstractions/Delay.hpp"
+
+using portA = AVR::port::Port<AVR::port::A>;
+using portC = AVR::port::Port<AVR::port::C>;
+using led1 = AVR::port::Pin<portA,2>;
+using led2 = typename portC::pins::pin3;
+using led3 = AVR::port::Pin<portA,3>;
+using led4 = AVR::port::Pin<portA,4>;
+using led5 = AVR::port::Pin<portA,5>;
+
+int main() {
+    portA::setDir<AVR::port::Out>();
+
+    led2::setOutput();
+    while(true){
+        led1::toggle();
+        if(led2::isOn())
+            led3::toggle();
+        led2::toggle();
+        AVR::port::pinsOutToggle<led4,led5>();
+        AVR::delay<AVR::ms,500>();
+    }
+}
+#endif
+
 
 #endif

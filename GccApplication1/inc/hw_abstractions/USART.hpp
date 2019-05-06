@@ -151,18 +151,18 @@ namespace AVR::usart {
                     }
 
                     if constexpr(_USART::isWriteOnly) {
-                        port::PinsDirOut<typename alt::Txd::pin0>();
-                        port::PinsOn<typename alt::Txd::pin0>();
+                        port::pinsDirOut < typename alt::Txd::pin0>();
+                        port::pinsOn < typename alt::Txd::pin0>();
                         reg<ControlB>().set(recMode,ControlB::type::special_bit::Txen, setting::opendrainmode, setting::startframedetection, setting::multiprocessor, setting::receivermode);
                     }
                     else if constexpr(_USART::isReadOnly) {
-                        port::PinsDirOut<typename alt::Rxd::pin0>();
-                        port::PinsOn<typename alt::Rxd::pin0>();
+                        port::pinsDirOut < typename alt::Rxd::pin0>();
+                        port::pinsOn < typename alt::Rxd::pin0>();
                         reg<ControlB>().set(recMode,ControlB::type::special_bit::Rxen, setting::opendrainmode, setting::startframedetection, setting::multiprocessor, setting::receivermode);
                     }
                     else {
-                        port::PinsDirOut<typename alt::Txd::pin0,typename alt::Rxd::pin0>();
-                        port::PinsOn<typename alt::Txd::pin0,typename alt::Rxd::pin0>();
+                        port::pinsDirOut < typename alt::Txd::pin0,typename alt::Rxd::pin0>();
+                        port::pinsOn < typename alt::Txd::pin0,typename alt::Rxd::pin0>();
                         reg<ControlB>().set(recMode,ControlB::type::special_bit::Txen, ControlB::type::special_bit::Rxen, setting::opendrainmode, setting::startframedetection, setting::multiprocessor, setting::receivermode);
                     }
                     if constexpr (_USART::InterruptEnabled){

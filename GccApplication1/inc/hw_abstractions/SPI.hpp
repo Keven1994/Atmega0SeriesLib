@@ -242,7 +242,7 @@ namespace AVR {
                     details::_SPI<RW, accesstype,component, instance, bit_width>::init();
 
                     constexpr auto mBit = component::CTRLAMasks::Master ;
-					AVR::port::PinsDirOut<typename alt::Mosi::pin0,typename alt::Sck::pin0, typename alt::Ss::pin0>();
+                    AVR::port::pinsDirOut < typename alt::Mosi::pin0,typename alt::Sck::pin0, typename alt::Ss::pin0>();
 					if constexpr(! std::is_same_v<WriteOnly,RW>)
 					alt::Miso::pin0::setInput();
 					SPIMaster::template reg<typename SPIMaster::ControlA>().set(Setting::presc, Setting::clkx2, Setting::Msb, mBit);
@@ -267,7 +267,7 @@ namespace AVR {
 
                     details::_SPI<RW, accesstype,component, instance, bit_width>::init();
 
-					AVR::port::PinsDirIn<typename alt::Mosi::pin0,typename alt::Sck::pin0>();
+                    AVR::port::pinsDirIn < typename alt::Mosi::pin0,typename alt::Sck::pin0>();
                     alt::Miso::pin0::setOutput();
 					
 					SPISlave::template reg<typename SPISlave::ControlA>().set(Setting::Msb);
