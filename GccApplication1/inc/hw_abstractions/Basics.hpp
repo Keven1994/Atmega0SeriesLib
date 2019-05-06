@@ -78,7 +78,6 @@ namespace AVR {
             return component<p>::getBaseAddress();
     }
 
-
     template<typename component>
     [[nodiscard]] auto getBaseAddress(){
         //special case Port -> is no RC Component so their functions arent available for this component

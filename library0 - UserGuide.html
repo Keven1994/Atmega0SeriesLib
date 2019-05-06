@@ -7,7 +7,7 @@
 	<META NAME="AUTHOR" CONTENT="Keven Kl&ouml;ckner">
 	<META NAME="CREATED" CONTENT="20190505;10514225">
 	<META NAME="CHANGEDBY" CONTENT="Keven Kl&ouml;ckner">
-	<META NAME="CHANGED" CONTENT="20190506;15380837">
+	<META NAME="CHANGED" CONTENT="20190506;22391186">
 	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
 	<STYLE TYPE="text/css">
 	<!--
@@ -22,10 +22,16 @@
 Serie Library User Guide</U></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Programmierung:</FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT SIZE=4 STYLE="font-size: 16pt"><U>Programmierung:</U></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Um
 die Programme auf die Chips der Atmega 0 Serie zu flashen gibt es
-grunds&auml;tzlich 2 Methoden_</FONT></P>
+grunds&auml;tzlich 2 Methoden:</FONT></P>
 <UL>
 	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm"><A HREF="https://github.com/ElTangas/jtag2updi">https://github.com/ElTangas/jtag2updi</A>
 	&rarr; hier wird ein Atmega328 oder ein vergleichbarer Chip zu einem
@@ -41,7 +47,11 @@ grunds&auml;tzlich 2 Methoden_</FONT></P>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Grunds&auml;tzliches:</FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=4 STYLE="font-size: 16pt"><U>Grunds&auml;tzliches:</U></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
 <UL>
 	<UL>
 		<LI><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
@@ -80,13 +90,49 @@ grunds&auml;tzlich 2 Methoden_</FONT></P>
 	</UL>
 </UL>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<FONT SIZE=3>Basics:</FONT></P>
+<BR>
+</P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
 <BR>
 </P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<FONT SIZE=3>Zun&auml;chst sehen wir uns an wie die Ports oder auch
-spezifische Pins &uuml;ber die Library angesteuert werden:</FONT></P>
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<FONT SIZE=4 STYLE="font-size: 16pt"><U>Basics:</U></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<FONT SIZE=3>Zun&auml;chst wird betrachtet wie die Ports oder auch
+spezifische Pins &uuml;ber die Library angesteuert werden.</FONT></P>
 <PRE CLASS="western" STYLE="text-align: left"><FONT COLOR="#a9b7c6">        </FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#bbb529">#include </FONT><FONT COLOR="#6a8759">&quot;MCUSelect.hpp&quot;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#bbb529">#include </FONT><FONT COLOR="#6a8759">&quot;hw_abstractions/Delay.hpp&quot;</FONT></FONT></FONT>
@@ -97,6 +143,7 @@ spezifische Pins &uuml;ber die Library angesteuert werden:</FONT></P>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led3 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">3</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led4 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">4</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led5 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">5</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
 <FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">portA::setDir&lt;AVR::port::Out&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">led2::setOutput()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
@@ -114,7 +161,7 @@ werden die Ports ausgew&auml;hlt welche angesprochen werden sollen,
 hier in diesem Falle Port A und C. Sollte bei der Auswahl ein
 Compiler Fehler auftreten wurde ein nicht existenter Port ausgew&auml;hlt
 (der Atmega4808 besitzt z.B. keinen Port B oder E obwohl es Defines
-daf&uuml;r gibt. Der n&auml;chste Schritt ist die Auswahl von
+daf&uuml;r gibt). Der n&auml;chste Schritt ist die Auswahl von
 spezifischen Pins, daf&uuml;r wird dem template-Alias der zuvor
 gew&auml;hlte Port sowie die Pin Nummer angegeben. Hier muss darauf
 geachtet werden dass die spezifischen Pins NICHT auf Verf&uuml;gbarkeit
@@ -140,12 +187,92 @@ korrekt um. Des weiteren gibt es noch eine safeDelay-Methode, diese
 schaltet die Interrupts f&uuml;r die Dauer des wartens ab und
 funktioniert somit immer korrekt (sollten die Interrupts angeschaltet
 gewesen sein werden sie nach Ablauf des delays wieder aktiviert).</FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT COLOR="#000000"><FONT FACE="Times New Roman, serif"><FONT SIZE=4 STYLE="font-size: 16pt"><U>RessourceController</U></FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT COLOR="#000000"><FONT FACE="Times New Roman, serif"><FONT SIZE=3>Die
+Library stellt eine Klasse zur Verf&uuml;gung mit welcher die
+Ressourcen auf ihre Kollisionsfreiheit &uuml;berpr&uuml;ft werden
+k&ouml;nnen. Wenn diese Klasse genutzt wird ist es ausgeschlossen
+dass darin angeforderte Ressourcen sich &uuml;berschneiden, wenn z.B
+TWI PortA Pin 3 braucht und eine weitere Ressource diesen Pin belegen
+wollen w&uuml;rde, so w&uuml;rde das Programm nicht kompilieren und
+eine entsprechende Fehlermeldung ausgegeben.</FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using</FONT> twiInstance = AVR::rc::Instance&lt;</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::twi::TWI, // using ressource SPI</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::rc::Number&lt;0&gt;, //using instance '0'</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::portmux::PortMux&lt;0&gt;&gt;; // using portmux 0 alternative</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using</FONT> usartInstance = AVR::rc::Instance&lt;</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::usart::USART_Comp, </FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::rc::Number&lt;2&gt;, </FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::portmux::PortMux&lt;0&gt;&gt;; </FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using</FONT> RC = AVR::rc::RessourceController&lt;twiInstance,usartInstance&gt;; </FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using</FONT> twiRessource = RC::getRessource_t&lt;twiRessource&gt;;</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using</FONT> usartRessource = RC::getRessource_t&lt;usartRessource&gt;;</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using</FONT> usart = AVR::usart::USART&lt;AVR::blocking,usartRessource&gt;;</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using</FONT> twi = AVR::twi::TWIMaster&lt;AVR::blocking,twiRessource , AVR::ReadWrite&gt;;</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
 <BR>
 </P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT COLOR="#000000"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><U>Vorgehensweise</U></FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT COLOR="#000000"><FONT FACE="Times New Roman, serif"><FONT SIZE=3>Zuerst
+wird die spezifische Instance einer Ressource festgelegt, diese
+besteht aus der Ressource selbst, diese sind immer in den
+dazugeh&ouml;rigen namespaces abgelegt (z.B. TWI/USART). Danach wird
+der RessourceController mit den zu benutzenden Instanzen belegt,
+danach kann mit der getRessource_t Klassen-Methode die Ressource
+angefordert werden. Sollten anderweitig noch Pins genutzt werden (z.B
+vom Benutzer f&uuml;r led's oder sonstiges) so kann/sollte eine
+GenericRessource erzeugt und &uuml;bergeben werden (Auch hier wird
+die physikalische Existenz der Pins nicht &uuml;berpr&uuml;ft!).</FONT></FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led1 = Pin&lt;PortA<FONT COLOR="#cc7832">, </FONT><FONT COLOR="#6897bb">0</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led2 = Pin&lt;PortA<FONT COLOR="#cc7832">, </FONT><FONT COLOR="#6897bb">1</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led3 = Pin&lt;PortD<FONT COLOR="#cc7832">, </FONT><FONT COLOR="#6897bb">6</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>gRes = AVR::rc::GenericRessource&lt;led1<FONT COLOR="#cc7832">,</FONT>led2&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>RC = AVR::rc::RessourceController&lt;twiIntance<FONT COLOR="#cc7832">,</FONT>usartInstance<FONT COLOR="#cc7832">,</FONT>gRes &gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
+Wenn alle Ressourcen mit dem RessourceController &uuml;berpr&uuml;ft
+werden ist ein Konflikt der Ressourcen Belegung zur Compile-Zeit
+ausgeschlossen. Zu beachten ist allerdings dass bei den meisten
+Ressourcen wie z.B. TWI, USART und SPI alle Pins welche dort benutzt
+werden k&ouml;nnen auch gepr&uuml;ft werden. Sollte also z.B.
+MasterSPI als ReadOnly konfiguriert werden so wird logischerweise der
+Miso-Pin nicht benutzt, aber im RessourceController trotzdem gepr&uuml;ft.
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>spiRessource = AVR::rc::Instance&lt;</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">AVR::spi::SPI<FONT COLOR="#cc7832">, </FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">AVR::rc::Number&lt;<FONT COLOR="#6897bb">0</FONT>&gt;<FONT COLOR="#cc7832">, </FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">AVR::portmux::PortMux&lt;<FONT COLOR="#6897bb">0</FONT>&gt;&gt;<FONT COLOR="#cc7832">; </FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>uncheckedSPI = AVR::rc::UncheckedRessource_t&lt;spiRessource&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt; <FONT COLOR="#cc7832">,</FONT>AVR::Interrupts&lt;&gt; &gt;<FONT COLOR="#cc7832">,</FONT>uncheckedSPI <FONT COLOR="#cc7832">, </FONT>AVR::ReadOnly&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
+Sollte der besagte Pin trotzdem von einer anderen Ressource verwendet
+werden besteht die M&ouml;glichkeit eine Ressource von der Pr&uuml;fung
+auszuschlie&szlig;en indem UncheckedRessource verwendet wird.</P>
 </BODY>
 </HTML>

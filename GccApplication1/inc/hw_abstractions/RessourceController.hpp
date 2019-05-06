@@ -177,6 +177,9 @@ namespace AVR {
 		template<typename FIRST,typename... PINS>
 		using RessourceController = ResController<DEFAULT_MCU,FIRST,PINS...>;
 
+		template<typename... PINS>
+		using GenericRessource = details::GenericRessource<PINS...>;
+
 		template<typename instance>
 		struct UncheckedRessource {
 		    using type = utils::tuple<typename details::resolveComponent<instance>::inst,typename details::resolveComponent<instance>::alt>;
