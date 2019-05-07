@@ -249,9 +249,9 @@ namespace AVR {
 
                 template<uint8_t Address, access dir>
                 struct ScopedTransaction {
-                    const bool transActionSuccess;
+                    const bool startSuccess;
 
-                    ScopedTransaction() : transActionSuccess(startTransaction<Address,dir>()){}
+                    ScopedTransaction() : startSuccess(startTransaction<Address,dir>()){}
 
                     template<bool Dummy = true, typename T = std::enable_if_t<!TWIMaster::isReadOnly && dir == Write>>
                     bool send(uint8_t Data){
@@ -260,12 +260,18 @@ namespace AVR {
 
                     template<bool Dummy = true, typename T = std::enable_if_t<!TWIMaster::isWriteOnly && dir == Read>>
                     bool receive(uint8_t& Data){
-                        return  TWIMaster::receive(Data);
+                        return  TWIMaster::receive<false>(Data);
+                    }
+
+                    template<bool Dummy = true, typename T = std::enable_if_t<!TWIMaster::isWriteOnly && dir == Read>>
+                    bool receiveLast(uint8_t& Data){
+                        return  TWIMaster::receive<true>(Data);
                     }
 
                     ~ScopedTransaction(){
-                        if(transActionSuccess)
-                            stopTransaction();
+                        if constexpr(dir == Write)
+                            if(startSuccess)
+                                stopTransaction();
                     }
                 };
 
@@ -286,7 +292,7 @@ namespace AVR {
                     return ScopedTransaction<address, Write>();
                 }
 
-                template<uint8_t address,bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isReadOnly>>
+                template<uint8_t address,bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
                 static inline auto scopedRead(){
                     return ScopedTransaction<address, Read>();
                 }
@@ -295,7 +301,14 @@ namespace AVR {
                     return TWIMaster::fifoIn;
                 }
 
-                template<uint8_t address,access dir,bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
+                [[nodiscard]] static inline bool slaveAcknowledged(){
+                    auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
+                    using statebits = typename TWIMaster::Status::type::special_bit;
+
+                    return ! statereg.areSet(statebits::Rxack);
+                }
+
+                template<uint8_t address,access dir,bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled>>
                 [[nodiscard]] static inline bool startTransaction() requires(address < (1 <<7)) {
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
                     using statebits = typename TWIMaster::Status::type::special_bit;
@@ -322,6 +335,37 @@ namespace AVR {
                         return true;
                     }
                     return false;
+                }
+
+                template<bool nack = true, bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
+                [[nodiscard]] static inline bool receive(uint8_t& data) {
+                    resetNack();
+                    auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
+                    using statebits = typename TWIMaster::Status::type::special_bit;
+
+                    if(! statereg.areSet(statebits::Rif)) return false;
+                    if constexpr(nack) {
+                        stopTransactionNack();
+                    }
+                    data = TWIMaster::template reg<typename TWIMaster::Data>().raw();
+                    return true;
+
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
+                static inline uint8_t receive(uint8_t* Data, uint8_t size) {
+                    uint8_t tmp;
+                    uint8_t n = 0;
+                    for(uint8_t i = 0; i < size-1; i++)
+                        if(TWIMaster::receive<false>(tmp))
+                            Data[n++] = tmp;
+
+                    if(size-n == 1)
+                        if(TWIMaster::receive<true>(tmp)) {
+                            Data[size - 1] = tmp;
+                            n++;
+                        }
+                    return n;
                 }
 
                 template<bool nack = true, bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
@@ -366,6 +410,14 @@ namespace AVR {
                 static inline void turnOn() {
                     TWIMaster::template reg<typename TWIMaster::_Ctrla>().on(
                             TWIMaster::_Ctrla::type::special_bit::Enable);
+                }
+
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::fifoEnabled>>
+                static inline void reset() {
+                    TWIMaster::fifoIn.clear();
+                    TWIMaster::fifoOut.clear();
+                    TWIMaster::CommandStack.clear();
+                    TWIMaster::current = Command{};
                 }
 
                 template<bool dummy = true, typename T = std::enable_if_t<
@@ -450,7 +502,7 @@ namespace AVR {
                     while (!(TWIMaster::template reg<typename TWIMaster::Status>().areSet(TWIMaster::InterruptFlagBits::Wif)));
                 }
 
-                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
+                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking && !TWIMaster::fifoEnabled>>
                 static inline void transfer(bit_width *data, uint8_t n) {
                     while (--n >= 0)
                         transfer(data[n]);
@@ -790,8 +842,8 @@ namespace AVR {
         }
 
         template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,
-                bool quickCommand = false, bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
-        using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, quickCommand, smartMode, timeOut>, bit_width>;
+                bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
+        using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, false, smartMode, timeOut>, bit_width>;
 
         template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns, typename bit_width = mem_width>
         using TWISlave = AVR::twi::details::TWISlave<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWISlaveSetting<fastModePlus, holdTime, sdaSetup>, bit_width>;

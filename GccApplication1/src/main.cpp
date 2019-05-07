@@ -6,7 +6,7 @@
 */
 
 #ifndef TEST
-
+#define TWITEST
 #ifdef TWITEST
 ///////////////////////
 #include "MCUSelect.hpp"
@@ -68,33 +68,37 @@ using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<t
 using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
 
 
-using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::ReadWrite>;
 
-ISR(TWI0_TWIM_vect){
-    twi::intHandler();
-}
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::NoFifo,AVR::NoInterrupts>,twires , AVR::ReadOnly>;
 
 volatile bool wasread = false;
 static inline void Callback (){
     wasread=true;
     uint8_t item;
-    while(twi::getInputFifo().pop_front(item))
-        AVR::dbgout::put(item);
+    //while(twi::getInputFifo().pop_front(item))
+        //AVR::dbgout::put(item);
 }
+static constexpr uint8_t size = 12;
+static uint8_t arr[size];
 
 int main() {
     twi::init();
-    AVR::dbgout::init();
-    while(true){
-        twi::get<42,Callback>(12);
 
-        while(!wasread)
-            ;
-        AVR::dbgout::flush();
-        twi::put<43>('H');
+    while(true){
+
+        uint8_t tmp = 0;
+        auto rd = twi::scopedRead<42>();
+        uint8_t data;
+        while(tmp != 11){
+            if(rd.receive(data))
+                arr[tmp++] = data;
+        }
+
+        while(!rd.receiveLast(data));
+        arr[tmp] = data;
+
         AVR::delay<AVR::ms,200>();
 
-        wasread = false;
     }
 
 }
@@ -102,6 +106,7 @@ int main() {
 
 #include "MCUSelect.hpp"
 #include "hw_abstractions/Delay.hpp"
+#include "hw_abstractions/Eventsystem.hpp"
 
 using portA = AVR::port::Port<AVR::port::A>;
 using portC = AVR::port::Port<AVR::port::C>;
@@ -111,7 +116,16 @@ using led3 = AVR::port::Pin<portA,3>;
 using led4 = AVR::port::Pin<portA,4>;
 using led5 = AVR::port::Pin<portA,5>;
 
+using ch0 = AVR::eventsystem::Channel<0>;
+using ch0_gen = typename ch0::generators::generals::spi0_sck;
+using user0 = typename ch0::users::evtca0;
+using user1 = typename ch0::users::evtcb0;
+
 int main() {
+    ch0::template registerListener<user0,user1>();
+    ch0::template setGenerator<ch0_gen >();
+    ch0::softwareEvent();
+
     portA::setDir<AVR::port::Out>();
 
     led2::setOutput();

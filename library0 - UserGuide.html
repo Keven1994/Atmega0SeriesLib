@@ -7,7 +7,9 @@
 	<META NAME="AUTHOR" CONTENT="Keven Kl&ouml;ckner">
 	<META NAME="CREATED" CONTENT="20190505;10514225">
 	<META NAME="CHANGEDBY" CONTENT="Keven Kl&ouml;ckner">
-	<META NAME="CHANGED" CONTENT="20190506;22391186">
+	<META NAME="CHANGED" CONTENT="20190507;22043725">
+	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
+	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
 	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
 	<STYLE TYPE="text/css">
 	<!--
@@ -50,7 +52,7 @@ grunds&auml;tzlich 2 Methoden:</FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0cm"><BR>
 </P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=4 STYLE="font-size: 16pt"><U>Grunds&auml;tzliches:</U></FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 <UL>
 	<UL>
@@ -89,51 +91,38 @@ grunds&auml;tzlich 2 Methoden:</FONT></P>
 		</P>
 	</UL>
 </UL>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
 <FONT SIZE=4 STYLE="font-size: 16pt"><U>Basics:</U></FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
-<BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm; font-weight: normal; text-decoration: none">
 <FONT SIZE=3>Zun&auml;chst wird betrachtet wie die Ports oder auch
 spezifische Pins &uuml;ber die Library angesteuert werden.</FONT></P>
-<PRE CLASS="western" STYLE="text-align: left"><FONT COLOR="#a9b7c6">        </FONT>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6">        </FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#bbb529">#include </FONT><FONT COLOR="#6a8759">&quot;MCUSelect.hpp&quot;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#bbb529">#include </FONT><FONT COLOR="#6a8759">&quot;hw_abstractions/Delay.hpp&quot;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>portA = AVR::port::Port&lt;AVR::port::A&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
@@ -143,7 +132,6 @@ spezifische Pins &uuml;ber die Library angesteuert werden.</FONT></P>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led3 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">3</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led4 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">4</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led5 = AVR::port::Pin&lt;portA<FONT COLOR="#cc7832">,</FONT><FONT COLOR="#6897bb">5</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
-
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
 <FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">portA::setDir&lt;AVR::port::Out&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">led2::setOutput()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
@@ -251,7 +239,7 @@ die physikalische Existenz der Pins nicht &uuml;berpr&uuml;ft!).</FONT></FONT></
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led2 = Pin&lt;PortA<FONT COLOR="#cc7832">, </FONT><FONT COLOR="#6897bb">1</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>led3 = Pin&lt;PortD<FONT COLOR="#cc7832">, </FONT><FONT COLOR="#6897bb">6</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 
-<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>gRes = AVR::rc::GenericRessource&lt;led1<FONT COLOR="#cc7832">,</FONT>led2&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>gRes = AVR::rc::GenericRessource&lt;led1<FONT COLOR="#cc7832">,</FONT>led2,led3&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>RC = AVR::rc::RessourceController&lt;twiIntance<FONT COLOR="#cc7832">,</FONT>usartInstance<FONT COLOR="#cc7832">,</FONT>gRes &gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
 Wenn alle Ressourcen mit dem RessourceController &uuml;berpr&uuml;ft
@@ -274,5 +262,156 @@ Miso-Pin nicht benutzt, aber im RessourceController trotzdem gepr&uuml;ft.
 Sollte der besagte Pin trotzdem von einer anderen Ressource verwendet
 werden besteht die M&ouml;glichkeit eine Ressource von der Pr&uuml;fung
 auszuschlie&szlig;en indem UncheckedRessource verwendet wird.</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT SIZE=4 STYLE="font-size: 16pt"><U>Eventsystem</U></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Das
+Eventsystem der 0 Serie erm&ouml;glicht Peripherie Abh&auml;ngige
+Funktionalit&auml;ten mit deren Hilfe die Peripherie ohne Interrupts
+Synchron und Asynchron kommunizieren kann. Das Eventsystem kann nur
+so konfiguriert werden dass je Kanal ein Generator l&auml;uft und
+dieser Kanal jeweils von beliebig vielen Users abgeh&ouml;rt werden
+kann, die einzelnen Funktionen der Users sowie das Verhalten der
+Generatoren m&uuml;ssen vor Benutzung nachgelesen werden. Da die
+Konfigurationsm&ouml;glichkeiten beschr&auml;nkt sind f&auml;llt die
+Schnittstelle entsprechend Schmal aus.</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>ch0 = AVR::eventsystem::Channel&lt;<FONT COLOR="#6897bb">0</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>ch0_gen = <FONT COLOR="#cc7832">typename </FONT>ch0::generators::generals::spi0_sck<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>user0 = <FONT COLOR="#cc7832">typename </FONT>ch0::users::evtca0<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>user1 = <FONT COLOR="#cc7832">typename </FONT>ch0::users::evtcb0<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">ch0::</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">template </FONT></FONT><FONT FACE="Courier New">registerListener&lt;user0,user1&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">ch0::</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">template </FONT></FONT><FONT FACE="Courier New">setGenerator&lt;ch0_gen &gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">ch0::softwareEvent()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+<FONT SIZE=3>Zun&auml;chst wird der Kanal ausgew&auml;hlt der Benutzt
+werden soll (Kanal 0- maximal 8), sollte hier ein ung&uuml;ltiger
+Kanal gew&auml;hlt werden wird das Programm nicht kompilieren. Als
+n&auml;chstes wird der Generator und der/die Benutzer ausgew&auml;hlt.
+Dann werden die Benutzer auf den Kanal eingestellt und der Generator
+wird f&uuml;r den Kanal eingestellt. Das Eventsystem erm&ouml;glicht
+des Weiteren das Ausl&ouml;sen von Software-Events, dies wird mir der
+entsprechenden Funktion erm&ouml;glicht.</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT SIZE=4 STYLE="font-size: 16pt"><U>TWI</U></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Die
+TWI Schnittstelle ist aus Aufwandsgr&uuml;nden nur f&uuml;r den
+Master Modus eingerichtet, die Quick-Command Funktionalit&auml;t
+wurde aus Gr&uuml;nden der Kompatibilit&auml;t zwischen TWI und I&sup2;C
+abgeschaltet, hier wurden Probleme bei der Kommunikation zwischen
+verschiedenen Ger&auml;ten sichtbar. Ansonsten kann die TWI-Master
+Schnittstelle mit allen m&ouml;glichen Eigenschaften konfiguriert
+werden, empfehlenswert ist aber lediglich die Anpassung der
+Zugriffsart (RW / R / W) sowie Blockierend / nicht blockierend oder
+auch Interruptdriven, ob eine FiFo genutzt wird und Instanzauswahl
+(wenn die anderen Eigenschaften angepassst werden so ist das
+Verhalten <B>NICHT</B> getestet), nachfolgend einige Beispiele.</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Hinweis:
+Es wird nicht kontrolliert ob der Slave die Adresse best&auml;tigt
+hat ,dieser Fall sollte/muss abgefangen werden!</FONT></P>
+<PRE CLASS="western" STYLE="text-align: left; text-decoration: none">
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt;<FONT COLOR="#cc7832">,</FONT>AVR::NoInterrupts&gt;<FONT COLOR="#cc7832">,</FONT>twires <FONT COLOR="#cc7832">, </FONT>AVR::ReadOnly&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">volatile bool </FONT>wasread = <FONT COLOR="#cc7832">false;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static inline void </FONT><FONT COLOR="#ffc66d">Callback </FONT>(){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">wasread=</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">item</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(twi::getInputFifo().pop_front(item))</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::dbgout::put(item)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">AVR::dbgout::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">twi::get&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">Callback&gt;(</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">12</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(!wasread)</FONT></FONT>
+<FONT COLOR="#a9b7c6">            <FONT FACE="Courier New">twi::periodic()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::dbgout::flush()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">200</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">wasread = </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">false;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+<FONT SIZE=3>Dieses Beispiel zeigt die Konfiguration der
+Schnittstelle als nicht blockierend, Readonly und Fifo Benutzend und
+ohne Interrupts, bei der TWI Schnittstelle wurde auf eine nicht
+blockierende Variante ohne FiFo verzichtet, da diese Version mangels
+Abstraktion zu fehleranf&auml;llig w&auml;re. Die get Methode wird
+mit den template Parametern der Addresse und einer Callback Funktion
+(oder auch lambda) versehen, als Parameter wird die Anzahl der zu
+lesenden Bytes &uuml;bergeben. Ohne Interrupts muss in der Schleife
+periodic aufgerufen werden, sonst werden weder Daten empfangen noch
+gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl
+an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und
+der Benutzer kann festlegen was passieren soll (sinnvoll ist auf
+jedenfall die FiFo zu leeren wie im Beispiel).</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::NoFifo<FONT COLOR="#cc7832">,</FONT>AVR::NoInterrupts&gt;<FONT COLOR="#cc7832">,</FONT>twires <FONT COLOR="#cc7832">, </FONT>AVR::ReadOnly&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static constexpr </FONT><FONT COLOR="#b9bcd1">uint8_t </FONT>size = <FONT COLOR="#6897bb">12</FONT><FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static </FONT><FONT COLOR="#b9bcd1">uint8_t </FONT>arr[size]<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(!twi::startTransaction&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">AVR::twi::access::Read&gt;())</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">tmp = </FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">0</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(tmp != size){</FONT></FONT>
+<FONT COLOR="#a9b7c6">            <FONT FACE="Courier New">tmp += twi::receive(arr</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">size-tmp)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6">        </FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">200</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#cc7832">        </FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+<FONT SIZE=3>wird keine FiFo genutzt dann wird von der receive
+Methode die Anzahl gelesener Bytes zur&uuml;ckgegeben (bei einem
+einzelnen Lesevorgang ein Boolean ob ein Byte gelesen wurde),
+logischerweise muss der Anwender ohne FiFo eigene Ma&szlig;nahmen
+treffen um entsprechend viele Bytes zu lesen (siehe Beispiel code).
+Auch das Ausl&ouml;sen der Start &ndash; sowie StopCondition m&uuml;ssen
+dann manuell eingepflegt werden, Ausnahme betrifft das lesen, hier
+wird die stopCondition mit dem lesen des letzen Bytes austomatisch
+ausgef&uuml;hrt.</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static constexpr </FONT><FONT COLOR="#b9bcd1">uint8_t </FONT>size = <FONT COLOR="#6897bb">12</FONT><FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static </FONT><FONT COLOR="#b9bcd1">uint8_t </FONT>arr[size]<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">tmp = </FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">0</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">auto </FONT></FONT><FONT FACE="Courier New">rd = twi::scopedRead&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">data</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(tmp != </FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">11</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">            <FONT COLOR="#cc7832"><FONT FACE="Courier New">if</FONT></FONT><FONT FACE="Courier New">(rd.receive(data))</FONT></FONT>
+<FONT COLOR="#a9b7c6">                <FONT FACE="Courier New">arr[tmp++] = data</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(!rd.receiveLast(data))</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">arr[tmp] = data</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#cc7832">        </FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+<FONT SIZE=3>Alternativ k&ouml;nnen bei nicht verwenden der nicht
+blockierenden NoFifo Varianten auch Scoped Varianten genutzt werden,
+somit muss sich nicht mehr explizit um die Start-Stop Conditions
+gek&uuml;mmert werden, auch hier gilt die Ausnahme des Lesens (siehe
+Beispiel).</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
 </BODY>
 </HTML>

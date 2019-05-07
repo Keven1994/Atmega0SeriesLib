@@ -13,13 +13,13 @@
 
 namespace AVR {
 	namespace eventsystem {
-		
-		template<typename defaultMCU = DEFAULT_MCU>
-		using users = typename defaultMCU::EventSystem::users;
-		
+
+
 		template<mem_width number, typename defaultMCU = DEFAULT_MCU>
 		struct Channel {
-			
+
+
+            using users = typename defaultMCU::EventSystem::users;
 			using generators = typename defaultMCU::EventSystem::template generators<number>;
 			
 			NoConstructors(Channel);
@@ -29,9 +29,13 @@ namespace AVR {
 				generators::value() = static_cast<mem_width>(generator::value);
 			}
 			
-			template<typename user>
+			template<typename... user>
 			static inline void registerListener(){
-				user::value() |= 1 << number;
+                ((user::listener() |= 1 << number),...);
+			}
+
+			static inline void softwareEvent(){
+			    EVSYS.STROBE = 1 << number;
 			}
 			
 		};
