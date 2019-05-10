@@ -7,7 +7,10 @@
 	<META NAME="AUTHOR" CONTENT="Keven Kl&ouml;ckner">
 	<META NAME="CREATED" CONTENT="20190505;10514225">
 	<META NAME="CHANGEDBY" CONTENT="Keven Kl&ouml;ckner">
-	<META NAME="CHANGED" CONTENT="20190507;22043725">
+	<META NAME="CHANGED" CONTENT="20190510;16573213">
+	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
+	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
+	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
 	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
 	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
 	<META NAME="CHANGEDBY" CONTENT="Keven Klöckner">
@@ -277,7 +280,7 @@ kann, die einzelnen Funktionen der Users sowie das Verhalten der
 Generatoren m&uuml;ssen vor Benutzung nachgelesen werden. Da die
 Konfigurationsm&ouml;glichkeiten beschr&auml;nkt sind f&auml;llt die
 Schnittstelle entsprechend Schmal aus.</FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 <PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>ch0 = AVR::eventsystem::Channel&lt;<FONT COLOR="#6897bb">0</FONT>&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>ch0_gen = <FONT COLOR="#cc7832">typename </FONT>ch0::generators::generals::spi0_sck<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
@@ -296,7 +299,7 @@ Dann werden die Benutzer auf den Kanal eingestellt und der Generator
 wird f&uuml;r den Kanal eingestellt. Das Eventsystem erm&ouml;glicht
 des Weiteren das Ausl&ouml;sen von Software-Events, dies wird mir der
 entsprechenden Funktion erm&ouml;glicht.</FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT SIZE=4 STYLE="font-size: 16pt"><U>TWI</U></FONT></P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
@@ -313,13 +316,18 @@ Zugriffsart (RW / R / W) sowie Blockierend / nicht blockierend oder
 auch Interruptdriven, ob eine FiFo genutzt wird und Instanzauswahl
 (wenn die anderen Eigenschaften angepassst werden so ist das
 Verhalten <B>NICHT</B> getestet), nachfolgend einige Beispiele.</FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Die
+Frequenzrate wird &uuml;ber die init Methode festgelegt, sofern
+fastmode plus nicht aktiviert ist (default Einstellung ist aus), so
+ist die rate auf 400khz beschr&auml;nkt.</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Hinweis:
 Es wird nicht kontrolliert ob der Slave die Adresse best&auml;tigt
 hat ,dieser Fall sollte/muss abgefangen werden!</FONT></P>
-<PRE CLASS="western" STYLE="text-align: left; text-decoration: none">
-<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt;<FONT COLOR="#cc7832">,</FONT>AVR::NoInterrupts&gt;<FONT COLOR="#cc7832">,</FONT>twires <FONT COLOR="#cc7832">, </FONT>AVR::ReadOnly&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #333333; text-align: left; text-decoration: none"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt;<FONT COLOR="#cc7832">,</FONT>AVR::NoInterrupts&gt;<FONT COLOR="#cc7832">,</FONT>twires <FONT COLOR="#cc7832">, </FONT>AVR::ReadOnly&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">volatile bool </FONT>wasread = <FONT COLOR="#cc7832">false;</FONT></FONT></FONT>
 
@@ -331,7 +339,7 @@ hat ,dieser Fall sollte/muss abgefangen werden!</FONT></P>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
 
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
-<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init&lt;100000&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">AVR::dbgout::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
 <FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">twi::get&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">Callback&gt;(</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">12</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
@@ -355,7 +363,27 @@ gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl
 an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und
 der Benutzer kann festlegen was passieren soll (sinnvoll ist auf
 jedenfall die FiFo zu leeren wie im Beispiel).</FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #333333; text-align: left; text-decoration: none"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static constexpr const char</FONT>* hello = <FONT COLOR="#6a8759">&quot;Hello Slave&quot;</FONT><FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">static constexpr auto </FONT></FONT><FONT FACE="Courier New">len = </FONT><FONT COLOR="#b5b6e3"><FONT FACE="Courier New">utils</FONT></FONT><FONT FACE="Courier New">::strlen(hello)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">twi::put&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT FACE="Courier New">&gt;((uint8_t*)hello</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">len)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">            </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">( twi::dataToSend())</FONT></FONT>
+<FONT COLOR="#a9b7c6">                <FONT FACE="Courier New">twi::periodic()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">200</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+<FONT SIZE=3>Hier im Beispiel wird die Verwendung des Schreibens
+gezeigt, hier wird solange periodic aufgerufen bis keine Daten zum
+Schreiben mehr vorhanden sind.</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 <PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::NoFifo<FONT COLOR="#cc7832">,</FONT>AVR::NoInterrupts&gt;<FONT COLOR="#cc7832">,</FONT>twires <FONT COLOR="#cc7832">, </FONT>AVR::ReadOnly&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static constexpr </FONT><FONT COLOR="#b9bcd1">uint8_t </FONT>size = <FONT COLOR="#6897bb">12</FONT><FONT COLOR="#cc7832">;</FONT></FONT></FONT>
@@ -383,7 +411,7 @@ Auch das Ausl&ouml;sen der Start &ndash; sowie StopCondition m&uuml;ssen
 dann manuell eingepflegt werden, Ausnahme betrifft das lesen, hier
 wird die stopCondition mit dem lesen des letzen Bytes austomatisch
 ausgef&uuml;hrt.</FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 <PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static constexpr </FONT><FONT COLOR="#b9bcd1">uint8_t </FONT>size = <FONT COLOR="#6897bb">12</FONT><FONT COLOR="#cc7832">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static </FONT><FONT COLOR="#b9bcd1">uint8_t </FONT>arr[size]<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
@@ -399,18 +427,252 @@ ausgef&uuml;hrt.</FONT></P>
 <FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">}</FONT></FONT>
 <FONT COLOR="#a9b7c6">        <FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(!rd.receiveLast(data))</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
 <FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">arr[tmp] = data</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
-<FONT COLOR="#cc7832">        </FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+<FONT COLOR="#cc7832"><FONT COLOR="#ffffff">}</FONT>        </FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
 <FONT SIZE=3>Alternativ k&ouml;nnen bei nicht verwenden der nicht
 blockierenden NoFifo Varianten auch Scoped Varianten genutzt werden,
 somit muss sich nicht mehr explizit um die Start-Stop Conditions
 gek&uuml;mmert werden, auch hier gilt die Ausnahme des Lesens (siehe
 Beispiel).</FONT></P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
-</P>
-<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
-</P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static constexpr const char</FONT>* hello = <FONT COLOR="#6a8759">&quot;Hello Slave&quot;</FONT><FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">static constexpr auto </FONT></FONT><FONT FACE="Courier New">len = </FONT><FONT COLOR="#b5b6e3"><FONT FACE="Courier New">utils</FONT></FONT><FONT FACE="Courier New">::strlen(hello)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT COLOR="#cc7832"><FONT FACE="Courier New">auto </FONT></FONT><FONT FACE="Courier New">wr = twi::scopedWrite&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">for</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">i = </FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">0</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">; </FONT></FONT><FONT FACE="Courier New">i &lt; len</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">; </FONT></FONT><FONT FACE="Courier New">) {</FONT></FONT>
+<FONT COLOR="#a9b7c6">            <FONT COLOR="#cc7832"><FONT FACE="Courier New">if </FONT></FONT><FONT FACE="Courier New">(wr.send((uint8_t) *(hello + i)))</FONT></FONT>
+<FONT COLOR="#a9b7c6">                <FONT FACE="Courier New">i++</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6">        </FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">200</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P STYLE="background: #ffffff">
+Hier wird noch die ScopedWrite Variante gezeigt, somit muss der
+Nutzer sich nicht um Start-Stop Conditions k&uuml;mmern.</P>
+<PRE CLASS="western" STYLE="background: #333333"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static constexpr const char* </FONT><FONT COLOR="#b2b2b2">hello</FONT><FONT COLOR="#cc7832"> = </FONT><FONT COLOR="#6a8759">&quot;Hello Slave&quot;</FONT><FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt;<FONT COLOR="#cc7832">,</FONT>AVR::Interrupts&lt;&gt;&gt;<FONT COLOR="#cc7832">,</FONT>twires <FONT COLOR="#cc7832">, </FONT>AVR::WriteOnly&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#908b25">ISR</FONT>(TWI0_TWIM_vect){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::intHandler()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">static constexpr auto </FONT></FONT><FONT FACE="Courier New">len = </FONT><FONT COLOR="#b5b6e3"><FONT FACE="Courier New">utils</FONT></FONT><FONT FACE="Courier New">::strlen(hello)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">twi::put&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT FACE="Courier New">&gt;((uint8_t*)hello</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">len)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">200</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P>
+Diese Interrupt gesteuerte Version wird im Intervall von 200 ms den
+String Hello Slave an den Slave mit der Addresse 42 senden.</P>
+<PRE CLASS="western" STYLE="background: #333333; text-align: left"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt;<FONT COLOR="#cc7832">,</FONT>AVR::Interrupts&lt;&gt;&gt;<FONT COLOR="#cc7832">,</FONT>twires <FONT COLOR="#cc7832">, </FONT>AVR::ReadOnly&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">volatile bool </FONT>wasread = <FONT COLOR="#cc7832">false;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#908b25">ISR</FONT>(TWI0_TWIM_vect){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::intHandler()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static inline void </FONT><FONT COLOR="#ffc66d">Callback </FONT>(){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">wasread=</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">item</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(twi::getInputFifo().pop_front(item))</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::dbgout::put(item)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">AVR::dbgout::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">twi::get&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">Callback&gt;(</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">12</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(!wasread)</FONT></FONT>
+<FONT COLOR="#a9b7c6">            <FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::dbgout::flush()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">200</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">wasread = </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">false;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
+Diese Version erh&auml;lt vom Slave mit der Addresse 42 je Iteration
+12 Datenbytes, nachdem diese gelesen wurden wird der Callback
+ausgef&uuml;hrt (in diesem Falle werden die Datenbytes &uuml;ber die
+Debug-Schnittstelle an den PC gesendet &rarr; nur 4808 verf&uuml;gbar
+und die innere While-Schleife der main Methode unterbrochen).</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt;<FONT COLOR="#cc7832">,</FONT>AVR::Interrupts&lt;&gt;&gt;<FONT COLOR="#cc7832">,</FONT>twires <FONT COLOR="#cc7832">, </FONT>AVR::ReadWrite&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#908b25">ISR</FONT>(TWI0_TWIM_vect){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::intHandler()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">volatile bool </FONT>wasread = <FONT COLOR="#cc7832">false;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">static inline void </FONT><FONT COLOR="#ffc66d">Callback </FONT>(){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">wasread=</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">item</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(twi::getInputFifo().pop_front(item))</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::dbgout::put(item)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">twi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">AVR::dbgout::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">twi::get&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT FACE="Courier New">Callback&gt;(</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">12</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(!wasread)</FONT></FONT>
+<FONT COLOR="#a9b7c6">            <FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::dbgout::flush()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">twi::put&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">42</FONT></FONT><FONT FACE="Courier New">&gt;(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'H'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">200</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">wasread = </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">false;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
+Als abschlie&szlig;endes Beispiel wird hier noch eine kombinierte
+Version gezeigt (lesen und Schreiben).</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Beispielbehandlung
+TWI Address-NACK:</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">auto </FONT>rd = twi::scopedRead&lt;<FONT COLOR="#6897bb">43</FONT>&gt;()<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">while</FONT>(! twi::writeComplete()) {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(! twi::slaveAcknowledged()) {</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT COLOR="#cc7832"><FONT FACE="Courier New">while </FONT></FONT><FONT FACE="Courier New">(!twi::endTransaction())</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">rd = twi::scopedRead&lt;</FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">43</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none">
+<FONT SIZE=3>Hier wird zuerst effektiv auf das Beenden der
+Start-Condition gewartet, danach wird eine Stop-Condition ausgel&ouml;st
+damit die Start Condition wiederholt werden kann. Die Behandlung
+besteht hier darin es solange zu versuchen bis der Slave best&auml;tigt,
+andere Behandlungsmethoden sind z.B. das versuchen einer anderen
+Adresse oder eine andere Programm-Routine auszuf&uuml;hren.</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT SIZE=4 STYLE="font-size: 16pt"><U>SPI</U></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Das
+SPI-Interface ist &auml;hnlich gestaltet wie bei TWI, mit der
+Ausnahme dass hier in keinem Fall auf start- oder stop Conditions
+oder der gleichen geachtet werden muss. Weiterhin wird auch ein
+Interrupthandler f&uuml;r die Benutzung ohne Fifo und der Slave Modus
+zur Verf&uuml;gung gestellt. Hier gibt es keine Option in der init
+Methode die Frequenz einzustellen, dies geschieht &uuml;ber die
+Prescaler-Option w&auml;hrend der Schnittstellen-Konfiguration.</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt; <FONT COLOR="#cc7832">,</FONT>AVR::NoInterrupts &gt;<FONT COLOR="#cc7832">,</FONT>res<FONT COLOR="#cc7832">, </FONT>AVR::ReadWrite&gt;<FONT COLOR="#cc7832">; </FONT><FONT COLOR="#808080"> </FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">spi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">AVR::dbgout::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'h'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'e'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'l'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'l'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'o'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">for</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">i = </FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">0</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">; </FONT></FONT><FONT FACE="Courier New">i &lt; </FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">5</FONT></FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">; </FONT></FONT><FONT FACE="Courier New">i++) {</FONT></FONT>
+<FONT COLOR="#a9b7c6">            <FONT FACE="Courier New">spi::periodic()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">            </FONT><FONT FACE="Courier New">AVR::delay &lt; AVR::us</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">, </FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">5 </FONT></FONT><FONT FACE="Courier New">&gt; ()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">item</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">       </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(spi::getInputFifo().pop_front(item)) {</FONT></FONT>
+<FONT COLOR="#a9b7c6">           <FONT FACE="Courier New">AVR::dbgout::put(item)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">       </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::dbgout::flush()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+
+</PRE><P>
+Die Nicht blockierende Variante ohne Interrupts l&auml;sst sich
+ebenso verwenden wie die TWI-Schnittstelle.</P>
+<PRE CLASS="western" STYLE="background: #ffffff">
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt; <FONT COLOR="#cc7832">,</FONT>AVR::Interrupts&lt;&gt; &gt;<FONT COLOR="#cc7832">,</FONT>res<FONT COLOR="#cc7832">, </FONT>AVR::ReadWrite&gt;<FONT COLOR="#cc7832">; </FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#908b25">ISR</FONT>(SPI0_INT_vect){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">spi::intHandler()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">spi::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">AVR::dbgout::init()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'h'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'e'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'l'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'l'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">spi::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'o'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT COLOR="#b9bcd1"><FONT FACE="Courier New">uint8_t </FONT></FONT><FONT FACE="Courier New">item</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">       </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(spi::getInputFifo().pop_front(item)) {</FONT></FONT>
+<FONT COLOR="#a9b7c6">           <FONT FACE="Courier New">AVR::dbgout::put(item)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">       </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">AVR::dbgout::flush()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
+Hier zu sehen ist eine Interrupt-Version des SPI, um die gelesenen
+Bytes auszugeben muss lediglich die fifo ausgelesen werden (siehe
+Beispiel). Wird eine ReadWrite Variante genutzt so wird die Library
+eine Null transferieren sofern keine Nutzdaten vorhanden sind. Sollte
+keine Fifo verwendet und kein WriteOnly eingestellt sein so muss ein
+Protokolladapter festgelegt werden.</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT SIZE=4 STYLE="font-size: 16pt"><U>USART</U></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>Die
+USART Schnittstelle l&auml;sst sich im Grunde genauso bedienen wie
+SPI und TWI, allerdings m&uuml;ssen hier besonders 2 Dinge beachtet
+werden:<BR>1. Baudrate: Hier ist es essentiell wichtig dass vor allem
+der F_CPU Wert stimmt und das eine zu dem Ziel-Ger&auml;t passende
+Baudrate eingestellt ist (default 115200).</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><FONT SIZE=3>2.
+Besonderheit Interrupts: Hier gibt es 2 Interrupt Vectoren (der
+TX-Vector wird nicht beachtet) und deswegen auch 2 Interrupt-Handler
+(tx/rxHandler).</FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm; text-decoration: none"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><FONT SIZE=3><SPAN STYLE="text-decoration: none">F&uuml;r
+den Atmega4808 ist ein Debug-Interface in der Library enthalten
+(AVR::dbgout &rarr; include Datei = </SPAN></FONT><FONT COLOR="#000000"><FONT FACE="Times New Roman, serif">inc/Boards/CuriosityNanoIOT.hpp</FONT></FONT><FONT SIZE=3><SPAN STYLE="text-decoration: none">),
+mit diesem kann f&uuml;r das IoT-Devboard von Microchip &uuml;ber das
+USB-Interface bequem kommuniziert werden, dabei ist zu beachten das
+dieses blockierend arbeitet und USART2 benutzt.</SPAN></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
+</P>
+<PRE CLASS="western" STYLE="background: #2b2b2b"><FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">using </FONT>usart =AVR::usart::USART&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<FONT COLOR="#6897bb">42</FONT>&gt;<FONT COLOR="#cc7832">, </FONT>AVR::Interrupts&lt;&gt;&gt;<FONT COLOR="#cc7832">,</FONT>usartres<FONT COLOR="#cc7832">, </FONT>AVR::ReadWrite&gt;<FONT COLOR="#cc7832">;</FONT></FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#908b25">ISR</FONT>(USART2_DRE_vect){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">usart::txHandler()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#908b25">ISR</FONT>(USART2_RXC_vect){</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">usart::rxHandler()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT>
+
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New"><FONT COLOR="#cc7832">int </FONT><FONT COLOR="#ffc66d">main</FONT>() {</FONT></FONT>
+<FONT COLOR="#a9b7c6">    <FONT FACE="Courier New">usart::init&lt;115200&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">while</FONT></FONT><FONT FACE="Courier New">(</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">true</FONT></FONT><FONT FACE="Courier New">){</FONT></FONT>
+<FONT COLOR="#a9b7c6">        <FONT FACE="Courier New">usart::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'h'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">usart::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'e'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">usart::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'l'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">usart::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'l'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">usart::put(</FONT><FONT COLOR="#6a8759"><FONT FACE="Courier New">'o'</FONT></FONT><FONT FACE="Courier New">)</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">        </FONT><FONT FACE="Courier New">AVR::delay&lt;AVR::ms</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">,</FONT></FONT><FONT COLOR="#6897bb"><FONT FACE="Courier New">200</FONT></FONT><FONT FACE="Courier New">&gt;()</FONT><FONT COLOR="#cc7832"><FONT FACE="Courier New">;</FONT></FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT COLOR="#cc7832">    </FONT><FONT FACE="Courier New">}</FONT></FONT>
+<FONT COLOR="#a9b7c6"><FONT FACE="Courier New">}</FONT></FONT></PRE><P ALIGN=LEFT STYLE="margin-bottom: 0cm">
+Hier im Beispiel wird die Verwendung der Interrupt Variante f&uuml;r
+Read und Write Zugang beschrieben, beachtet werden muss dass der TX
+Vector nicht verwendet werden darf, stattdessen muss der DRE Vector
+verwendet werden.</P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0cm"><BR>
 </P>
 </BODY>
