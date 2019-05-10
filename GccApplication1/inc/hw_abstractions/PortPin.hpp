@@ -83,7 +83,7 @@ namespace AVR {
         static inline void pinsOn() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().OUT;
-            Pval |= (Pins::pinValue | ...);
+            Pval |= (static_cast<mem_width >(Pins::pinValue) | ...);
         }
 
         template<typename... Pins>
@@ -91,7 +91,7 @@ namespace AVR {
         static inline void pinsDirIn() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().DIR;
-            Pval &= ~(Pins::pinValue | ...);
+            Pval &= ~(static_cast<mem_width >(Pins::pinValue) | ...);
         }
 
         template<typename... Pins>
@@ -123,7 +123,7 @@ namespace AVR {
         static inline void pinsOff() {
             using firstPin = typename utils::front<Pins...>::type;
             auto &Pval = firstPin::port::port().OUT;
-            Pval &= ~(Pins::pinValue | ...);
+            Pval &= ~(static_cast<mem_width >(Pins::pinValue) | ...);
         }
 
         template<typename P, mem_width num>

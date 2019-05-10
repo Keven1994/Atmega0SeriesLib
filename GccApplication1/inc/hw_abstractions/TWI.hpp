@@ -249,22 +249,26 @@ namespace AVR {
 
                 template<uint8_t Address, access dir>
                 struct ScopedTransaction {
-                    const bool startSuccess;
+                    bool startSuccess;
 
                     ScopedTransaction() : startSuccess(startTransaction<Address,dir>()){}
 
+                    void operator=(const ScopedTransaction& other){
+                        startSuccess = other.startSuccess;
+                    }
+
                     template<bool Dummy = true, typename T = std::enable_if_t<!TWIMaster::isReadOnly && dir == Write>>
-                    bool send(uint8_t Data){
+                    [[nodiscard]] bool send(uint8_t Data){
                         return transfer(Data);
                     }
 
                     template<bool Dummy = true, typename T = std::enable_if_t<!TWIMaster::isWriteOnly && dir == Read>>
-                    bool receive(uint8_t& Data){
+                    [[nodiscard]] bool receive(uint8_t& Data){
                         return  TWIMaster::receive<false>(Data);
                     }
 
                     template<bool Dummy = true, typename T = std::enable_if_t<!TWIMaster::isWriteOnly && dir == Read>>
-                    bool receiveLast(uint8_t& Data){
+                    [[nodiscard]] bool receiveLast(uint8_t& Data){
                         return  TWIMaster::receive<true>(Data);
                     }
 
@@ -286,6 +290,11 @@ namespace AVR {
                 }
 
             public:
+
+                template<bool dummy = true,typename T =  std::enable_if_t<dummy && TWIMaster::fifoEnabled>>
+                [[nodiscard]] static inline bool dataToSend(){
+                    return ! TWIMaster::fifoOut.empty();
+                }
 
                 template<uint8_t address,bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isReadOnly>>
                 static inline auto scopedWrite(){
@@ -352,6 +361,13 @@ namespace AVR {
 
                 }
 
+                [[nodiscard]] static inline bool writeComplete(){
+                    auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
+                    using statebits = typename TWIMaster::Status::type::special_bit;
+
+                    return statereg.areSet(statebits::Wif);
+                }
+
                 template<bool dummy = true, typename T = std::enable_if_t<dummy && !TWIMaster::fifoEnabled && !TWIMaster::isBlocking && ! TWIMaster::isWriteOnly>>
                 static inline uint8_t receive(uint8_t* Data, uint8_t size) {
                     uint8_t tmp;
@@ -389,14 +405,15 @@ namespace AVR {
                     Data[size-1] = TWIMaster::receive<true>();
                 }
 
-
-                template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::isBlocking>>
                 [[nodiscard]] static inline bool endTransaction() {
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
                     using statebits = typename TWIMaster::Status::type::special_bit;
 
                     if(statereg.areSet(statebits::Busstate_owner)){
                         stopTransaction();
+                        if constexpr(TWIMaster::fifoEnabled) {
+                            reset();
+                        }
                         return true;
                     }
                     return false;
@@ -452,8 +469,9 @@ namespace AVR {
                             TWIMaster::template doIfSet<txMethod>(TWIMaster::StatusBits::Wif);
                         } else {
                             if (statereg.areSet(statebits::Busstate_idle)) {
-
-                                if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
+                                typename TWIMaster::command tmp;
+                                if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                    TWIMaster::current = tmp;
                                     writeCondition();
                                 }
 
@@ -519,6 +537,7 @@ namespace AVR {
                             typename TWIMaster::command tmp;
                             if (TWIMaster::CommandStack.pop_front(tmp)) {
                                 TWIMaster::current = tmp;
+                                writeCondition();
                             }
 
                         }

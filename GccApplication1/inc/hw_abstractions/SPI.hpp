@@ -30,11 +30,22 @@ namespace AVR {
                 }
             }
 
+            template<bool dummy = true,typename T = std::enable_if_t<dummy && _SPI::fifoEnabled && !_SPI::isReadOnly>>
+            static inline void transferReceive(){
+                bit_width item;
+
+                if(_SPI::fifoOut.pop_front(item)){
+                    auto & data = reg<Data>().raw();
+                    _SPI::fifoIn.push_back(data);
+
+                    data = item;
+                }
+            }
+
             template<bool dummy = true,typename T = std::enable_if_t<dummy && _SPI::fifoEnabled && !_SPI::isWriteOnly>>
             static inline bool receive() {
                 return _SPI::fifoIn.push_back(reg<Data>().raw());
             }
-
 
 				protected:
 
@@ -52,12 +63,11 @@ namespace AVR {
 
                 static inline void init(){
                     if constexpr(_SPI::InterruptEnabled){
+
                         if constexpr (_SPI::isWriteOnly)
                             reg<InterruptControl>().set(InterruptControl::type::special_bit::Dreie);
-                        else if constexpr (_SPI::isReadOnly)
-                            reg<InterruptControl>().set(InterruptControl::type::special_bit::Rxcie);
                         else
-                            reg<InterruptControl>().set(InterruptControl::type::special_bit::Dreie, InterruptControl::type::special_bit::Rxcie);
+                            reg<InterruptControl>().set(InterruptControl::type::special_bit::Rxcie,InterruptControl::type::special_bit::Dreie);
                     }
                 }
 
@@ -88,40 +98,45 @@ namespace AVR {
                 return _SPI::fifoOut.size();
             }
 
-            ///////////////////Interrupthandlers
-            template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled>>
-            static inline void rxHandler(){
-                const auto c = reg<Data>.raw();
-                if constexpr (_SPI::FifoEnabled) {
-                    static_assert(std::is_same_v<typename accesstype::Adapter, External::Hal::NullProtocollAdapter>, "recvQueue is used, no need for PA");
-                    _SPI::fifoIn.push_back(c);
+            ///////////////////Interrupthandler
+            template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled && _SPI::fifoEnabled>>
+            static inline void intHandler(){
+
+                if constexpr (! _SPI::isReadOnly) {
+                    if(_SPI::fifoOut.empty()) reg<Data>().raw() = 0;
+                    else transfer();
+                } else {
+                    reg<Data>().raw() = 0;
                 }
-                else {
-                    static_assert(_SPI::fifoIn::value == 0);
+
+                static_assert(std::is_same_v<typename accesstype::Adapter, External::Hal::NullProtocollAdapter>, "recvQueue is used, no need for PA");
+                if constexpr (! _SPI::isWriteOnly)
+                    _SPI::fifoIn.push_back(reg<Data>().raw());
+            }
+
+            template<bool dummy = true, typename T = std::enable_if_t<_SPI::InterruptEnabled && !_SPI::fifoEnabled>>
+            static inline void intHandler(uint8_t data = 0){
+
+                if constexpr (! _SPI::isReadOnly) {
+                    transfer(data);
+                } else {
+                    transfer(0);
+                }
+
+                if constexpr(! _SPI::isWriteOnly) {
                     if constexpr(!std::is_same_v<typename accesstype::Adapter, External::Hal::NullProtocollAdapter>) {
-                        if (!accesstype::Adapter::process(c)) {
-                            if constexpr(Debug) {
+                        if (!accesstype::Adapter::process(reg<Data>().raw())) {
+
 #ifdef DBGOUT
-                                dbgout::put("input not handled by protocol adapter!");
-                                dbgout::flush();
+                            dbgout::put("input not handled by protocol adapter!\n");
+                            dbgout::flush();
 #endif
-                            }
+
                         }
-                    }
-                    else {
-                        static_assert(!dummy, "no recvQueue, no PA -> wrong configuration");
+                    } else {
+                        static_assert(!dummy, "no fifo, no PA -> wrong configuration");
                     }
                 }
-            }
-
-            template<bool dummy = true, typename T = std::enable_if_t<dummy && _SPI::InterruptEnabled && _SPI::fifoEnabled>>
-            static inline void txHandler(){
-                transfer();
-            }
-
-            template<bool dummy = true, typename T = std::enable_if_t<dummy && _SPI::InterruptEnabled && !_SPI::fifoEnabled>>
-            static inline void txHandler(const uint8_t data){
-                reg<Data>().raw() = data;
             }
 
             /////////////no fifo/not blocking transfer/receive methods
@@ -132,7 +147,7 @@ namespace AVR {
 
             template<bool dummy = true,typename T = std::enable_if_t<dummy && !_SPI::fifoEnabled && !_SPI::isBlocking && !_SPI::isWriteOnly>>
             [[nodiscard]] static inline bit_width receive() {
-                return reg<Data>().raw();
+                    return reg<Data>().raw();
             }
 
             //////////////blocking receive/transfer methods
@@ -176,17 +191,19 @@ namespace AVR {
             }
 
             template<bool dummy = true,typename T = std::enable_if_t<dummy && _SPI::fifoEnabled && !_SPI::isWriteOnly>>
-            static inline bool get(bit_width& item){
-                return _SPI::fifoIn.pop_front(item);
+            static inline auto& getInputFifo(){
+                return _SPI::fifoIn;
             }
-            static constexpr auto both = [](){rxHelp(); txHelp();};
+
             template<bool dummy = true,typename T = std::enable_if_t<dummy && _SPI::fifoEnabled && !_SPI::InterruptEnabled>>
             static inline void periodic(){
 
-                    if constexpr(_SPI::isReadOnly) doIfSet<rxHelp>(InterruptFlagBits::If);
+                    if constexpr(_SPI::isReadOnly){
+                        _SPI::fifoOut.push_back(0);
+                        doIfSet<_SPI::transferReceive>(InterruptFlagBits::If);}
                     else if constexpr(_SPI::isWriteOnly) doIfSet<txHelp>(InterruptFlagBits::If);
                     else {
-                        doIfSet<both>(InterruptFlagBits::If);
+                        doIfSet<_SPI::transferReceive>(InterruptFlagBits::If);
                     }
             }
 
@@ -267,7 +284,7 @@ namespace AVR {
 
                     details::_SPI<RW, accesstype,component, instance, bit_width>::init();
 
-                    AVR::port::pinsDirIn < typename alt::Mosi::pin0,typename alt::Sck::pin0>();
+                    AVR::port::pinsDirIn < typename alt::Mosi::pin0,typename alt::Sck::pin0, typename alt::Ss::pin0>();
                     alt::Miso::pin0::setOutput();
 					
 					SPISlave::template reg<typename SPISlave::ControlA>().set(Setting::Msb);
@@ -297,7 +314,7 @@ namespace AVR {
 			using defInst = defRC::getRessource_t<defComponent>;
 		}
 
-		template<typename accesstype = blocking,typename instance = details::defInst,typename RW = ReadWrite,bool msb = true, bool clockDouble = true, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
+		template<typename accesstype = blocking,typename instance = details::defInst,typename RW = ReadWrite,bool msb = true, bool clockDouble = false, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
 		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, typename bit_width = mem_width>
 		using SPIMaster = AVR::spi::details::SPIMaster<RW,accesstype, typename SPI::Component_t,typename instance::t1, typename instance::t2, SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
 		

@@ -56,6 +56,7 @@ namespace AVR {
     struct notBlocking<fifoUse,Interrupts<>> {
         static constexpr bool intEnabled = true;
 
+        using Adapter = External::Hal::NullProtocollAdapter;
         using fifo = fifoUse;
 
     };

@@ -62,46 +62,38 @@ using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource
 using res = RC::getRessource_t<spiRessource>; //get the ressource
 using twires = RC::getRessource_t<twiRessource>;
 using usartres = RC::getRessource_t<usartRessource>;
-using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrupts<> >,res, AVR::ReadWrite>; // put spi ressource in
-using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::WriteOnly>;
-using usart1 =AVR::usart::USART<AVR::notBlocking<AVR::NoFifo , AVR::Interrupts<testPA>>,usartres, AVR::ReadWrite>;
-using usart2 =AVR::usart::USART<AVR::blocking,usartres, AVR::ReadWrite>;
+//using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>; // put spi ressource in
 
 
+using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::NoFifo ,AVR::Interrupts<testPA> >,res, AVR::WriteOnly>;
+volatile uint8_t arr[12];
+volatile uint8_t n = 0;
 
-using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::NoFifo,AVR::NoInterrupts>,twires , AVR::ReadOnly>;
-
-volatile bool wasread = false;
-static inline void Callback (){
-    wasread=true;
-    uint8_t item;
-    //while(twi::getInputFifo().pop_front(item))
-        //AVR::dbgout::put(item);
+ISR(SPI0_INT_vect){
+    //arr[n++] = SPI0.DATA;
+    spi::txHandler(42);
+    //spi::getInputFifo().push_back(42);
+    PORTA.OUTTGL = 1 << 2;
 }
-static constexpr uint8_t size = 12;
-static uint8_t arr[size];
 
 int main() {
-    twi::init();
+
+    spi::init();
+    PORTA.DIR |= 1 <<2;
+    //spi::put('h');
 
     while(true){
 
-        uint8_t tmp = 0;
-        auto rd = twi::scopedRead<42>();
-        uint8_t data;
-        while(tmp != 11){
-            if(rd.receive(data))
-                arr[tmp++] = data;
-        }
+      //  spi::put('h');
+        //spi::put('e');
+        //spi::put('l');
+        //spi::put('l');
+        //spi::put('o');
 
-        while(!rd.receiveLast(data));
-        arr[tmp] = data;
-
-        AVR::delay<AVR::ms,200>();
 
     }
-
 }
+
 #else
 
 #include "MCUSelect.hpp"

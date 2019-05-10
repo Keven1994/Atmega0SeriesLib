@@ -16,6 +16,12 @@
 #define NoConstructors(x) x() = delete; x(const x&) = delete; x(x&&) = delete
 
 namespace utils {
+
+    static constexpr auto strlen(const char* str){
+        auto n = 0;
+        while(str[n++] != '\0');
+        return n-1;
+    }
 	
 	template<typename T1, typename T2>
 	struct tuple {
