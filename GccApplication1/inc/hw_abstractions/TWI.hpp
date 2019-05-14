@@ -860,9 +860,9 @@ namespace AVR {
             using defInst = typename defRC::getRessource<defComponent>::type;
         }
 
-        template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns,
-                bool smartMode = true, MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
-        using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, false, smartMode, timeOut>, bit_width>;
+        template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns
+                , MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
+        using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, false, true, timeOut>, bit_width>;
 
         template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns, typename bit_width = mem_width>
         using TWISlave = AVR::twi::details::TWISlave<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWISlaveSetting<fastModePlus, holdTime, sdaSetup>, bit_width>;
