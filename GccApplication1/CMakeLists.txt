@@ -24,6 +24,10 @@ set(AVRDUDE  avrdude)
 
 # Sets the compiler
 # Needs to come before the project function
+if(WIN32)
+set(IsWindows WIN32)
+endif()
+
 set(CMAKE_SYSTEM_NAME  Generic)
 set(CMAKE_CXX_COMPILER ${AVRCPP})
 set(CMAKE_C_COMPILER   ${AVRC})
@@ -90,22 +94,39 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 include_directories(${INC_PATH} ${LIB_INC_PATH})
 add_executable(${PROJECT_NAME} ${SRC_FILES} ${LIB_SRC_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}.elf")
+if(IsWindows)
 add_custom_target(atmega4809 COMMAND untitled ${DEVICEFILE_4809} ${HWFOLDER_4809}
         WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
+else()
+add_custom_target(atmega4809 COMMAND ./untitled ${DEVICEFILE_4809} ${HWFOLDER_4809}
+        WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
+endif()
 
-
+if(IsWindows)
 add_custom_target(atmega4808 COMMAND untitled "${DEVICEFILE_4808}" "${HWFOLDER_4808}"
         WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
-
+else()
+add_custom_target(atmega4808 COMMAND ./untitled "${DEVICEFILE_4808}" "${HWFOLDER_4808}"
+        WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe)
+endif()
 
 add_custom_target(hwfiles ALL DEPENDS atmega4808 atmega4809 )
 add_custom_target(hwfilesexe COMMAND make all
         WORKING_DIRECTORY ${PARSER_PATH}
         DEPENDS hwfilescmake
         )
+		
+if(IsWindows)
 add_custom_target(hwfilescmake COMMAND cmake -G "MinGW Makefiles" ./
         WORKING_DIRECTORY ${PARSER_PATH}
+
         )
+else() 
+add_custom_target(hwfilescmake COMMAND cmake -G "Unix Makefiles" ./
+        WORKING_DIRECTORY ${PARSER_PATH}
+
+        )
+endif()
 
 
 #Optional: after first Compile comment out
