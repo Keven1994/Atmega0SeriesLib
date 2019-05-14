@@ -30,10 +30,11 @@ Zunächst wird betrachtet wie die Ports oder auch spezifische Pins über die Lib
 using portA = AVR::port::Port<AVR::port::A>;
 using portC = AVR::port::Port<AVR::port::C>; # <1>
 using led1 = AVR::port::Pin<portA,2>;
-using led2 = typename portC::pins::pin3; # <2>
 using led3 = AVR::port::Pin<portA,3>;
 using led4 = AVR::port::Pin<portA,4>;
-using led5 = AVR::port::Pin<portA,5>; # <3>
+using led5 = AVR::port::Pin<portA,5>; # <2>
+
+using led2 = typename portC::pins::pin3; # <3>
 
 int main() {
 

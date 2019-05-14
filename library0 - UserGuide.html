@@ -531,10 +531,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 using portA = AVR::port::Port&lt;AVR::port::A&gt;;
 using portC = AVR::port::Port&lt;AVR::port::C&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
 using led1 = AVR::port::Pin&lt;portA,2&gt;;
-using led2 = typename portC::pins::pin3; <i class="conum" data-value="2"></i><b>(2)</b>
 using led3 = AVR::port::Pin&lt;portA,3&gt;;
 using led4 = AVR::port::Pin&lt;portA,4&gt;;
-using led5 = AVR::port::Pin&lt;portA,5&gt;; <i class="conum" data-value="3"></i><b>(3)</b>
+using led5 = AVR::port::Pin&lt;portA,5&gt;; <i class="conum" data-value="2"></i><b>(2)</b>
+
+using led2 = typename portC::pins::pin3; <i class="conum" data-value="3"></i><b>(3)</b>
 
 int main() {
 
@@ -1332,7 +1333,7 @@ int main() {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-14 12:43:42 +0200
+Last updated 2019-05-14 13:02:00 +0200
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

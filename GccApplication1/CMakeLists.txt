@@ -107,8 +107,9 @@ add_custom_target(hwfilescmake COMMAND cmake -G "MinGW Makefiles" ./
         WORKING_DIRECTORY ${PARSER_PATH}
         )
 
+
 #Optional: after first Compile comment out
-#add_dependencies(${PROJECT_NAME} hwfiles)
+add_dependencies(${PROJECT_NAME} hwfiles)
 
 # Compiling targets
 add_custom_target(strip ALL     ${AVRSTRIP} "${PROJECT_NAME}.elf" DEPENDS ${PROJECT_NAME})
