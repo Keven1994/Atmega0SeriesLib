@@ -21,10 +21,6 @@ namespace AVR {
             read, write
         };
 
-        struct blocking {
-        };
-        struct notBlocking {
-        };
         enum access {
             Read, Write
         };
@@ -72,9 +68,11 @@ namespace AVR {
 
             struct NoCommand{};
 
-            template<typename RW, typename accesstype, typename component, typename instance, typename bit_width, bool master>
+            template<typename RW, typename accesstype, typename component, typename instance, typename bit_width, bool master, auto& NackHandler>
             struct _TWI : protected AVR::details::Communication<RW, accesstype, bit_width> {
             protected:
+                static inline constexpr auto& nackhandle = NackHandler;
+
                 using command = std::conditional_t<!_TWI::fifoEnabled, NoCommand,
                         std::conditional_t<
                         _TWI::isReadOnly || _TWI::isWriteOnly,  std::conditional_t<_TWI::isReadOnly, Command<true,true> ,Command<true,false>>, Command<false>>>;
@@ -194,8 +192,8 @@ namespace AVR {
             };
 
 
-            template<typename RW, typename accesstype, typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-            class TWIMaster : public _TWI<RW, accesstype, component, instance, bit_width, true> {
+            template<typename RW, typename accesstype, typename component, typename instance, typename alt, typename Setting, typename bit_width , auto& nackhandle>
+            class TWIMaster : public _TWI<RW, accesstype, component, instance, bit_width, true, nackhandle> {
 
                 template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::fifoEnabled>>
                 static inline void writeCondition() {
@@ -205,11 +203,27 @@ namespace AVR {
                 template<uint8_t address>
                 static inline void writeCondition() {
                     TWIMaster::template reg<typename TWIMaster::Addr>().set(address << 1);
+                    if constexpr (TWIMaster::nackhandle != details::noop){
+                        while(! writeComplete()) {
+                            if(! slaveAcknowledged()) {
+                                stopTransaction();
+                                TWIMaster::nackhandle();
+                            }
+                        }
+                    }
                 }
 
                 template<uint8_t address>
                 static inline void readCondition() {
                     TWIMaster::template reg<typename TWIMaster::Addr>().set((address << 1) | TWI_ADDREN_bm);
+                    if constexpr (TWIMaster::nackhandle != details::noop){
+                        while(! writeComplete()) {
+                            if(! slaveAcknowledged()) {
+                                stopTransaction();
+                                TWIMaster::nackhandle();
+                            }
+                        }
+                    }
                 }
 
                 template<bool dummy = true, typename T = std::enable_if_t<dummy && TWIMaster::fifoEnabled>>
@@ -669,8 +683,8 @@ namespace AVR {
             };
 
 
-            template<typename RW, typename accesstype, typename component, typename instance, typename alt, typename Setting, typename bit_width = mem_width>
-            class TWISlave : public _TWI<RW, accesstype, component, instance, bit_width, true> {
+            template<typename RW, typename accesstype, typename component, typename instance, typename alt, typename Setting, typename bit_width , auto& nackhandle>
+            class TWISlave : public _TWI<RW, accesstype, component, instance, bit_width, true, nackhandle> {
 
             public:
 
@@ -860,12 +874,14 @@ namespace AVR {
             using defInst = typename defRC::getRessource<defComponent>::type;
         }
 
-        template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns
-                , MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
-        using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, false, true, timeOut>, bit_width>;
+        static constexpr auto& DefaultNackHandler = twi::details::noop;
 
-        template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns, typename bit_width = mem_width>
-        using TWISlave = AVR::twi::details::TWISlave<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWISlaveSetting<fastModePlus, holdTime, sdaSetup>, bit_width>;
+        template<typename accesstype = AVR::blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, auto& nackhandle = DefaultNackHandler, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns
+                , MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
+        using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, false, true, timeOut>, bit_width, nackhandle>;
+
+        template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite,auto& nackhandle = DefaultNackHandler, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns, typename bit_width = mem_width>
+        using TWISlave = AVR::twi::details::TWISlave<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWISlaveSetting<fastModePlus, holdTime, sdaSetup>, bit_width, nackhandle>;
 
     }
 }
