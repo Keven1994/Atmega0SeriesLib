@@ -64,12 +64,13 @@ using twires = RC::getRessource_t<twiRessource>;
 using usartres = RC::getRessource_t<usartRessource>;
 //using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>; // put spi ressource in
 bool b = true;
-static inline void nackHandler(){
+static inline bool nackHandler(){
     b=false;
+    return true;
 }
 
 using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::NoFifo ,AVR::Interrupts<testPA> >,res, AVR::WriteOnly>;
-using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite, nackHandler>;
+using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite>;
 
 volatile uint8_t arr[12];
 volatile uint8_t n = 0;

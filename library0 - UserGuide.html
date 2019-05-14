@@ -436,9 +436,39 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article">
+<body class="article toc2 toc-left">
 <div id="header">
 <h1>0 Series Library Userguide</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_programmierung">Programmierung</a></li>
+<li><a href="#_grundsätzliches">Grundsätzliches</a></li>
+<li><a href="#_basics">Basics</a></li>
+<li><a href="#_ressourcecontroller">Ressourcecontroller</a></li>
+<li><a href="#_eventsystem">Eventsystem</a></li>
+<li><a href="#_twi">TWI</a>
+<ul class="sectlevel2">
+<li><a href="#_beispielbehandlung_twi_address_nack">Beispielbehandlung TWI Address-NACK</a></li>
+<li><a href="#_lesen_mit_fifo_keine_interrupts">Lesen mit FiFo, keine Interrupts</a></li>
+<li><a href="#_schreiben_mit_fifo_keine_interrupts">Schreiben mit FiFo, keine Interrupts</a></li>
+<li><a href="#_lesen_nicht_blockierend_keine_interrupts_keine_fifo">Lesen nicht blockierend, keine Interrupts, keine FiFo</a></li>
+<li><a href="#_lesen_nicht_blockierend_scoped_variante">Lesen nicht blockierend, Scoped-Variante</a></li>
+<li><a href="#_schreiben_nicht_blockierend_scoped_variante">Schreiben nicht blockierend, Scoped-Variante</a></li>
+<li><a href="#_schreiben_nicht_blockierend_fifo_mit_interrupts">Schreiben nicht blockierend, FiFo mit Interrupts</a></li>
+<li><a href="#_lesen_nicht_blockierend_fifo_mit_interrupts">Lesen nicht blockierend, FiFo mit Interrupts</a></li>
+<li><a href="#_lesen_und_schreiben_nicht_blockierend_fifo_mit_interrupts">Lesen und schreiben nicht blockierend, FiFo mit Interrupts</a></li>
+</ul>
+</li>
+<li><a href="#_spi">SPI</a>
+<ul class="sectlevel2">
+<li><a href="#_schreiben_nicht_blockierend_fifo_ohne_interrupts">Schreiben, nicht blockierend, FiFo ohne Interrupts</a></li>
+<li><a href="#_schreiben_nicht_blockierend_fifo_mit_interrupts_2">Schreiben, nicht blockierend, FiFo mit Interrupts</a></li>
+</ul>
+</li>
+<li><a href="#_usart">USART</a></li>
+</ul>
+</div>
 </div>
 <div id="content">
 <div class="sect1">
@@ -495,32 +525,64 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-c++" data-lang="c++">#include "MCUSelect.hpp"
+<pre class="prettyprint highlight"><code data-lang="c++">#include "MCUSelect.hpp"
 #include "hw_abstractions/Delay.hpp"
 
 using portA = AVR::port::Port&lt;AVR::port::A&gt;;
-using portC = AVR::port::Port&lt;AVR::port::C&gt;;
+using portC = AVR::port::Port&lt;AVR::port::C&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
 using led1 = AVR::port::Pin&lt;portA,2&gt;;
-using led2 = typename portC::pins::pin3;
+using led2 = typename portC::pins::pin3; <i class="conum" data-value="2"></i><b>(2)</b>
 using led3 = AVR::port::Pin&lt;portA,3&gt;;
 using led4 = AVR::port::Pin&lt;portA,4&gt;;
-using led5 = AVR::port::Pin&lt;portA,5&gt;;
+using led5 = AVR::port::Pin&lt;portA,5&gt;; <i class="conum" data-value="3"></i><b>(3)</b>
 
 int main() {
 
-    portA::setDir&lt;AVR::port::Out&gt;();
-    led2::setOutput();
+    portA::setDir&lt;AVR::port::Out&gt;(); <i class="conum" data-value="4"></i><b>(4)</b>
+    led2::setOutput(); <i class="conum" data-value="5"></i><b>(5)</b>
     while(true){
         led1::toggle();
         if(led2::isOn())
             led3::toggle();
         led2::toggle();
-        AVR::port::pinsOutToggle&lt;led4,led5&gt;();
-        AVR::delay&lt;AVR::ms,500&gt;();
+        AVR::port::pinsOutToggle&lt;led4,led5&gt;(); <i class="conum" data-value="6"></i><b>(6)</b>
+        AVR::delay&lt;AVR::ms,500&gt;(); <i class="conum" data-value="7"></i><b>(7)</b>
     }
 
 }</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Portauswahl</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Pinauswahl</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Sichere Pinauswahl über den Port</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Pin auf Output setzen mit Port Funktion</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Pin auf Output setzen mit Pin Funktion</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Mehrere Pins mit freier Funktion togglen</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>Delay-Funktion</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Zunächst werden die Ports ausgewählt welche angesprochen werden sollen, hier in diesem Falle Port A und C. Sollte bei der Auswahl ein Compiler Fehler auftreten wurde ein nicht existenter Port ausgewählt (der Atmega4808 besitzt z.B. keinen Port B oder E obwohl es Defines dafür gibt). Der nächste Schritt ist die Auswahl von spezifischen Pins, dafür wird dem template-Alias der zuvor gewählte Port sowie die Pin Nummer angegeben. Hier muss darauf geachtet werden dass die spezifischen Pins NICHT auf Verfügbarkeit geprüft werden, um sicher zu gehen können die Pins auch aus dem Port entnommen werden (s.a. Led2), die hier enthaltenen Pins sind definitiv physikalisch vorhanden. Nachdem die Auswahl für Ports und/oder Pins getroffen wurden können auf diesen Operationen ausgeführt werden. Es könne sowohl auf den Ports als auch auf den Pins spezifische Operationen ausgeführt werden (z.B. toggle, on, off,setDir ….). Sollen auf mehreren Pins gleichzeitig Operationen ausgeführt werden, so können die freien Funktionen in AVR::port genutzt werden. Bei den freien Funktionen ist zu beachten, dass nur Pins des gleichen Ports übergeben werden können, verschiedene Ports lösen einen Compiler-Fehler aus. Die Port Klasse besitzt noch die Convenience-Methode „get“ um auf Register zuzugreifen, damit kann von außerhalb auf ein spezifisches Register (z.B. pin0ctrl) zugegriffen werden. Wenn möglich sollte diese Methode aber vermieden und vorhandene abstraktere Klassen-Methoden genutzt werden. Im obigen Beispiel findet sich die delay-Methode, diese wrappt die C _delay Methoden und rechnet je nach Einheit (us, ms, s) korrekt um. Des weiteren gibt es noch eine safeDelay-Methode, diese schaltet die Interrupts für die Dauer des wartens ab und funktioniert somit immer korrekt (sollten die Interrupts angeschaltet gewesen sein werden sie nach Ablauf des delays wieder aktiviert).</p>
@@ -535,53 +597,97 @@ int main() {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using twiInstance = AVR::rc::Instance&lt;
-        AVR::twi::TWI, // using ressource SPI
-        AVR::rc::Number&lt;0&gt;, //using instance '0'
-        AVR::portmux::PortMux&lt;0&gt;&gt;; // using portmux 0 alternative
+<pre class="prettyprint highlight"><code data-lang="C++">using twiInstance = AVR::rc::Instance&lt;
+        AVR::twi::TWI,
+        AVR::rc::Number&lt;0&gt;,
+        AVR::portmux::PortMux&lt;0&gt;&gt;;
 
 using usartInstance = AVR::rc::Instance&lt;
         AVR::usart::USART_Comp,
         AVR::rc::Number&lt;2&gt;,
-        AVR::portmux::PortMux&lt;0&gt;&gt;;
+        AVR::portmux::PortMux&lt;0&gt;&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
 
-using RC = AVR::rc::RessourceController&lt;twiInstance,usartInstance&gt;;
+using RC = AVR::rc::RessourceController&lt;twiInstance,usartInstance&gt;; <i class="conum" data-value="2"></i><b>(2)</b>
 
-using twiRessource = RC::getRessource_t&lt;twiRessource&gt;;
-using usartRessource = RC::getRessource_t&lt;usartRessource&gt;;
+using twiRessource = RC::getRessource_t&lt;twiInstance&gt;;
+using usartRessource = RC::getRessource_t&lt;usartInstance&gt;; <i class="conum" data-value="3"></i><b>(3)</b>
 
 using usart = AVR::usart::USART&lt;AVR::blocking,usartRessource&gt;;
 
-using twi = AVR::twi::TWIMaster&lt;AVR::blocking,twiRessource , AVR::ReadWrite&gt;;</code></pre>
+using twi = AVR::twi::TWIMaster&lt;AVR::blocking,twiRessource , AVR::ReadWrite&gt;; <i class="conum" data-value="4"></i><b>(4)</b></code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Auswahl der gewünschten Ressourcen Instanzauswahl</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Instanziieren des RessourceController mit den gewünschten Ressourcen</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Anfordern einer Ressource</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Übergeben einer Ressource</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst, diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART). Danach wird der RessourceController mit den zu benutzenden Instanzen belegt, danach kann mit der getRessource_t Klassen-Methode die Ressource angefordert werden. Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led&#8217;s oder sonstiges) so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using led1 = Pin&lt;PortA, 0&gt;;
+<pre class="prettyprint highlight"><code data-lang="C++">using led1 = Pin&lt;PortA, 0&gt;;
 using led2 = Pin&lt;PortA, 1&gt;;
 using led3 = Pin&lt;PortD, 6&gt;;
 
-using gRes = AVR::rc::GenericRessource&lt;led1,led2,led3&gt;;
+using gRes = AVR::rc::GenericRessource&lt;led1,led2,led3&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
 
-using RC = AVR::rc::RessourceController&lt;twiIntance,usartInstance,gRes &gt;;</code></pre>
+using RC = AVR::rc::RessourceController&lt;twiIntance,usartInstance,gRes &gt;; <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Instanziieren einer generischen Ressource</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Instanziieren des RessourceControllers mit der generischen Ressource</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Wenn alle Ressourcen mit dem RessourceController überprüft werden ist ein Konflikt der Ressourcen Belegung zur Compile-Zeit ausgeschlossen. Zu beachten ist allerdings dass bei den meisten Ressourcen wie z.B. TWI, USART und SPI alle Pins welche dort benutzt werden können auch geprüft werden. Sollte also z.B. MasterSPI als ReadOnly konfiguriert werden so wird logischerweise der Miso-Pin nicht benutzt, aber im RessourceController trotzdem geprüft.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using spiRessource = AVR::rc::Instance&lt;
+<pre class="prettyprint highlight"><code data-lang="C++">using spiRessource = AVR::rc::Instance&lt;
 AVR::spi::SPI,
 AVR::rc::Number&lt;0&gt;,
 AVR::portmux::PortMux&lt;0&gt;&gt;;
 
-using uncheckedSPI = AVR::rc::UncheckedRessource_t&lt;spiRessource&gt;;
-using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::Interrupts&lt;&gt; &gt;,uncheckedSPI , AVR::ReadOnly&gt;;</code></pre>
+using uncheckedSPI = AVR::rc::UncheckedRessource_t&lt;spiRessource&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
+using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::Interrupts&lt;&gt; &gt;,uncheckedSPI , AVR::ReadOnly&gt;; <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Instanziieren einer ungeprüften Ressource</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Übergabe der ungeprüften Ressource an SPI</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Sollte der besagte Pin trotzdem von einer anderen Ressource verwendet werden besteht die Möglichkeit eine Ressource von der Prüfung auszuschließen indem UncheckedRessource verwendet wird.</p>
@@ -592,24 +698,104 @@ using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,A
 <h2 id="_eventsystem">Eventsystem</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Das Eventsystem der 0 Serie ermöglicht Peripherie Abhängige Funktionalitäten mit deren Hilfe die Peripherie ohne Interrupts Synchron und Asynchron kommunizieren kann. Das Eventsystem kann nur so konfiguriert werden dass je Kanal ein Generator läuft und dieser Kanal jeweils von beliebig vielen Users abgehört werden kann, die einzelnen Funktionen der Users sowie das Verhalten der Generatoren müssen vor Benutzung nachgelesen werden. Da die Konfigurationsmöglichkeiten beschränkt sind fällt die Schnittstelle entsprechend Schmal aus.</p>
+<p>Das Eventsystem der 0 Serie ermöglicht Peripherie Abhängige Funktionalitäten mit deren Hilfe die Peripherie ohne Interrupts Synchron und Asynchron miteinander kommunizieren kann. Das Eventsystem kann nur so konfiguriert werden dass je Kanal ein Generator läuft und dieser Kanal jeweils von beliebig vielen Users abgehört werden kann. Das Eventsystem ist hauptsächlich dazu gedacht Interrupts und den damit verbundenen Overhead zu vermeiden.</p>
+</div>
+<div class="ulist">
+<div class="title">Generatoren:</div>
+<ul>
+<li>
+<p>Je Kanal kann ein Generator eingeschaltet werden, diese haben bestimmte Bedingungen um Events auszulösen, z.B. löst der SPI-Generator immer zum Master-Takt ein Event aus.</p>
+</li>
+<li>
+<p>Beachtet werden müssen hier auch die Constraints, Wenn z.B. ein PortPin als Generator festgelegt wird, soll ein Event ausgelöst werden bei einem High-Pegel, dazu muss aber der Pegel für mindestens einen Taktzyklus Stabil sein.</p>
+</li>
+<li>
+<p>Des weiteren muss auch die Eventlänge beachtet werden, ein Generator kann ein Event z.B. als Pulse oder auch als Level ausgeben (hat wiederum Auswirkungen auf den User).</p>
+</li>
+<li>
+<p>Die Bedingungen, die Eventlänge sowie die Constraints müssen vor der Verwendung im Manual nachgelesen werden.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Es können auch Software-Events generiert werden (immer Synchron als Strobe).
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<div class="title">User:</div>
+<ul>
+<li>
+<p>Je Kanal können beliebig viele User registriert werden, die Benutzer reagieren dann auf die Events welche von dem Generator erzeugt werden.</p>
+</li>
+<li>
+<p>Wenn z.B. ein Pin als User gewählt wird, so wird das Event auf den Pin abgebildet, also falls ein Event generiert wird, so ist der Pegel High, sonst Low (beachte Eventlänge).</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Wichtig ist zu beachten ob die Events die der Generator erzeugt Synchron oder Asynchron sind, dies muss im Manual nachgelesen werden.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using ch0 = AVR::eventsystem::Channel&lt;0&gt;;
-using ch0_gen = typename ch0::generators::generals::spi0_sck;
+<pre class="prettyprint highlight"><code data-lang="C++">using ch0 = AVR::eventsystem::Channel&lt;0&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
+using ch0_gen = typename ch0::generators::generals::spi0_sck; <i class="conum" data-value="2"></i><b>(2)</b>
 using user0 = typename ch0::users::evtca0;
-using user1 = typename ch0::users::evtcb0;
+using user1 = typename ch0::users::evtcb0; <i class="conum" data-value="3"></i><b>(3)</b>
 
 int main() {
-    ch0::template registerListener&lt;user0,user1&gt;();
-    ch0::template setGenerator&lt;ch0_gen &gt;();
-    ch0::softwareEvent();
+    ch0::template registerListener&lt;user0,user1&gt;(); <i class="conum" data-value="4"></i><b>(4)</b>
+    ch0::template setGenerator&lt;ch0_gen &gt;(); <i class="conum" data-value="5"></i><b>(5)</b>
+    ch0::softwareEvent(); <i class="conum" data-value="6"></i><b>(6)</b>
 }</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Kanalauswahl</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Generatorauwahl</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Userauswahl</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>User auf Kanal registrieren</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Generator an Kanal zuweisen</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Software-Event auslösen</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>Zunächst wird der Kanal ausgewählt der Benutzt werden soll (Kanal 0- maximal 8), sollte hier ein ungültiger Kanal gewählt werden wird das Programm nicht kompilieren. Als nächstes wird der Generator und der/die Benutzer ausgewählt. Dann werden die Benutzer auf den Kanal eingestellt und der Generator wird für den Kanal eingestellt. Das Eventsystem ermöglicht des Weiteren das Auslösen von Software-Events, dies wird mir der entsprechenden Funktion ermöglicht.</p>
+<p>Zunächst wird der Kanal ausgewählt welcher benutzt werden soll (Kanal 0- maximal 8), sollte hier ein ungültiger Kanal gewählt werden wird das Programm nicht kompilieren. Als nächstes wird der Generator und der/die Benutzer ausgewählt. Dann werden die Benutzer auf den Kanal eingestellt und der Generator wird für den Kanal eingestellt. Das Eventsystem ermöglicht des Weiteren das Auslösen von Software-Events, dies wird mir der entsprechenden Funktion ermöglicht.</p>
 </div>
 </div>
 </div>
@@ -636,25 +822,45 @@ Es wird nicht kontrolliert ob der Slave die Adresse bestätigt hat ,dieser Fall 
 <h3 id="_beispielbehandlung_twi_address_nack">Beispielbehandlung TWI Address-NACK</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">auto rd = twi::scopedRead&lt;43&gt;();
+<pre class="prettyprint highlight"><code data-lang="C++">auto rd = twi::scopedRead&lt;43&gt;();
 
-while(! twi::writeComplete()) {
-    while(! twi::slaveAcknowledged()) {
-        while (!twi::endTransaction());
-        rd = twi::scopedRead&lt;43&gt;();
+while(! twi::writeComplete()) { <i class="conum" data-value="1"></i><b>(1)</b>
+    while(! twi::slaveAcknowledged()) { <i class="conum" data-value="2"></i><b>(2)</b>
+        while (!twi::endTransaction());  <i class="conum" data-value="3"></i><b>(3)</b>
+        rd = twi::scopedRead&lt;43&gt;(); <i class="conum" data-value="4"></i><b>(4)</b>
     }
 }</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Warten auf Beendigung der Start-Condition</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Acknowledgment abfragen</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Stop-Condition auslösen</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Neuer Versuch starten</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>Hier wird zuerst effektiv auf das Beenden der Start-Condition gewartet, danach wird eine Stop-Condition ausgelöst damit die Start Condition wiederholt werden kann. Die Behandlung besteht hier darin es solange zu versuchen bis der Slave bestätigt, andere Behandlungsmethoden sind z.B. das versuchen einer anderen Adresse oder eine andere Programm-Routine auszuführen.</p>
+<p>Hier wird außerhalb der Schnittstelle zuerst effektiv auf das Beenden der Start-Condition gewartet, danach wird eine Stop-Condition ausgelöst damit die Start-Condition wiederholt werden kann. Die Behandlung besteht hier darin es solange zu versuchen bis der Slave bestätigt, andere Behandlungsmethoden sind z.B. das versuchen einer anderen Adresse oder eine andere Programm-Routine auszuführen. Eine weitere Möglichkeit ist der Schnittstelle als 4. Parameter einen Handler in form eines lambda oder einer Funktion mitzugeben, per Default Parameter ist keiner festgelegt ('AVR::DefaultNackHandler'). Intern wird nach der Start-Condition gewartet bis die Adresse geschrieben wurde und der Slave geantwortet hat, sollte hier ein NACK festgestellt werden so wird der NackHandler so lange ausgeführt bis ein ACK erhalten wurde oder der Handler ein true zurückgibt (z.B. könnte hier Punk 3 und 4 als lambda und return false an die TWI-Schnittstelle übergeben werden).</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_lesen_mit_fifo_keine_interrupts">Lesen mit FiFo, keine Interrupts</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::NoInterrupts&gt;,twires , AVR::ReadOnly&gt;;
+<pre class="prettyprint highlight"><code data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::NoInterrupts&gt;,twires , AVR::ReadOnly&gt;;
 
 volatile bool wasread = false;
 
@@ -663,15 +869,15 @@ static inline void Callback (){
     uint8_t item;
     while(twi::getInputFifo().pop_front(item))
         AVR::dbgout::put(item);
-}
+} <i class="conum" data-value="1"></i><b>(1)</b>
 
 int main() {
-    twi::init&lt;100000&gt;();
+    twi::init&lt;100000&gt;(); <i class="conum" data-value="2"></i><b>(2)</b>
     AVR::dbgout::init();
     while(true){
-        twi::get&lt;42,Callback&gt;(12);
+        twi::get&lt;42,Callback&gt;(12); <i class="conum" data-value="3"></i><b>(3)</b>
         while(!wasread)
-            twi::periodic();
+            twi::periodic(); <i class="conum" data-value="4"></i><b>(4)</b>
         AVR::dbgout::flush();
         AVR::delay&lt;AVR::ms,200&gt;();
         wasread = false;
@@ -679,15 +885,35 @@ int main() {
 }</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Definition des Read-Callbacks</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Initialisieren der TWI-Schnittstelle mit 100 KHZ-Frequenz</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Lese-Anforderung mit Callback</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Periodic Aufruf</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>Dieses Beispiel zeigt die Konfiguration der Schnittstelle als nicht blockierend, Readonly und Fifo Benutzend und ohne Interrupts, bei der TWI Schnittstelle wurde auf eine nicht blockierende Variante ohne FiFo verzichtet, da diese Version mangels Abstraktion zu fehleranfällig wäre. Die get Methode wird mit den template Parametern der Addresse und einer Callback Funktion (oder auch lambda) versehen, als Parameter wird die Anzahl der zu lesenden Bytes übergeben. Ohne Interrupts muss in der Schleife periodic aufgerufen werden, sonst werden weder Daten empfangen noch gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und der Benutzer kann festlegen was passieren soll (sinnvoll ist auf jedenfall die FiFo zu leeren wie im Beispiel).</p>
+<p>Dieses Beispiel zeigt die Konfiguration der Schnittstelle als nicht blockierend, Readonly, mit Fifo und ohne Interrupts, bei der TWI Schnittstelle wurde auf eine nicht blockierende Variante ohne FiFo verzichtet, da diese Version mangels Abstraktion zu fehleranfällig wäre. Die get Methode wird mit den template Parametern der Addresse und einer Callback Funktion (oder auch lambda) versehen, als Parameter wird die Anzahl der zu lesenden Bytes übergeben. Ohne Interrupts muss in der Schleife periodic aufgerufen werden, sonst werden weder Daten empfangen noch gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und der Benutzer kann festlegen was passieren soll (sinnvoll ist auf jedenfall die FiFo zu leeren wie im Beispiel).</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_schreiben_mit_fifo_keine_interrupts">Schreiben mit FiFo, keine Interrupts</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">static constexpr const char* hello = "Hello Slave";
+<pre class="prettyprint highlight"><code data-lang="C++">static constexpr const char* hello = "Hello Slave";
 
 int main() {
     twi::init();
@@ -696,13 +922,21 @@ int main() {
 
     while(true){
         twi::put&lt;42&gt;((uint8_t*)hello,len);
-            while( twi::dataToSend())
+            while( twi::dataToSend()) <i class="conum" data-value="1"></i><b>(1)</b>
                 twi::periodic();
 
         AVR::delay&lt;AVR::ms,200&gt;();
     }
 }</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Überprüfen ob in der Fifo nicht gesendete Daten sind</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Hier im Beispiel wird die Verwendung des Schreibens gezeigt, hier wird solange periodic aufgerufen bis keine Daten zum Schreiben mehr vorhanden sind.</p>
@@ -712,17 +946,17 @@ int main() {
 <h3 id="_lesen_nicht_blockierend_keine_interrupts_keine_fifo">Lesen nicht blockierend, keine Interrupts, keine FiFo</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::NoFifo,AVR::NoInterrupts&gt;,twires , AVR::ReadOnly&gt;;
+<pre class="prettyprint highlight"><code data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::NoFifo,AVR::NoInterrupts&gt;,twires , AVR::ReadOnly&gt;;
 static constexpr uint8_t size = 12;
 static uint8_t arr[size];
 
 int main() {
     twi::init();
     while(true){
-        while(!twi::startTransaction&lt;42,AVR::twi::access::Read&gt;());
+        while(!twi::startTransaction&lt;42,AVR::twi::access::Read&gt;()); <i class="conum" data-value="1"></i><b>(1)</b>
         uint8_t tmp = 0;
         while(tmp != size){
-            tmp += twi::receive(arr,size-tmp);
+            tmp += twi::receive(arr,size-tmp); <i class="conum" data-value="2"></i><b>(2)</b>
         }
 
         AVR::delay&lt;AVR::ms,200&gt;();
@@ -731,30 +965,58 @@ int main() {
 }</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Auslösen der Start-Condition für lesen</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Lesen mit Rückgabe der gelesenen Bytes</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>wird keine FiFo genutzt dann wird von der receive Methode die Anzahl gelesener Bytes zurückgegeben (bei einem einzelnen Lesevorgang ein Boolean ob ein Byte gelesen wurde), logischerweise muss der Anwender ohne FiFo eigene Maßnahmen treffen um entsprechend viele Bytes zu lesen (siehe Beispiel code). Auch das Auslösen der Start – sowie StopCondition müssen dann manuell eingepflegt werden, Ausnahme betrifft das lesen, hier wird die stopCondition mit dem lesen des letzen Bytes austomatisch ausgeführt.</p>
+<p>wird keine FiFo genutzt dann wird von der receive Methode die Anzahl gelesener Bytes zurückgegeben (bei einem einzelnen Lesevorgang ein Boolean ob ein Byte gelesen wurde), logischerweise muss der Anwender ohne FiFo eigene Maßnahmen treffen um entsprechend viele Bytes zu lesen (siehe Beispiel code). Auch das Auslösen der Start – sowie StopCondition müssen dann manuell eingepflegt werden, Ausnahme betrifft das lesen, hier wird die stop-Condition mit dem lesen des letzen Bytes austomatisch ausgeführt.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_lesen_nicht_blockierend_scoped_variante">Lesen nicht blockierend, Scoped-Variante</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">static constexpr uint8_t size = 12;
+<pre class="prettyprint highlight"><code data-lang="C++">static constexpr uint8_t size = 12;
 static uint8_t arr[size];
 int main() {
     twi::init();
     while(true){
         uint8_t tmp = 0;
-        auto rd = twi::scopedRead&lt;42&gt;();
+        auto rd = twi::scopedRead&lt;42&gt;(); <i class="conum" data-value="1"></i><b>(1)</b>
         uint8_t data;
         while(tmp != 11){
-            if(rd.receive(data))
+            if(rd.receive(data)) <i class="conum" data-value="2"></i><b>(2)</b>
                 arr[tmp++] = data;
         }
-        while(!rd.receiveLast(data));
+        while(!rd.receiveLast(data)); <i class="conum" data-value="3"></i><b>(3)</b>
         arr[tmp] = data;
 }</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Erzeugen einer Scoped-Transaktion</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Lesen eines Bytes</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Lesen des Letzten Bytes</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Alternativ können bei nicht verwenden der nicht blockierenden NoFifo Varianten auch Scoped Varianten genutzt werden, somit muss sich nicht mehr explizit um die Start-Stop Conditions gekümmert werden, auch hier gilt die Ausnahme des Lesens (siehe Beispiel).</p>
@@ -764,7 +1026,7 @@ int main() {
 <h3 id="_schreiben_nicht_blockierend_scoped_variante">Schreiben nicht blockierend, Scoped-Variante</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">static constexpr const char* hello = "Hello Slave";
+<pre class="prettyprint highlight"><code data-lang="C++">static constexpr const char* hello = "Hello Slave";
 
 int main() {
     twi::init();
@@ -791,11 +1053,11 @@ int main() {
 <h3 id="_schreiben_nicht_blockierend_fifo_mit_interrupts">Schreiben nicht blockierend, FiFo mit Interrupts</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">static constexpr const char* hello = "Hello Slave";
+<pre class="prettyprint highlight"><code data-lang="C++">static constexpr const char* hello = "Hello Slave";
 using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::WriteOnly&gt;;
 
-ISR(TWI0_TWIM_vect){
-    twi::intHandler();
+ISR(TWI0_TWIM_vect){ <i class="conum" data-value="1"></i><b>(1)</b>
+    twi::intHandler(); <i class="conum" data-value="2"></i><b>(2)</b>
 }
 
 int main() {
@@ -809,6 +1071,18 @@ int main() {
 }</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Definition des entsprechenden Interrupt-Vektors</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Aufruf des Interrupt-Handlers</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Diese Interrupt gesteuerte Version wird im Intervall von 200 ms den String Hello Slave an den Slave mit der Addresse 42 senden.</p>
 </div>
@@ -817,7 +1091,7 @@ int main() {
 <h3 id="_lesen_nicht_blockierend_fifo_mit_interrupts">Lesen nicht blockierend, FiFo mit Interrupts</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::ReadOnly&gt;;
+<pre class="prettyprint highlight"><code data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::ReadOnly&gt;;
 
 volatile bool wasread = false;
 
@@ -838,13 +1112,21 @@ int main() {
     while(true){
         twi::get&lt;42,Callback&gt;(12);
         while(!wasread)
-            ;
+            ; <i class="conum" data-value="1"></i><b>(1)</b>
         AVR::dbgout::flush();
         AVR::delay&lt;AVR::ms,200&gt;();
         wasread = false;
     }
 }</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Kein Periodic da Interruptgesteuert</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Diese Version erhält vom Slave mit der Addresse 42 je Iteration 12 Datenbytes, nachdem diese gelesen wurden wird der Callback ausgeführt (in diesem Falle werden die Datenbytes über die Debug-Schnittstelle an den PC gesendet → nur 4808 verfügbar und die innere While-Schleife der main Methode unterbrochen).</p>
@@ -854,7 +1136,7 @@ int main() {
 <h3 id="_lesen_und_schreiben_nicht_blockierend_fifo_mit_interrupts">Lesen und schreiben nicht blockierend, FiFo mit Interrupts</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::ReadWrite&gt;;
+<pre class="prettyprint highlight"><code data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::ReadWrite&gt;;
 
 ISR(TWI0_TWIM_vect){
     twi::intHandler();
@@ -872,16 +1154,28 @@ int main() {
     twi::init();
     AVR::dbgout::init();
     while(true){
-        twi::get&lt;42,Callback&gt;(12);
+        twi::get&lt;42,Callback&gt;(12); <i class="conum" data-value="1"></i><b>(1)</b>
         while(!wasread)
             ;
         AVR::dbgout::flush();
-        twi::put&lt;42&gt;('H');
+        twi::put&lt;42&gt;('H'); <i class="conum" data-value="2"></i><b>(2)</b>
         AVR::delay&lt;AVR::ms,200&gt;();
         wasread = false;
     }
 }</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Lesen von 12 Bytes</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Schreiben eines Bytes</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Als abschließendes Beispiel wird hier noch eine kombinierte Version gezeigt (lesen und Schreiben).</p>
@@ -893,13 +1187,13 @@ int main() {
 <h2 id="_spi">SPI</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Das SPI-Interface ist ähnlich gestaltet wie bei TWI, mit der Ausnahme dass hier in keinem Fall auf start- oder stop Conditions oder der gleichen geachtet werden muss. Weiterhin wird auch ein Interrupthandler für die Benutzung ohne Fifo und der Slave Modus zur Verfügung gestellt. Hier gibt es keine Option in der init Methode die Frequenz einzustellen, dies geschieht über die Prescaler-Option während der Schnittstellen-Konfiguration.</p>
+<p>Das SPI-Interface ist ähnlich gestaltet wie bei TWI, mit der Ausnahme dass hier in keinem Fall auf start- oder stop-Conditions oder der gleichen geachtet werden muss. Weiterhin wird auch ein Interrupthandler für die Benutzung ohne Fifo und der Slave Modus zur Verfügung gestellt. Hier gibt es keine Option in der init Methode die Frequenz einzustellen, dies geschieht über die Prescaler-Option während der Schnittstellen-Konfiguration.</p>
 </div>
 <div class="sect2">
 <h3 id="_schreiben_nicht_blockierend_fifo_ohne_interrupts">Schreiben, nicht blockierend, FiFo ohne Interrupts</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::NoInterrupts &gt;,res, AVR::ReadWrite&gt;;
+<pre class="prettyprint highlight"><code data-lang="C++">using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::NoInterrupts &gt;,res, AVR::ReadWrite&gt;;
 
 int main() {
     spi::init();
@@ -940,7 +1234,7 @@ Die Nicht blockierende Variante ohne Interrupts lässt sich ebenso verwenden wie
 <h3 id="_schreiben_nicht_blockierend_fifo_mit_interrupts_2">Schreiben, nicht blockierend, FiFo mit Interrupts</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::Interrupts&lt;&gt; &gt;,res, AVR::ReadWrite&gt;;
+<pre class="prettyprint highlight"><code data-lang="C++">using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::Interrupts&lt;&gt; &gt;,res, AVR::ReadWrite&gt;;
 
 ISR(SPI0_INT_vect){
     spi::intHandler();
@@ -974,27 +1268,35 @@ int main() {
 <h2 id="_usart">USART</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Die USART Schnittstelle lässt sich im Grunde genauso bedienen wie SPI und TWI.
-.Hier müssen besonders 2 Dinge beachtet werden:
-* Baudrate: Hier ist es essentiell wichtig dass vor allem der F_CPU Wert stimmt und das eine zu dem Ziel-Gerät passende Baudrate eingestellt ist (default 115200).
-* Besonderheit Interrupts: Hier gibt es 2 Interrupt Vectoren (der TX-Vector wird nicht beachtet) und deswegen auch 2 Interrupt-Handler (tx/rxHandler).</p>
+<p>Die USART Schnittstelle lässt sich im Grunde genauso bedienen wie SPI und TWI.</p>
+</div>
+<div class="ulist">
+<div class="title">Hier müssen besonders 2 Dinge beachtet werden:</div>
+<ul>
+<li>
+<p>Baudrate: Hier ist es essentiell wichtig dass vor allem der F_CPU Wert stimmt und das eine zu dem Ziel-Gerät passende Baudrate eingestellt ist (default 115200).</p>
+</li>
+<li>
+<p>Besonderheit Interrupts: Hier gibt es 2 Interrupt Vectoren (der TX-Vector wird nicht beachtet) und deswegen auch 2 Interrupt-Handler (tx/rxHandler).</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>Für den Atmega4808 ist ein Debug-Interface in der Library enthalten (AVR::dbgout → include Datei = inc/Boards/CuriosityNanoIOT.hpp), mit diesem kann für das IoT-Devboard von Microchip über das USB-Interface bequem kommuniziert werden, dabei ist zu beachten das dieses blockierend arbeitet und USART2 benutzt.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-C++" data-lang="C++">using usart =AVR::usart::USART&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;, AVR::Interrupts&lt;&gt;&gt;,usartres, AVR::ReadWrite&gt;;
+<pre class="prettyprint highlight"><code data-lang="C++">using usart =AVR::usart::USART&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;, AVR::Interrupts&lt;&gt;&gt;,usartres, AVR::ReadWrite&gt;;
 
 ISR(USART2_DRE_vect){
     usart::txHandler();
-}
+} <i class="conum" data-value="1"></i><b>(1)</b>
 ISR(USART2_RXC_vect){
     usart::rxHandler();
-}
+} <i class="conum" data-value="2"></i><b>(2)</b>
 
 int main() {
-    usart::init&lt;115200&gt;();
+    usart::init&lt;115200&gt;(); <i class="conum" data-value="3"></i><b>(3)</b>
     while(true){
         usart::put('h');
         usart::put('e');
@@ -1006,6 +1308,22 @@ int main() {
 }</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Transfer Vektor (DRE)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Receive Vektor (TXC)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Initialisierung der Schnittstelle mit 115,2 KHZ-Baudrate</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Hier im Beispiel wird die Verwendung der Interrupt Variante für Read und Write Zugang beschrieben, beachtet werden muss dass der TX Vector nicht verwendet werden darf, stattdessen muss der DRE Vector verwendet werden.</p>
 </div>
@@ -1014,8 +1332,10 @@ int main() {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-12 14:12:26 +0200
+Last updated 2019-05-14 12:43:42 +0200
 </div>
 </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js"></script>
 </body>
 </html>

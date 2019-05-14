@@ -1,5 +1,7 @@
 = 0 Series Library Userguide
 :icons: font
+:source-highlighter: prettify
+:toc: left
 
 == Programmierung
 
@@ -26,28 +28,35 @@ Zunächst wird betrachtet wie die Ports oder auch spezifische Pins über die Lib
 #include "hw_abstractions/Delay.hpp"
 
 using portA = AVR::port::Port<AVR::port::A>;
-using portC = AVR::port::Port<AVR::port::C>;
+using portC = AVR::port::Port<AVR::port::C>; # <1>
 using led1 = AVR::port::Pin<portA,2>;
-using led2 = typename portC::pins::pin3;
+using led2 = typename portC::pins::pin3; # <2>
 using led3 = AVR::port::Pin<portA,3>;
 using led4 = AVR::port::Pin<portA,4>;
-using led5 = AVR::port::Pin<portA,5>;
+using led5 = AVR::port::Pin<portA,5>; # <3>
 
 int main() {
 
-    portA::setDir<AVR::port::Out>();
-    led2::setOutput();
+    portA::setDir<AVR::port::Out>(); # <4>
+    led2::setOutput(); # <5>
     while(true){
         led1::toggle();
         if(led2::isOn())
             led3::toggle();
         led2::toggle();
-        AVR::port::pinsOutToggle<led4,led5>();
-        AVR::delay<AVR::ms,500>();
+        AVR::port::pinsOutToggle<led4,led5>(); # <6>
+        AVR::delay<AVR::ms,500>(); # <7>
     }
 	
 }
 ----
+<1> Portauswahl
+<2> Pinauswahl
+<3> Sichere Pinauswahl über den Port
+<4> Pin auf Output setzen mit Port Funktion
+<5> Pin auf Output setzen mit Pin Funktion
+<6> Mehrere Pins mit freier Funktion togglen
+<7> Delay-Funktion
 
 Zunächst werden die Ports ausgewählt welche angesprochen werden sollen, hier in diesem Falle Port A und C. Sollte bei der Auswahl ein Compiler Fehler auftreten wurde ein nicht existenter Port ausgewählt (der Atmega4808 besitzt z.B. keinen Port B oder E obwohl es Defines dafür gibt). Der nächste Schritt ist die Auswahl von spezifischen Pins, dafür wird dem template-Alias der zuvor gewählte Port sowie die Pin Nummer angegeben. Hier muss darauf geachtet werden dass die spezifischen Pins NICHT auf Verfügbarkeit geprüft werden, um sicher zu gehen können die Pins auch aus dem Port entnommen werden (s.a. Led2), die hier enthaltenen Pins sind definitiv physikalisch vorhanden. Nachdem die Auswahl für Ports und/oder Pins getroffen wurden können auf diesen Operationen ausgeführt werden. Es könne sowohl auf den Ports als auch auf den Pins spezifische Operationen ausgeführt werden (z.B. toggle, on, off,setDir ….). Sollen auf mehreren Pins gleichzeitig Operationen ausgeführt werden, so können die freien Funktionen in AVR::port genutzt werden. Bei den freien Funktionen ist zu beachten, dass nur Pins des gleichen Ports übergeben werden können, verschiedene Ports lösen einen Compiler-Fehler aus. Die Port Klasse besitzt noch die Convenience-Methode „get“ um auf Register zuzugreifen, damit kann von außerhalb auf ein spezifisches Register (z.B. pin0ctrl) zugegriffen werden. Wenn möglich sollte diese Methode aber vermieden und vorhandene abstraktere Klassen-Methoden genutzt werden. Im obigen Beispiel findet sich die delay-Methode, diese wrappt die C _delay Methoden und rechnet je nach Einheit (us, ms, s) korrekt um. Des weiteren gibt es noch eine safeDelay-Methode, diese schaltet die Interrupts für die Dauer des wartens ab und funktioniert somit immer korrekt (sollten die Interrupts angeschaltet gewesen sein werden sie nach Ablauf des delays wieder aktiviert).
 
@@ -58,24 +67,28 @@ Die Library stellt eine Klasse zur Verfügung mit welcher die Ressourcen auf ihr
 [source,C++]
 ----
 using twiInstance = AVR::rc::Instance<
-        AVR::twi::TWI, // using ressource SPI
-        AVR::rc::Number<0>, //using instance '0'
-        AVR::portmux::PortMux<0>>; // using portmux 0 alternative
+        AVR::twi::TWI,
+        AVR::rc::Number<0>,
+        AVR::portmux::PortMux<0>>;
 
 using usartInstance = AVR::rc::Instance<
         AVR::usart::USART_Comp, 
         AVR::rc::Number<2>, 
-        AVR::portmux::PortMux<0>>; 
+        AVR::portmux::PortMux<0>>; # <1>
 
-using RC = AVR::rc::RessourceController<twiInstance,usartInstance>; 
+using RC = AVR::rc::RessourceController<twiInstance,usartInstance>; # <2>
 
-using twiRessource = RC::getRessource_t<twiRessource>;
-using usartRessource = RC::getRessource_t<usartRessource>;
+using twiRessource = RC::getRessource_t<twiInstance>;
+using usartRessource = RC::getRessource_t<usartInstance>; # <3>
 
 using usart = AVR::usart::USART<AVR::blocking,usartRessource>;
 
-using twi = AVR::twi::TWIMaster<AVR::blocking,twiRessource , AVR::ReadWrite>;
+using twi = AVR::twi::TWIMaster<AVR::blocking,twiRessource , AVR::ReadWrite>; # <4>
 ----
+<1> Auswahl der gewünschten Ressourcen Instanzauswahl
+<2> Instanziieren des RessourceController mit den gewünschten Ressourcen
+<3> Anfordern einer Ressource
+<4> Übergeben einer Ressource
 
 Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst, diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART). Danach wird der RessourceController mit den zu benutzenden Instanzen belegt, danach kann mit der getRessource_t Klassen-Methode die Ressource angefordert werden. Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led's oder sonstiges) so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).
 
@@ -85,10 +98,12 @@ using led1 = Pin<PortA, 0>;
 using led2 = Pin<PortA, 1>;
 using led3 = Pin<PortD, 6>;
 
-using gRes = AVR::rc::GenericRessource<led1,led2,led3>;
+using gRes = AVR::rc::GenericRessource<led1,led2,led3>; # <1>
 
-using RC = AVR::rc::RessourceController<twiIntance,usartInstance,gRes >;
+using RC = AVR::rc::RessourceController<twiIntance,usartInstance,gRes >; # <2>
 ----
+<1> Instanziieren einer generischen Ressource
+<2> Instanziieren des RessourceControllers mit der generischen Ressource
 
 Wenn alle Ressourcen mit dem RessourceController überprüft werden ist ein Konflikt der Ressourcen Belegung zur Compile-Zeit ausgeschlossen. Zu beachten ist allerdings dass bei den meisten Ressourcen wie z.B. TWI, USART und SPI alle Pins welche dort benutzt werden können auch geprüft werden. Sollte also z.B. MasterSPI als ReadOnly konfiguriert werden so wird logischerweise der Miso-Pin nicht benutzt, aber im RessourceController trotzdem geprüft. 
 
@@ -99,31 +114,53 @@ AVR::spi::SPI,
 AVR::rc::Number<0>, 
 AVR::portmux::PortMux<0>>; 
 
-using uncheckedSPI = AVR::rc::UncheckedRessource_t<spiRessource>;
-using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrupts<> >,uncheckedSPI , AVR::ReadOnly>;
+using uncheckedSPI = AVR::rc::UncheckedRessource_t<spiRessource>; # <1>
+using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrupts<> >,uncheckedSPI , AVR::ReadOnly>; # <2>
 ----
+<1> Instanziieren einer ungeprüften Ressource
+<2> Übergabe der ungeprüften Ressource an SPI
 
 Sollte der besagte Pin trotzdem von einer anderen Ressource verwendet werden besteht die Möglichkeit eine Ressource von der Prüfung auszuschließen indem UncheckedRessource verwendet wird.
 
 == Eventsystem
 
-Das Eventsystem der 0 Serie ermöglicht Peripherie Abhängige Funktionalitäten mit deren Hilfe die Peripherie ohne Interrupts Synchron und Asynchron kommunizieren kann. Das Eventsystem kann nur so konfiguriert werden dass je Kanal ein Generator läuft und dieser Kanal jeweils von beliebig vielen Users abgehört werden kann, die einzelnen Funktionen der Users sowie das Verhalten der Generatoren müssen vor Benutzung nachgelesen werden. Da die Konfigurationsmöglichkeiten beschränkt sind fällt die Schnittstelle entsprechend Schmal aus.
+Das Eventsystem der 0 Serie ermöglicht Peripherie Abhängige Funktionalitäten mit deren Hilfe die Peripherie ohne Interrupts Synchron und Asynchron miteinander kommunizieren kann. Das Eventsystem kann nur so konfiguriert werden dass je Kanal ein Generator läuft und dieser Kanal jeweils von beliebig vielen Users abgehört werden kann. Das Eventsystem ist hauptsächlich dazu gedacht Interrupts und den damit verbundenen Overhead zu vermeiden.
+
+.Generatoren: 
+* Je Kanal kann ein Generator eingeschaltet werden, diese haben bestimmte Bedingungen um Events auszulösen, z.B. löst der SPI-Generator immer zum Master-Takt ein Event aus. 
+* Beachtet werden müssen hier auch die Constraints, Wenn z.B. ein PortPin als Generator festgelegt wird, soll ein Event ausgelöst werden bei einem High-Pegel, dazu muss aber der Pegel für mindestens einen Taktzyklus Stabil sein. 
+* Des weiteren muss auch die Eventlänge beachtet werden, ein Generator kann ein Event z.B. als Pulse oder auch als Level ausgeben (hat wiederum Auswirkungen auf den User). 
+* Die Bedingungen, die Eventlänge sowie die Constraints müssen vor der Verwendung im Manual nachgelesen werden.
+
+NOTE: Es können auch Software-Events generiert werden (immer Synchron als Strobe).
+
+.User: 
+* Je Kanal können beliebig viele User registriert werden, die Benutzer reagieren dann auf die Events welche von dem Generator erzeugt werden. 
+* Wenn z.B. ein Pin als User gewählt wird, so wird das Event auf den Pin abgebildet, also falls ein Event generiert wird, so ist der Pegel High, sonst Low (beachte Eventlänge).
+
+WARNING: Wichtig ist zu beachten ob die Events die der Generator erzeugt Synchron oder Asynchron sind, dies muss im Manual nachgelesen werden.
 
 [source,C++]
 ----
-using ch0 = AVR::eventsystem::Channel<0>;
-using ch0_gen = typename ch0::generators::generals::spi0_sck;
-using user0 = typename ch0::users::evtca0;
-using user1 = typename ch0::users::evtcb0;
+using ch0 = AVR::eventsystem::Channel<0>; # <1>
+using ch0_gen = typename ch0::generators::generals::spi0_sck; # <2>
+using user0 = typename ch0::users::evtca0; 
+using user1 = typename ch0::users::evtcb0; # <3>
 
 int main() {
-    ch0::template registerListener<user0,user1>();
-    ch0::template setGenerator<ch0_gen >();
-    ch0::softwareEvent();
+    ch0::template registerListener<user0,user1>(); <4>
+    ch0::template setGenerator<ch0_gen >(); # <5>
+    ch0::softwareEvent(); # <6>
 }
 ----
+<1> Kanalauswahl
+<2> Generatorauwahl
+<3> Userauswahl
+<4> User auf Kanal registrieren
+<5> Generator an Kanal zuweisen
+<6> Software-Event auslösen
 
-Zunächst wird der Kanal ausgewählt der Benutzt werden soll (Kanal 0- maximal 8), sollte hier ein ungültiger Kanal gewählt werden wird das Programm nicht kompilieren. Als nächstes wird der Generator und der/die Benutzer ausgewählt. Dann werden die Benutzer auf den Kanal eingestellt und der Generator wird für den Kanal eingestellt. Das Eventsystem ermöglicht des Weiteren das Auslösen von Software-Events, dies wird mir der entsprechenden Funktion ermöglicht.
+Zunächst wird der Kanal ausgewählt welcher benutzt werden soll (Kanal 0- maximal 8), sollte hier ein ungültiger Kanal gewählt werden wird das Programm nicht kompilieren. Als nächstes wird der Generator und der/die Benutzer ausgewählt. Dann werden die Benutzer auf den Kanal eingestellt und der Generator wird für den Kanal eingestellt. Das Eventsystem ermöglicht des Weiteren das Auslösen von Software-Events, dies wird mir der entsprechenden Funktion ermöglicht.
 
 == TWI
 
@@ -138,16 +175,19 @@ WARNING: Es wird nicht kontrolliert ob der Slave die Adresse bestätigt hat ,die
 ----
 auto rd = twi::scopedRead<43>();
 
-while(! twi::writeComplete()) {
-    while(! twi::slaveAcknowledged()) {
-        while (!twi::endTransaction());
-        rd = twi::scopedRead<43>();
+while(! twi::writeComplete()) { # <1>
+    while(! twi::slaveAcknowledged()) { # <2>
+        while (!twi::endTransaction());  # <3>
+        rd = twi::scopedRead<43>(); # <4>
     }
 }
 ----
+<1> Warten auf Beendigung der Start-Condition
+<2> Acknowledgment abfragen
+<3> Stop-Condition auslösen
+<4> Neuer Versuch starten
 
-Hier wird zuerst effektiv auf das Beenden der Start-Condition gewartet, danach wird eine Stop-Condition ausgelöst damit die Start Condition wiederholt werden kann. Die Behandlung besteht hier darin es solange zu versuchen bis der Slave bestätigt, andere Behandlungsmethoden sind z.B. das versuchen einer anderen Adresse oder eine andere Programm-Routine auszuführen.
-
+Hier wird außerhalb der Schnittstelle zuerst effektiv auf das Beenden der Start-Condition gewartet, danach wird eine Stop-Condition ausgelöst damit die Start-Condition wiederholt werden kann. Die Behandlung besteht hier darin es solange zu versuchen bis der Slave bestätigt, andere Behandlungsmethoden sind z.B. das versuchen einer anderen Adresse oder eine andere Programm-Routine auszuführen. Eine weitere Möglichkeit ist der Schnittstelle als 4. Parameter einen Handler in form eines lambda oder einer Funktion mitzugeben, per Default Parameter ist keiner festgelegt ('AVR::DefaultNackHandler'). Intern wird nach der Start-Condition gewartet bis die Adresse geschrieben wurde und der Slave geantwortet hat, sollte hier ein NACK festgestellt werden so wird der NackHandler so lange ausgeführt bis ein ACK erhalten wurde oder der Handler ein true zurückgibt (z.B. könnte hier Punk 3 und 4 als lambda und return false an die TWI-Schnittstelle übergeben werden).
 
 === Lesen mit FiFo, keine Interrupts
 
@@ -162,23 +202,27 @@ static inline void Callback (){
     uint8_t item;
     while(twi::getInputFifo().pop_front(item))
         AVR::dbgout::put(item);
-}
+} # <1>
 
 int main() {
-    twi::init<100000>();
+    twi::init<100000>(); # <2>
     AVR::dbgout::init();
     while(true){
-        twi::get<42,Callback>(12);
+        twi::get<42,Callback>(12); # <3>
         while(!wasread)
-            twi::periodic();
+            twi::periodic(); # <4>
         AVR::dbgout::flush();
         AVR::delay<AVR::ms,200>();
         wasread = false;
     }
 }
 ----
+<1> Definition des Read-Callbacks
+<2> Initialisieren der TWI-Schnittstelle mit 100 KHZ-Frequenz
+<3> Lese-Anforderung mit Callback
+<4> Periodic Aufruf
 
-Dieses Beispiel zeigt die Konfiguration der Schnittstelle als nicht blockierend, Readonly und Fifo Benutzend und ohne Interrupts, bei der TWI Schnittstelle wurde auf eine nicht blockierende Variante ohne FiFo verzichtet, da diese Version mangels Abstraktion zu fehleranfällig wäre. Die get Methode wird mit den template Parametern der Addresse und einer Callback Funktion (oder auch lambda) versehen, als Parameter wird die Anzahl der zu lesenden Bytes übergeben. Ohne Interrupts muss in der Schleife periodic aufgerufen werden, sonst werden weder Daten empfangen noch gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und der Benutzer kann festlegen was passieren soll (sinnvoll ist auf jedenfall die FiFo zu leeren wie im Beispiel).
+Dieses Beispiel zeigt die Konfiguration der Schnittstelle als nicht blockierend, Readonly, mit Fifo und ohne Interrupts, bei der TWI Schnittstelle wurde auf eine nicht blockierende Variante ohne FiFo verzichtet, da diese Version mangels Abstraktion zu fehleranfällig wäre. Die get Methode wird mit den template Parametern der Addresse und einer Callback Funktion (oder auch lambda) versehen, als Parameter wird die Anzahl der zu lesenden Bytes übergeben. Ohne Interrupts muss in der Schleife periodic aufgerufen werden, sonst werden weder Daten empfangen noch gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und der Benutzer kann festlegen was passieren soll (sinnvoll ist auf jedenfall die FiFo zu leeren wie im Beispiel).
 
 === Schreiben mit FiFo, keine Interrupts 
 
@@ -193,13 +237,14 @@ int main() {
 
     while(true){
         twi::put<42>((uint8_t*)hello,len);
-            while( twi::dataToSend())
+            while( twi::dataToSend()) # <1>
                 twi::periodic();
 
         AVR::delay<AVR::ms,200>();
     }
 }
 ----
+<1> Überprüfen ob in der Fifo nicht gesendete Daten sind
 
 Hier im Beispiel wird die Verwendung des Schreibens gezeigt, hier wird solange periodic aufgerufen bis keine Daten zum Schreiben mehr vorhanden sind.
 
@@ -214,10 +259,10 @@ static uint8_t arr[size];
 int main() {
     twi::init();
     while(true){
-        while(!twi::startTransaction<42,AVR::twi::access::Read>());
+        while(!twi::startTransaction<42,AVR::twi::access::Read>()); # <1>
         uint8_t tmp = 0;
         while(tmp != size){
-            tmp += twi::receive(arr,size-tmp);
+            tmp += twi::receive(arr,size-tmp); # <2>
         }
         
         AVR::delay<AVR::ms,200>();
@@ -225,8 +270,10 @@ int main() {
     }
 }
 ----
+<1> Auslösen der Start-Condition für lesen
+<2> Lesen mit Rückgabe der gelesenen Bytes
 
-wird keine FiFo genutzt dann wird von der receive Methode die Anzahl gelesener Bytes zurückgegeben (bei einem einzelnen Lesevorgang ein Boolean ob ein Byte gelesen wurde), logischerweise muss der Anwender ohne FiFo eigene Maßnahmen treffen um entsprechend viele Bytes zu lesen (siehe Beispiel code). Auch das Auslösen der Start – sowie StopCondition müssen dann manuell eingepflegt werden, Ausnahme betrifft das lesen, hier wird die stopCondition mit dem lesen des letzen Bytes austomatisch ausgeführt.
+wird keine FiFo genutzt dann wird von der receive Methode die Anzahl gelesener Bytes zurückgegeben (bei einem einzelnen Lesevorgang ein Boolean ob ein Byte gelesen wurde), logischerweise muss der Anwender ohne FiFo eigene Maßnahmen treffen um entsprechend viele Bytes zu lesen (siehe Beispiel code). Auch das Auslösen der Start – sowie StopCondition müssen dann manuell eingepflegt werden, Ausnahme betrifft das lesen, hier wird die stop-Condition mit dem lesen des letzen Bytes austomatisch ausgeführt.
 
 === Lesen nicht blockierend, Scoped-Variante
 
@@ -238,16 +285,19 @@ int main() {
     twi::init();
     while(true){
         uint8_t tmp = 0;
-        auto rd = twi::scopedRead<42>();
+        auto rd = twi::scopedRead<42>(); # <1>
         uint8_t data;
         while(tmp != 11){
-            if(rd.receive(data))
+            if(rd.receive(data)) # <2>
                 arr[tmp++] = data;
         }
-        while(!rd.receiveLast(data));
+        while(!rd.receiveLast(data)); # <3>
         arr[tmp] = data;
 }
 ----
+<1> Erzeugen einer Scoped-Transaktion
+<2> Lesen eines Bytes
+<3> Lesen des Letzten Bytes
 
 Alternativ können bei nicht verwenden der nicht blockierenden NoFifo Varianten auch Scoped Varianten genutzt werden, somit muss sich nicht mehr explizit um die Start-Stop Conditions gekümmert werden, auch hier gilt die Ausnahme des Lesens (siehe Beispiel).
 
@@ -283,8 +333,8 @@ Hier wird noch die ScopedWrite Variante gezeigt, somit muss der Nutzer sich nich
 static constexpr const char* hello = "Hello Slave";
 using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::WriteOnly>;
 
-ISR(TWI0_TWIM_vect){
-    twi::intHandler();
+ISR(TWI0_TWIM_vect){ # <1>
+    twi::intHandler(); # <2>
 }
 
 int main() {
@@ -297,6 +347,8 @@ int main() {
     }
 }
 ----
+<1> Definition des entsprechenden Interrupt-Vektors
+<2> Aufruf des Interrupt-Handlers
 
 Diese Interrupt gesteuerte Version wird im Intervall von 200 ms den String Hello Slave an den Slave mit der Addresse 42 senden.
 
@@ -325,13 +377,14 @@ int main() {
     while(true){
         twi::get<42,Callback>(12);
         while(!wasread)
-            ;
+            ; # <1>
         AVR::dbgout::flush();
         AVR::delay<AVR::ms,200>();
         wasread = false;
     }
 }
 ----
+<1> Kein Periodic da Interruptgesteuert
 
 Diese Version erhält vom Slave mit der Addresse 42 je Iteration 12 Datenbytes, nachdem diese gelesen wurden wird der Callback ausgeführt (in diesem Falle werden die Datenbytes über die Debug-Schnittstelle an den PC gesendet → nur 4808 verfügbar und die innere While-Schleife der main Methode unterbrochen).
 
@@ -357,22 +410,24 @@ int main() {
     twi::init();
     AVR::dbgout::init();
     while(true){
-        twi::get<42,Callback>(12);
+        twi::get<42,Callback>(12); # <1>
         while(!wasread)
             ;
         AVR::dbgout::flush();
-        twi::put<42>('H');
+        twi::put<42>('H'); # <2>
         AVR::delay<AVR::ms,200>();
         wasread = false;
     }
 }
 ----
+<1> Lesen von 12 Bytes
+<2> Schreiben eines Bytes
 
 Als abschließendes Beispiel wird hier noch eine kombinierte Version gezeigt (lesen und Schreiben).
 
 == SPI
 
-Das SPI-Interface ist ähnlich gestaltet wie bei TWI, mit der Ausnahme dass hier in keinem Fall auf start- oder stop Conditions oder der gleichen geachtet werden muss. Weiterhin wird auch ein Interrupthandler für die Benutzung ohne Fifo und der Slave Modus zur Verfügung gestellt. Hier gibt es keine Option in der init Methode die Frequenz einzustellen, dies geschieht über die Prescaler-Option während der Schnittstellen-Konfiguration.
+Das SPI-Interface ist ähnlich gestaltet wie bei TWI, mit der Ausnahme dass hier in keinem Fall auf start- oder stop-Conditions oder der gleichen geachtet werden muss. Weiterhin wird auch ein Interrupthandler für die Benutzung ohne Fifo und der Slave Modus zur Verfügung gestellt. Hier gibt es keine Option in der init Methode die Frequenz einzustellen, dies geschieht über die Prescaler-Option während der Schnittstellen-Konfiguration.
 
 === Schreiben, nicht blockierend, FiFo ohne Interrupts
 
@@ -392,7 +447,7 @@ int main() {
         for(uint8_t i = 0; i < 5; i++) {
             spi::periodic();
             AVR::delay < AVR::us, 5 > ();
-        }
+        } 
         uint8_t item;
        while(spi::getInputFifo().pop_front(item)) {
            AVR::dbgout::put(item);
@@ -437,6 +492,7 @@ Hier zu sehen ist eine Interrupt-Version des SPI, um die gelesenen Bytes auszuge
 == USART
 
 Die USART Schnittstelle lässt sich im Grunde genauso bedienen wie SPI und TWI.
+
 .Hier müssen besonders 2 Dinge beachtet werden:
 * Baudrate: Hier ist es essentiell wichtig dass vor allem der F_CPU Wert stimmt und das eine zu dem Ziel-Gerät passende Baudrate eingestellt ist (default 115200).
 * Besonderheit Interrupts: Hier gibt es 2 Interrupt Vectoren (der TX-Vector wird nicht beachtet) und deswegen auch 2 Interrupt-Handler (tx/rxHandler).
@@ -449,13 +505,13 @@ using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupt
 
 ISR(USART2_DRE_vect){
     usart::txHandler();
-}
+} # <1>
 ISR(USART2_RXC_vect){
     usart::rxHandler();
-}
+} # <2>
 
 int main() {
-    usart::init<115200>();
+    usart::init<115200>(); # <3>
     while(true){
         usart::put('h');
         usart::put('e');
@@ -466,5 +522,8 @@ int main() {
     }
 }
 ----
+<1> Transfer Vektor (DRE)
+<2> Receive Vektor (TXC)
+<3> Initialisierung der Schnittstelle mit 115,2 KHZ-Baudrate
 
 Hier im Beispiel wird die Verwendung der Interrupt Variante für Read und Write Zugang beschrieben, beachtet werden muss dass der TX Vector nicht verwendet werden darf, stattdessen muss der DRE Vector verwendet werden.

@@ -204,11 +204,12 @@ namespace AVR {
                 static inline void writeCondition() {
                     TWIMaster::template reg<typename TWIMaster::Addr>().set(address << 1);
                     if constexpr (TWIMaster::nackhandle != details::noop){
-                        while(! writeComplete()) {
-                            if(! slaveAcknowledged()) {
-                                stopTransaction();
-                                TWIMaster::nackhandle();
-                            }
+                        while(! writeComplete());
+
+                        bool b = false;
+
+                        while(! slaveAcknowledged() && ! b) {
+                            b = TWIMaster::nackhandle();
                         }
                     }
                 }
@@ -217,11 +218,12 @@ namespace AVR {
                 static inline void readCondition() {
                     TWIMaster::template reg<typename TWIMaster::Addr>().set((address << 1) | TWI_ADDREN_bm);
                     if constexpr (TWIMaster::nackhandle != details::noop){
-                        while(! writeComplete()) {
-                            if(! slaveAcknowledged()) {
-                                stopTransaction();
-                                TWIMaster::nackhandle();
-                            }
+                        while(! writeComplete());
+
+                        bool b = false;
+
+                        while(! slaveAcknowledged() && ! b) {
+                            b = TWIMaster::nackhandle();
                         }
                     }
                 }
