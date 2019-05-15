@@ -10,14 +10,8 @@
 
 #ifdef _m4808
     #define _DEFAULT mega4808::Atmega4808<>
-
-
-    using mem_width = uint8_t;
-    using ptr_t = uintptr_t;
 #elif defined(_m4809)
     #define _DEFAULT mega4809::Atmega4809<>
-    using mem_width = uint8_t;
-    using ptr_t = uintptr_t;
 #else
 #error "using library with unsupported Device"
 #endif

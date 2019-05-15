@@ -34,7 +34,7 @@ using twiRessource = AVR::rc::Instance<
         AVR::twi::TWI, // using ressource SPI
         AVR::rc::Number<0>, //using instance '0'
         AVR::portmux::PortMux<0>>; // using portmux 0 alternative
-using test = typename mega4808::Atmega4808<>::template ADC<false,mega4808::port_details::ports::portd::Pin::pin7,mega4808::port_details::ports::portd::Pin::pin6>;
+//using test = typename mega4809::Atmega4809<>::template ADC<false,mega4809::port_details::ports::portd::Pin::pin7,mega4809::port_details::ports::portd::Pin::pin6>;
 using adcRessource = AVR::rc::Instance<
        test, // using ressource SPI
         AVR::rc::Number<0>, //using instance '0'

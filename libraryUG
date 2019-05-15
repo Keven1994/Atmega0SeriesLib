@@ -12,8 +12,9 @@
 == Grundsätzliches
 
 * Die Library stützt sich auf den AVR-GCC 8.3+, es werden intern unter anderem Concepts genutzt, die Verwendung eines aktuellen C++ Compilers ist daher notwendig.
-* Am besten wird das enthaltene CMakefile genutzt um das Projekt zu erstellen, um den UC zu wechseln muss lediglich die Variable Mnumber und F_CPU abgeändert werden.
-* [Optional] um ein schnelleres Compilieren zu ermöglichen kann nach dem ersten Compilieren in Zeile 112 im CmakeFile eine Zeile auskommentiert werden welche automatische Dateien generiert.
+* Am besten wird das enthaltene CMakefile genutzt um das Projekt zu erstellen, um den UC zu wechseln muss lediglich die Variable 'Mnumber' und 'F_CPU' abgeändert werden.
+* [Optional] um ein schnelleres Compilieren zu ermöglichen kann nach dem ersten Compilieren in Zeile 133 im CmakeFile eine Zeile auskommentiert werden welche automatische Dateien generiert.
+* Die Library kann auf Windows und Linux genutzt werden, sollte auf dem Ziel-Windows "sh.exe" in der Shell vorhanden sein wird sich CMake beschweren und beim ersten Versuch abbrechen, zur Behebung muss dann ein zweites Mal CMake aufgerufen werden.
 * Es sollten nur die HW-Abstraktionen inkludiert werden, ansonsten kann kein ordnungsgemäßes funktionieren gewährleistet werden.
 * Der Erste Include MUSS MCUSelect.hpp sein, hier findet die Auswahl des Gerätes statt.
 * Port, PortPin und der Ressource Controller sind Standardmäßig inkludiert und müssen nicht nochmal explizit inkludiert werden.

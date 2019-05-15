@@ -496,10 +496,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Die Library stützt sich auf den AVR-GCC 8.3+, es werden intern unter anderem Concepts genutzt, die Verwendung eines aktuellen C++ Compilers ist daher notwendig.</p>
 </li>
 <li>
-<p>Am besten wird das enthaltene CMakefile genutzt um das Projekt zu erstellen, um den UC zu wechseln muss lediglich die Variable Mnumber und F_CPU abgeändert werden.</p>
+<p>Am besten wird das enthaltene CMakefile genutzt um das Projekt zu erstellen, um den UC zu wechseln muss lediglich die Variable 'Mnumber' und 'F_CPU' abgeändert werden.</p>
 </li>
 <li>
-<p>[Optional] um ein schnelleres Compilieren zu ermöglichen kann nach dem ersten Compilieren in Zeile 112 im CmakeFile eine Zeile auskommentiert werden welche automatische Dateien generiert.</p>
+<p>[Optional] um ein schnelleres Compilieren zu ermöglichen kann nach dem ersten Compilieren in Zeile 133 im CmakeFile eine Zeile auskommentiert werden welche automatische Dateien generiert.</p>
+</li>
+<li>
+<p>Die Library kann auf Windows und Linux genutzt werden, sollte auf dem Ziel-Windows "sh.exe" in der Shell vorhanden sein wird sich CMake beschweren und beim ersten Versuch abbrechen, zur Behebung muss dann ein zweites Mal CMake aufgerufen werden.</p>
 </li>
 <li>
 <p>Es sollten nur die HW-Abstraktionen inkludiert werden, ansonsten kann kein ordnungsgemäßes funktionieren gewährleistet werden.</p>
@@ -1333,7 +1336,7 @@ int main() {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-14 13:02:00 +0200
+Last updated 2019-05-15 13:10:20 +0200
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

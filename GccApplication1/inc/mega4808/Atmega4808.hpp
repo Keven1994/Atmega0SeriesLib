@@ -7,8 +7,9 @@
 */
 
 #pragma once
+using mem_width = uint8_t;
+using ptr_t = uintptr_t;
 #include "../hw_abstractions/Basics.hpp"
-//type informations for the templates in the hw includes
 
 //hw includes
 #include "hal/ATmega4808PORT.hpp"
