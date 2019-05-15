@@ -66,11 +66,11 @@ namespace mega4809 {
             >::type;
 
             static constexpr auto baseAddress = port::port;
+        private:
             using Component_t = port_details::portComponent;
         };
 
         struct EventSystem {
-
             template<mem_width number>
             using generators = mega4809::details::generatorChannel<number>;
 
@@ -234,12 +234,14 @@ namespace mega4809 {
 
             };
 
+        private:
             using Component_t = adc_details::adcComponent;
 
         };
 
         class Status {
         public:
+        private:
             using Component_t = cpu_details::cpuComponent;
         };
 

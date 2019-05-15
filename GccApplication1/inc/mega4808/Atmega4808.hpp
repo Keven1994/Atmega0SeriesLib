@@ -60,6 +60,8 @@ namespace mega4808 {
             >::type;
 
             static constexpr auto baseAddress = port::port;
+
+		private:
             using Component_t = port_details::portComponent;
         };
 		
@@ -105,7 +107,7 @@ namespace mega4808 {
 				static constexpr BConf bufwait = buffered ? BConf::Bufwr : static_cast<BConf>(0);
 			};
 
-
+        private:
 		    using Component_t = spi_details::spiComponent;
 		};
 		
@@ -139,7 +141,7 @@ namespace mega4808 {
 				static constexpr AConf setuptime = static_cast<AConf>(sdaSetup);
 			};
 
-
+        private:
             using Component_t = mega4808::twi_details::twiComponent;
 		};
 
@@ -168,6 +170,7 @@ namespace mega4808 {
                 static constexpr CConf msb = !Msb ? CConf::Udord : static_cast<CConf>(0);
 		    };
 
+        private:
 		    using Component_t = usart_details::usartComponent;
 		};
 
@@ -234,6 +237,7 @@ namespace mega4808 {
 		};
 
 		struct Status {
+        private:
             using Component_t = cpu_details::cpuComponent;
 		};
 		

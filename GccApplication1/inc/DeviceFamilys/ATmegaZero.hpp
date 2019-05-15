@@ -161,6 +161,7 @@ namespace AVR {
                     AIN13 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain13),
                     AIN14 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain14),
                     AIN15 = static_cast<mem_width>(adcComponent::MUXPOSMasks::Muxpos_ain15)//,
+                    //not supported options
                     //DACRef = static_cast<mem_width>(adcComponent::CTRLEMasks::Muxpos_dacref),
                     //Temperature = static_cast<mem_width>(adcComponent::CTRLEMasks::Tempsense),
                     //Ground = static_cast<mem_width>(adcComponent::CTRLEMasks::Muxpos_gnd)
