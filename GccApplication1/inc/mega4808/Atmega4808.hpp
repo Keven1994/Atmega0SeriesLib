@@ -11,9 +11,9 @@
 //type informations for the templates in the hw includes
 
 //hw includes
-#include "hal/Atmega4808Port.hpp"
+#include "hal/ATmega4808PORT.hpp"
 #include "mega4808/hal/Atmega4808EventSystem.hpp"
-#include "hal/Atmega4808SPI.hpp"
+#include "hal/ATmega4808SPI.hpp"
 #include "hal/ATmega4808TWI.hpp"
 #include "hal/ATmega4808CPU.hpp"
 #include "hal/ATmega4808USART.hpp"

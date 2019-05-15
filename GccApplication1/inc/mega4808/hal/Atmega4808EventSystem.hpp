@@ -2,7 +2,7 @@
 #include "../../tools/utils.h"
 #include "../../hw_abstractions/Eventsystem.hpp"
 
-namespace mega4808 {
+namespace mega4808  {
 	namespace details {
 		struct users {
             struct evporta {

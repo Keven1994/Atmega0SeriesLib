@@ -618,7 +618,7 @@ ns.addMember(compStruct);
         nameSpace.addMember(ns);
         tmp += nameSpace.generate();
 
-        std::string outName = utils::toHigherCase(path)+ deviceName + compname + ".hpp";
+        std::string outName = path + deviceName + compname + ".hpp";
         try {
             std::ofstream of(outName);
             of << tmp;
