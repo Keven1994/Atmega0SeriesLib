@@ -385,12 +385,12 @@ Hier zu sehen sind die einzelnen Prüfungen die der RessourceController durchfü
 [source, C++]
 ----
 template<typename _first,typename... pins>
-static constexpr bool checkInstance() {
-	using first = resolveInst<_first>;
-	
+static constexpr bool checkRessource() {
+	using first = typename resolveAlt<_first>::list;
+					
 	if constexpr(sizeof...(pins) == 0)
 	return true;
-	else return checkInstanceHelper<Meta::List<first>,pins...>();
+	else return checkRessourceHelper<first,pins...>();
 }
 ----
 
@@ -399,14 +399,17 @@ Dies ist die Startfunktion um zu Prüfen ob die Pins Kollisionsfrei sind, hierzu
 [source,C++]
 ----
 template<Meta::concepts::List first,typename _second, typename... pins>
-static constexpr bool checkInstanceHelper(){
-	using second = Meta::List<resolveInst<_second>>;
+static constexpr bool checkRessourceHelper(){
 	
-	if constexpr(sizeof...(pins) > 0)
-		return !Meta::contains_any<first,second>::value # <1>
-		&& checkInstanceHelper<typename Meta::concat_t<first,second>, pins...>(); # <2>
+	using second = typename resolveAlt<_second>::list;
+	
+	if constexpr(sizeof...(pins) > 0){
+		constexpr bool current = !Meta::contains_any<first, second>::value; # <1>
+		constexpr bool next =  checkRessourceHelper<Meta::concat_t<first,second>, pins...>(); # <2>
+		return  current && next ;
+	}
 	else {
-		return !Meta::contains_any<first,second>::value; # <3> 
+		return !Meta::contains_any<first,second>::value; # <3>
 	}
 }
 ----
@@ -416,5 +419,5 @@ static constexpr bool checkInstanceHelper(){
 
 Die Prüfung auf Kollisionsfreiheit Funktioniert so, dass auf der aktuellen Stufe immer überprüft wird ob irgendein Element der aktuellen Pinliste in der nächsten enthalten ist, danach wird die aktuelle Liste mit der nächsten vereinigt und als erste Liste übergeben, das geht solange bis es in 'pins' keine weiteren Listen mehr gibt.
 
-NOTE: Die CheckRessource Methode funktioniert Analog (bloß das die Pinlisten nicht überprüft werden sondern die HW-Instanzen)
+NOTE: Die CheckInstance Methode funktioniert Analog (bloß das die Pinlisten nicht überprüft werden sondern die HW-Instanzen)
  

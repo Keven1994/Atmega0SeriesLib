@@ -1052,12 +1052,12 @@ using getRessource_t = typename getRessource&lt;N&gt;::type;</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code data-lang="C++">template&lt;typename _first,typename... pins&gt;
-static constexpr bool checkInstance() {
-	using first = resolveInst&lt;_first&gt;;
+static constexpr bool checkRessource() {
+	using first = typename resolveAlt&lt;_first&gt;::list;
 
 	if constexpr(sizeof...(pins) == 0)
 	return true;
-	else return checkInstanceHelper&lt;Meta::List&lt;first&gt;,pins...&gt;();
+	else return checkRessourceHelper&lt;first,pins...&gt;();
 }</code></pre>
 </div>
 </div>
@@ -1067,12 +1067,15 @@ static constexpr bool checkInstance() {
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code data-lang="C++">template&lt;Meta::concepts::List first,typename _second, typename... pins&gt;
-static constexpr bool checkInstanceHelper(){
-	using second = Meta::List&lt;resolveInst&lt;_second&gt;&gt;;
+static constexpr bool checkRessourceHelper(){
 
-	if constexpr(sizeof...(pins) &gt; 0)
-		return !Meta::contains_any&lt;first,second&gt;::value <i class="conum" data-value="1"></i><b>(1)</b>
-		&amp;&amp; checkInstanceHelper&lt;typename Meta::concat_t&lt;first,second&gt;, pins...&gt;(); <i class="conum" data-value="2"></i><b>(2)</b>
+	using second = typename resolveAlt&lt;_second&gt;::list;
+
+	if constexpr(sizeof...(pins) &gt; 0){
+		constexpr bool current = !Meta::contains_any&lt;first, second&gt;::value; <i class="conum" data-value="1"></i><b>(1)</b>
+		constexpr bool next =  checkRessourceHelper&lt;Meta::concat_t&lt;first,second&gt;, pins...&gt;(); <i class="conum" data-value="2"></i><b>(2)</b>
+		return  current &amp;&amp; next ;
+	}
 	else {
 		return !Meta::contains_any&lt;first,second&gt;::value; <i class="conum" data-value="3"></i><b>(3)</b>
 	}
@@ -1105,7 +1108,7 @@ static constexpr bool checkInstanceHelper(){
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Die CheckRessource Methode funktioniert Analog (bloß das die Pinlisten nicht überprüft werden sondern die HW-Instanzen)
+Die CheckInstance Methode funktioniert Analog (bloß das die Pinlisten nicht überprüft werden sondern die HW-Instanzen)
 </td>
 </tr>
 </table>
@@ -1117,7 +1120,7 @@ Die CheckRessource Methode funktioniert Analog (bloß das die Pinlisten nicht ü
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-15 21:58:53 +0200
+Last updated 2019-05-15 22:39:57 +0200
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
