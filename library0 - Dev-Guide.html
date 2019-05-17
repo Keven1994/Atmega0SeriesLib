@@ -939,13 +939,7 @@ struct TWI_C {
 <div class="content">
 <pre class="prettyprint highlight"><code data-lang="C++">template&lt;typename instances, typename Component_t, typename instances2 = void&gt;
 class RCComponent {
-	static constexpr bool checkAll(){
-		if constexpr(std::is_same_v&lt;instances2,void&gt;)
-			return true;
-		else {
-			return false;
-		}
-	} <i class="conum" data-value="1"></i><b>(1)</b>
+
 	template&lt;typename Alias&gt;
 	friend struct AVR::rc::details::resolveComponent;
 
@@ -955,20 +949,20 @@ class RCComponent {
 		using alt  = typename  inst::alt;
 
 		static_assert(Meta::contains_all&lt;typename instances2::template inst&lt;Alias::Instance&gt;::template alt&lt;Alias::Alternative&gt;::list,typename alt::list&gt;::value, "not available pin was set up");
-	}; <i class="conum" data-value="2"></i><b>(2)</b>
+	}; <i class="conum" data-value="1"></i><b>(1)</b>
 
 	template&lt;typename Alias&gt;
 	struct comps&lt;Alias,void&gt;{
 		using inst  = typename  instances::template inst&lt;Alias::Instance&gt;;
 		using alt  = typename  inst::template alt&lt;Alias::Alternative&gt;;
-	}; <i class="conum" data-value="3"></i><b>(3)</b>
+	}; <i class="conum" data-value="2"></i><b>(2)</b>
 public:
 	static constexpr bool isRCComponent = true;
 
 	template&lt;auto number&gt;
 	static inline auto getBaseAddress(){
 		return (typename Component_t::registers*) &amp;instances::template inst&lt;number&gt;::value();
-	} <i class="conum" data-value="4"></i><b>(4)</b>
+	} <i class="conum" data-value="3"></i><b>(3)</b>
 
 };</code></pre>
 </div>
@@ -977,18 +971,14 @@ public:
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Funktion um dem RC mitzuteilen ob alle Pins getestet werden oder nur bestimmte</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
 <td>Spezialisierung für eine Teilprüfung der IO Pins</td>
 </tr>
 <tr>
-<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
 <td>Spezialisierung für eine Vollprüfung der IO Pins</td>
 </tr>
 <tr>
-<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
 <td>Realisierung der BCMPP legacy-Funktion getBaseAddress</td>
 </tr>
 </table>
@@ -1120,7 +1110,7 @@ Die CheckInstance Methode funktioniert Analog (bloß das die Pinlisten nicht üb
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-15 22:39:57 +0200
+Last updated 2019-05-17 17:56:10 +0200
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

@@ -51,7 +51,7 @@ using usartRessource = AVR::rc::Instance<
 
 
 using led1 = Pin<PortA, 2>;
-using led2 = Pin<PortA, 2>;
+using led2 = Pin<PortA, 3>;
 using led3 = Pin<PortD, 6>;
 
 using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource >; //acquire ressource
@@ -66,7 +66,15 @@ static inline bool nackHandler(){
 }
 
 using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::NoFifo ,AVR::Interrupts<testPA> >,res, AVR::WriteOnly>;
-using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite>;
+
+using _twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite>;
+
+static inline auto handler = [](){
+    while (!_twi::endTransaction());
+    while(!_twi::startTransaction<42,AVR::twi::access::Read>());
+};
+
+using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite, handler>;
 
 volatile uint8_t arr[12];
 volatile uint8_t n = 0;

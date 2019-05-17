@@ -305,13 +305,7 @@ Diese Struktur dient dazu die verschiedenen Einstellungen aus den HW-Dateien auf
 ----
 template<typename instances, typename Component_t, typename instances2 = void>
 class RCComponent {
-	static constexpr bool checkAll(){
-		if constexpr(std::is_same_v<instances2,void>)
-			return true;
-		else {
-			return false;
-		}
-	} # <1>
+
 	template<typename Alias>
 	friend struct AVR::rc::details::resolveComponent;
 
@@ -321,27 +315,26 @@ class RCComponent {
 		using alt  = typename  inst::alt;
 
 		static_assert(Meta::contains_all<typename instances2::template inst<Alias::Instance>::template alt<Alias::Alternative>::list,typename alt::list>::value, "not available pin was set up");
-	}; # <2>
+	}; # <1>
 
 	template<typename Alias>
 	struct comps<Alias,void>{
 		using inst  = typename  instances::template inst<Alias::Instance>;
 		using alt  = typename  inst::template alt<Alias::Alternative>;
-	}; # <3>
+	}; # <2>
 public:
 	static constexpr bool isRCComponent = true;
 
 	template<auto number>
 	static inline auto getBaseAddress(){
 		return (typename Component_t::registers*) &instances::template inst<number>::value();
-	} # <4>
+	} # <3>
 	
 };
 ----
-<1> Funktion um dem RC mitzuteilen ob alle Pins getestet werden oder nur bestimmte
-<2> Spezialisierung für eine Teilprüfung der IO Pins
-<3> Spezialisierung für eine Vollprüfung der IO Pins
-<4> Realisierung der BCMPP legacy-Funktion getBaseAddress
+<1> Spezialisierung für eine Teilprüfung der IO Pins
+<2> Spezialisierung für eine Vollprüfung der IO Pins
+<3> Realisierung der BCMPP legacy-Funktion getBaseAddress
 
 Diese Struktur wird im RessourceController genutzt um z.B. auf die HW-Instanzen zuzugreifen um schließlich die IO Pins zu vergleichen. Je nach Komponente ist e möglich dass nicht alle Pins überprüft werden die in den Komponenten verfügbar sind, z.B. der ADC.
 

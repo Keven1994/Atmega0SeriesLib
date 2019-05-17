@@ -191,6 +191,23 @@ while(! twi::writeComplete()) { # <1>
 
 Hier wird außerhalb der Schnittstelle zuerst effektiv auf das Beenden der Start-Condition gewartet, danach wird eine Stop-Condition ausgelöst damit die Start-Condition wiederholt werden kann. Die Behandlung besteht hier darin es solange zu versuchen bis der Slave bestätigt, andere Behandlungsmethoden sind z.B. das versuchen einer anderen Adresse oder eine andere Programm-Routine auszuführen. Eine weitere Möglichkeit ist der Schnittstelle als 4. Parameter einen Handler in form eines lambda oder einer Funktion mitzugeben, per Default Parameter ist keiner festgelegt ('AVR::DefaultNackHandler'). Intern wird nach der Start-Condition gewartet bis die Adresse geschrieben wurde und der Slave geantwortet hat, sollte hier ein NACK festgestellt werden so wird der NackHandler so lange ausgeführt bis ein ACK erhalten wurde oder der Handler ein true zurückgibt (z.B. könnte hier Punk 3 und 4 als lambda und return false an die TWI-Schnittstelle übergeben werden).
 
+[source,C++]
+----
+using _twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite>; # <1>
+
+static inline auto handler = [](){
+    while (!_twi::endTransaction());
+    while(!_twi::startTransaction<42,AVR::twi::access::Read>());
+}; # <2>
+
+using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite, handler>; # <3>
+----
+<1> Deklarieren der Schnittstelle ohne handler
+<2> Definieren des handlers
+<3> Einsetzen des Handlers in die Schnittstelle
+
+Hier wird nochmal gezeigt wie so ein built-in Handler realisiert werden kann
+
 === Lesen mit FiFo, keine Interrupts
 
 [source,C++]

@@ -54,13 +54,7 @@ namespace AVR {
 			
 			template<typename instances, typename Component_t, typename instances2 = void>
 			class RCComponent {
-			    static constexpr bool checkAll(){
-			        if constexpr(std::is_same_v<instances2,void>)
-			            return true;
-			        else {
-			            return false;
-			        }
-			    }
+
 				template<typename Alias>
 				friend struct AVR::rc::details::resolveComponent;
 
