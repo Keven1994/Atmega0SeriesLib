@@ -26,7 +26,7 @@ namespace AVR {
             template<typename T, auto &inst>
             [[nodiscard, gnu::always_inline]] static inline auto &getRegister() {
                 using reg_t = typename T::type;
-                auto offset = (mem_width *) &inst() + T::value;
+                auto offset = (uint8_t *) &inst() + T::value;
                 return reg_t::getRegister(*((typename reg_t::reg_size*)offset));
             }
 
