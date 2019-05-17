@@ -318,22 +318,12 @@ namespace AVR::usart {
 
         }
 
-        namespace details{
-            using defComponent = AVR::rc::Instance<
-                    USART_Comp, // using ressource SPI
-                    AVR::rc::Number<0>, //using instance '0'
-                    AVR::portmux::PortMux<0>>; // using portmux 0 alternative
-
-            using defRC = rc::RessourceController<defComponent>;
-            using defInst = typename defRC::getRessource<defComponent>::type;
-        }
-
-        template<typename accesstype = notBlocking<UseFifo<42>>,typename instance = details::defInst,typename RW = ReadWrite, RS485Mode RSMode = RS485Mode::Disabled, ReceiverMode receiverMode = ReceiverMode::Normal,
+        template<typename accesstype ,typename instance ,typename RW = ReadWrite, RS485Mode RSMode = RS485Mode::Disabled, ReceiverMode receiverMode = ReceiverMode::Normal,
                 CommunicationMode ComMode = CommunicationMode::Asynchronous, ParityMode parityMode = ParityMode::Disabled ,
                 StopBitMode stopBitMode = StopBitMode::OneBit, CharacterSize CharSize = CharacterSize::Bit8, bool msb = true,
                 bool StartFrameDetection = false, bool OpenDrainMode = false, bool MultiProcessor =false, bool LoopBackMode=false, typename bit_width = mem_width>
         using USART = AVR::usart::details::_USART<
-                RW,accesstype, USART_Comp::Component_t,typename instance::t1, typename instance::t2,
+                RW,accesstype, USART_Comp::Component_t,typename instance::type::t1, typename instance::type::t2,
                 USART_Comp::template USARTSetting<RSMode,receiverMode,ComMode,parityMode,stopBitMode,
                 CharSize,msb,StartFrameDetection,OpenDrainMode,MultiProcessor,LoopBackMode>, bit_width>;
 

@@ -206,7 +206,7 @@ using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite, handler>;
 <2> Definieren des handlers
 <3> Einsetzen des Handlers in die Schnittstelle
 
-Hier wird nochmal gezeigt wie so ein built-in Handler realisiert werden kann
+Hier wird nochmal gezeigt wie so ein built-in Handler realisiert werden kann.
 
 === Lesen mit FiFo, keine Interrupts
 

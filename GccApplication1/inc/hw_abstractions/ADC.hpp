@@ -27,10 +27,12 @@ using SampleDelayUS = std::integral_constant<uint16_t, val>;
     class ADC {
 
         using component = typename ADC_Comp<>::Component_t;
+        using comps = ADC_Comp<>::Comps;
 
         template<typename Reg>
         [[nodiscard,gnu::always_inline]] static inline auto& reg(){
-            return AVR::port::details::getRegister<Reg,instance::value>();
+            static constexpr auto& val = comps::template inst<instance::Instance>::value;
+            return AVR::port::details::getRegister<Reg, val>();
         }
 
         using ControlA = typename component::registers::ctrla;
@@ -46,7 +48,11 @@ using SampleDelayUS = std::integral_constant<uint16_t, val>;
         using Setting = typename ADC_Comp<>::template ADCSetting<freerun,std::is_same_v<Resolution,Res_8_Bit>,standby,accumulations,prescaler,window,sampleDelay,sampleLength>;
 
         [[gnu::always_inline]] static inline void init(){
-
+            reg<ControlA>().set(Setting::standby,Setting::freerun,Setting::resolution);
+            reg<ControlB>().set(Setting::accumulations);
+            reg<ControlC>().set(Setting::prescale);
+            reg<ControlD>().set(Setting::sampledelay, Setting::samplelength);
+            reg<ControlE>().set(Setting::windowcomp);
 
         }
 

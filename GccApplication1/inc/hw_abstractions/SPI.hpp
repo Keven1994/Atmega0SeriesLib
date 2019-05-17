@@ -303,23 +303,13 @@ namespace AVR {
 		using TransferMode = typename SPI::TransferMode;
 
 		using Prescaler = typename SPI::Prescaler;
-		
-		namespace details{
-			using defComponent = AVR::rc::Instance<
-			        SPI, // using ressource SPI
-			AVR::rc::Number<0>, //using instance '0'
-			AVR::portmux::PortMux<0>>; // using portmux 0 alternative
-			
-			using defRC = rc::RessourceController<defComponent>;
-			using defInst = defRC::getRessource_t<defComponent>;
-		}
 
-		template<typename accesstype = blocking,typename instance = details::defInst,typename RW = ReadWrite,bool msb = true, bool clockDouble = false, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
+		template<typename accesstype ,typename instance,typename RW = ReadWrite,bool msb = true, bool clockDouble = false, bool slaveSelectDisable = true, TransferMode tmode = TransferMode::Mode0,
 		bool buffered = false,bool waitForReceive = false, Prescaler prescaler = Prescaler::Div4, typename bit_width = mem_width>
-		using SPIMaster = AVR::spi::details::SPIMaster<RW,accesstype, typename SPI::Component_t,typename instance::t1, typename instance::t2, SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
+		using SPIMaster = AVR::spi::details::SPIMaster<RW,accesstype, typename SPI::Component_t,typename instance::type::t1, typename instance::type::t2, SPI::template SPIMasterSetting<msb,clockDouble,slaveSelectDisable,tmode,buffered,waitForReceive,prescaler>, bit_width>;
 		
-		template<typename accesstype = blocking,typename instance = details::defInst,typename RW = ReadWrite, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
-		using SPISlave = AVR::spi::details::SPISlave<RW,accesstype,typename SPI::Component_t,typename instance::t1, typename instance::t2, SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
+		template<typename accesstype ,typename instance ,typename RW = ReadWrite, bool msb = true, TransferMode tmode = TransferMode::Mode0,  bool buffered = false,bool waitForReceive = false, typename bit_width = mem_width>
+		using SPISlave = AVR::spi::details::SPISlave<RW,accesstype,typename SPI::Component_t,typename instance::type::t1, typename instance::type::t2, SPI::template SPISlaveSetting<msb,tmode,buffered,waitForReceive>,bit_width>;
 
 	}
 }

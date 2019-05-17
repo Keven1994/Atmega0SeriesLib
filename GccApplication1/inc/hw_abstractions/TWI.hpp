@@ -200,6 +200,11 @@ namespace AVR {
                     TWIMaster::template reg<typename TWIMaster::Addr>().set(TWIMaster::current.address);
                 }
 
+                static inline void receiveStopNack(){
+                    stopTransactionNack();
+                    TWIMaster::_TWI::receive();
+                }
+
                 template<uint8_t address>
                 static inline void writeCondition() {
                     TWIMaster::template reg<typename TWIMaster::Addr>().set(address << 1);
@@ -461,11 +466,9 @@ namespace AVR {
 
                     if constexpr(TWIMaster::isReadOnly) {
                         if (TWIMaster::current.bytes > 1) {
-                            static constexpr auto rxMethod = TWIMaster::_TWI::receive;
-                            TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
+                            TWIMaster::template doIfSet<TWIMaster::_TWI::receive>(TWIMaster::StatusBits::Rif);
                         } else if (TWIMaster::current.bytes == 1) {
-                            static constexpr auto rxMethod = []{stopTransactionNack(); TWIMaster::_TWI::receive();};
-                            TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
+                            TWIMaster::template doIfSet<receiveStopNack>(TWIMaster::StatusBits::Rif);
                         } else  {
                             resetNack();
                             TWIMaster::current.Callback();
@@ -481,8 +484,7 @@ namespace AVR {
                         }
                     } else if constexpr(TWIMaster::isWriteOnly) {
                         if (TWIMaster::current.bytes > 0) {
-                            static constexpr auto txMethod = TWIMaster::_TWI::transfer;
-                            TWIMaster::template doIfSet<txMethod>(TWIMaster::StatusBits::Wif);
+                            TWIMaster::template doIfSet<TWIMaster::_TWI::transfer>(TWIMaster::StatusBits::Wif);
                         } else {
                             if (statereg.areSet(statebits::Busstate_idle)) {
                                 typename TWIMaster::command tmp;
@@ -497,17 +499,14 @@ namespace AVR {
                         }
                     } else if constexpr(!TWIMaster::isWriteOnly && !TWIMaster::isReadOnly) {
                         if (TWIMaster::current.bytes > 0) {
-                            static constexpr auto txMethod = TWIMaster::_TWI::transfer;
-                            static constexpr auto rxMethod = TWIMaster::_TWI::receive;
                             if (TWIMaster::current.access == write) {
-                                TWIMaster::template doIfSet<txMethod>(TWIMaster::StatusBits::Wif);
+                                TWIMaster::template doIfSet<TWIMaster::_TWI::transfer>(TWIMaster::StatusBits::Wif);
                             } else {
                                 if(TWIMaster::current.bytes == 1) {
-                                    static constexpr auto rxMethod1 = []{stopTransactionNack(); TWIMaster::_TWI::receive();};
-                                    TWIMaster::template doIfSet<rxMethod1>(TWIMaster::StatusBits::Rif);
+                                    TWIMaster::template doIfSet<receiveStopNack>(TWIMaster::StatusBits::Rif);
                                 }
                                 else
-                                    TWIMaster::template doIfSet<rxMethod>(TWIMaster::StatusBits::Rif);
+                                    TWIMaster::template doIfSet<TWIMaster::_TWI::receive>(TWIMaster::StatusBits::Rif);
                             }
                         } else {
                             resetNack();
@@ -614,7 +613,6 @@ namespace AVR {
                 static inline void intHandler() {
                     auto& statereg = TWIMaster::template reg<typename TWIMaster::Status>();
                     using statebits = typename TWIMaster::Status::type::special_bit;
-
 
                     if constexpr(TWIMaster::isReadOnly) {
                         resetNack();
@@ -866,23 +864,13 @@ namespace AVR {
         using Basic_MasterTimeout = typename mcu::TWI::MasterTimeout;
         using MasterTimeout = Basic_MasterTimeout<>;
 
-        namespace details {
-            using defComponent = AVR::rc::Instance<
-                    TWI, // using ressource SPI
-                    AVR::rc::Number<0>, //using instance '0'
-                    AVR::portmux::PortMux<0>>; // using portmux 0 alternative
-
-            using defRC = rc::RessourceController<defComponent>;
-            using defInst = typename defRC::getRessource<defComponent>::type;
-        }
-
         static constexpr auto& DefaultNackHandler = twi::details::noop;
 
-        template<typename accesstype = AVR::blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite, auto& nackhandle = DefaultNackHandler, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns
+        template<typename accesstype , typename instance , typename RW = AVR::ReadWrite, auto& nackhandle = DefaultNackHandler, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns
                 , MasterTimeout timeOut = MasterTimeout::Disabled, typename bit_width = mem_width>
-        using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, false, true, timeOut>, bit_width, nackhandle>;
+        using TWIMaster = AVR::twi::details::TWIMaster<RW, accesstype, TWI::Component_t,  typename instance::type::t1 , typename instance::type::t2, TWI::template TWIMasterSetting<fastModePlus, holdTime, sdaSetup, false, true, timeOut>, bit_width, nackhandle>;
 
-        template<typename accesstype = blocking, typename instance = details::defInst, typename RW = AVR::ReadWrite,auto& nackhandle = DefaultNackHandler, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns, typename bit_width = mem_width>
+        template<typename accesstype , typename instance, typename RW = AVR::ReadWrite,auto& nackhandle = DefaultNackHandler, bool fastModePlus = false, SDAHold holdTime = SDAHold::Setup4Cycles, SDASetup sdaSetup = SDASetup::SDASetup_300ns, typename bit_width = mem_width>
         using TWISlave = AVR::twi::details::TWISlave<RW, accesstype, TWI::Component_t, typename instance::t1, typename instance::t2, TWI::template TWISlaveSetting<fastModePlus, holdTime, sdaSetup>, bit_width, nackhandle>;
 
     }

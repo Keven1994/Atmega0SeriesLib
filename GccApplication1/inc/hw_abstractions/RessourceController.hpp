@@ -24,10 +24,8 @@ namespace AVR {
 		        using super = GenericRessource;
                 struct inst
                 {
-                    static constexpr auto value = 0;
                     struct alt
                     {
-                        static constexpr auto value = 0;
                         using list = Meta::List<PINS...>;
                     };
                 };
@@ -62,7 +60,7 @@ namespace AVR {
                 struct comps {
                     using inst  = typename  instances::inst;
                     using alt  = typename  inst::alt;
-
+                    static constexpr auto& value = instances2::template inst<Alias::Instance>::value;
                     static_assert(Meta::contains_all<typename instances2::template inst<Alias::Instance>::template alt<Alias::Alternative>::list,typename alt::list>::value, "not available pin was set up");
                 };
 
@@ -70,12 +68,13 @@ namespace AVR {
 				struct comps<Alias,void>{
 					using inst  = typename  instances::template inst<Alias::Instance>;
 					using alt  = typename  inst::template alt<Alias::Alternative>;
+                    static constexpr auto& value = inst::value;
 				};
 			public:
 			    static constexpr bool isRCComponent = true;
 
                 template<auto number>
-                static inline auto getBaseAddress(){
+                static inline auto& getBaseAddress(){
                     return (typename Component_t::registers*) &instances::template inst<number>::value();
                 }
 				
@@ -152,6 +151,7 @@ namespace AVR {
 			
 			template<typename N>
 			struct getRessource {
+                static constexpr auto Instance = N::Instance;
 				using type = utils::tuple<typename get_ressource_help<N, FIRST, INSTANCES...>::inst,typename get_ressource_help<N, FIRST, INSTANCES...>::alt>;
                     static_assert(!std::is_same<typename type::t2, void>::value, "portmux not found");
                     static_assert(checkRessource<FIRST, INSTANCES...>(), "I/O Pins conflicting");
@@ -159,8 +159,6 @@ namespace AVR {
                                   "only 1 alternative from a single instance permitted");
 			};
 
-			template<typename N>
-			using getRessource_t = typename getRessource<N>::type;
 		};
 		
 		template<auto N>

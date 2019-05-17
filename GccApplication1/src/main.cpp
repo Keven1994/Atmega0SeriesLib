@@ -24,6 +24,8 @@ using namespace AVR::port;
 using PortA = Port<AVR::port::A>;
 using PortC = Port<AVR::port::C>;
 using PortD = Port<AVR::port::D>;
+using led1 = Pin<PortD, 4>;
+using led2 = Pin<PortD, 6>;
 
 using spiRessource = AVR::rc::Instance<
 AVR::spi::SPI, // using ressource SPI
@@ -40,6 +42,10 @@ using usartRessource = AVR::rc::Instance<
         AVR::rc::Number<2>, //using instance '0'
         AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
+using adcRessource = AVR::rc::Instance<
+        AVR::adc::ADC_Comp<led1,led2>, // using ressource SPI
+        AVR::rc::Number<0>, //using instance '0'
+        AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
         struct testPA {
 
@@ -50,20 +56,18 @@ using usartRessource = AVR::rc::Instance<
         };
 
 
-using led1 = Pin<PortA, 2>;
-using led2 = Pin<PortA, 3>;
+
 using led3 = Pin<PortD, 6>;
 
-using RC = AVR::rc::RessourceController<spiRessource,twiRessource,usartRessource >; //acquire ressource
-using res = RC::getRessource_t<spiRessource>; //get the ressource
-using twires = RC::getRessource_t<twiRessource>;
-using usartres = RC::getRessource_t<usartRessource>;
-//using spi = AVR::spi::SPISlave<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>; // put spi ressource in
-bool b = true;
-static inline bool nackHandler(){
-    b=false;
-    return true;
-}
+
+using RC = AVR::rc::RessourceController<twiRessource,usartRessource,adcRessource,spiRessource >; //acquire ressource
+using twires = RC::getRessource<twiRessource>;
+using res = RC::getRessource<spiRessource >;
+using usartres = RC::getRessource<usartRessource>;
+using adcres = RC::getRessource<adcRessource >;
+
+
+using ADC1 = AVR::adc::ADC<adcres >;
 
 using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::NoFifo ,AVR::Interrupts<testPA> >,res, AVR::WriteOnly>;
 
@@ -76,30 +80,14 @@ static inline auto handler = [](){
 
 using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite, handler>;
 
-volatile uint8_t arr[12];
-volatile uint8_t n = 0;
-
 ISR(SPI0_INT_vect){
-    //arr[n++] = SPI0.DATA;
-    spi::intHandler(42);
-    //spi::getInputFifo().push_back(42);
-    PORTA.OUTTGL = 1 << 2;
+//    spi::intHandler(42);
 }
 
 int main() {
-    twi::init();
-    spi::init();
-    PORTA.DIR |= 1 <<2;
-    //spi::put('h');
-
+    //spi::init();
+ ADC1::init();
     while(true){
-
-      //  spi::put('h');
-        //spi::put('e');
-        //spi::put('l');
-        //spi::put('l');
-        //spi::put('o');
-
 
     }
 }

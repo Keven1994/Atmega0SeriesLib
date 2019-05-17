@@ -175,7 +175,7 @@ namespace mega4808 {
 		};
 
 		template<bool unchecked,typename... PINS>
-	    struct ADC : public AVR::rc::details::RCComponent<AVR::rc::details::GenericRessource<PINS...>, adc_details::adcComponent, adc_details::adcs>
+	struct ADC : public AVR::rc::details::RCComponent<AVR::rc::details::GenericRessource<PINS...>, adc_details::adcComponent, adc_details::adcs>
 		         , public AVR::details::AtmegaZero::template ADC_C< adc_details::adcComponent> {
             using AConf = adc_details::adcComponent::CTRLAMasks;
             using BConf = adc_details::adcComponent::CTRLBMasks;
@@ -206,34 +206,35 @@ namespace mega4808 {
 
             template<bool FreeRun, bool Bit8, bool Standby, ADC::Accumulations Accumulations, ADC::Prescaler Prescale
                     , ADC::WindowComparation WindowComparation, etl::Concepts::NamedConstant sampleDelay, etl::Concepts::NamedConstant sampleLength>
-            struct ADCSetting {
+            class ADCSetting {
+
+                template<uint16_t us>
+                [[nodiscard]] static constexpr uint8_t calcUS(){
+                    constexpr auto mcuclk = DEFAULT_MCU::clockFrequency;
+                    constexpr auto adcclkus = (mcuclk/1000000) * (Prescale ==  ADC::Prescaler::Div2 ? 2: Prescale ==  ADC::Prescaler::Div4 ? 4:
+                                                                                                         Prescale ==  ADC::Prescaler::Div8 ? 8:Prescale ==  ADC::Prescaler::Div16 ? 16: Prescale ==  ADC::Prescaler::Div32 ? 32:
+                                                                                                                                                                                        Prescale ==  ADC::Prescaler::Div64 ? 64: Prescale ==  ADC::Prescaler::Div128 ? 128: 256);
+                    //static_assert(us >= adcclkus, "sample delay value was lower than ADC Cycle duration!");
+                    return us / adcclkus;
+                }
+            public:
+
                 static constexpr AConf freerun = FreeRun ? static_cast<AConf >(adc_details::adcComponent::CTRLAMasks::Freerun) : static_cast<AConf >(0);
                 static constexpr AConf resolution = Bit8 ? static_cast<AConf >(adc_details::adcComponent::CTRLAMasks::Ressel_8bit) : static_cast<AConf >(adc_details::adcComponent::CTRLAMasks::Ressel_10bit) ;
                 static constexpr AConf standby = Standby ? static_cast<AConf >(adc_details::adcComponent::CTRLAMasks::Freerun) : static_cast<AConf >(0);
                 static constexpr BConf accumulations = static_cast<BConf>(Accumulations);
                 static constexpr CConf prescale = static_cast<CConf>(Prescale);
                 static constexpr DConf sampledelay = sampleDelay::value == 0 ?
-                                                     static_cast<DConf>(adc_details::adcComponent::CTRLDMasks::Asdv_asvon) :  static_cast<DConf>(calcUS( sampleDelay::value));
-                static constexpr SampleControl samplelength = sampleLength::value == 0 ?
-                                                     static_cast<SampleControl>(adc_details::adcComponent::CTRLDMasks::Asdv_asvon) : static_cast<SampleControl>(calcUS( sampleLength::value) >= 2 ? calcUS( sampleLength::value) : 2);
+                                                     static_cast<DConf>(adc_details::adcComponent::CTRLDMasks::Asdv_asvon) :  static_cast<DConf>(calcUS<sampleDelay::value>());
+                static constexpr DConf samplelength = sampleLength::value == 0 ?
+                                                     static_cast<DConf>(adc_details::adcComponent::CTRLDMasks::Asdv_asvon) : static_cast<DConf>(calcUS<sampleLength::value>( ) >= 2 ? calcUS<sampleLength::value>( ) : 2);
                 //TODO: init delay?
                 static constexpr EConf windowcomp = static_cast<EConf>(WindowComparation);
-
-            private:
-                template<uint16_t us>
-                [[nodiscard]] static constexpr uint8_t calcUS(){
-                    constexpr auto mcuclk = DEFAULT_MCU::clockFrequency;
-                    constexpr auto adcclkus = (mcuclk/1000000) * (Prescale ==  ADC::Prescaler::Div2 ? 2: Prescale ==  ADC::Prescaler::Div4 ? 4:
-                            Prescale ==  ADC::Prescaler::Div8 ? 8:Prescale ==  ADC::Prescaler::Div16 ? 16: Prescale ==  ADC::Prescaler::Div32 ? 32:
-                            Prescale ==  ADC::Prescaler::Div64 ? 64: Prescale ==  ADC::Prescaler::Div128 ? 128: 256);
-                    static_assert(us >= adcclkus, "sample delay value was lower than ADC Cycle duration!");
-                    return us / adcclkus;
-                }
 
             };
 
             using Component_t = adc_details::adcComponent;
-
+            using Comps = adc_details::adcs;
 		};
 
 		struct Status {

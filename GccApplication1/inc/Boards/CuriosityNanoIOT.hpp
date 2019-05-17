@@ -18,7 +18,7 @@ namespace AVR{
                 utils::autoConstant<2>,
                 utils::autoConstant<0>>;
         using RC = AVR::rc::RessourceController<usartRessource>;
-        using usartres = RC::getRessource_t<usartRessource>;
+        using usartres = typename RC::getRessource<usartRessource>;
     }
     using dbgout = details::_dbgout<curiosity_details::usartres,42>;
 
