@@ -6,6 +6,7 @@ set(USBPORT /dev/tty.usbmodem411)
 set(PROG_ARGS -b 19200 -P ${USBPORT})
 
 # Variables regarding the AVR chip
+set(GenerateHWFiles FALSE)
 set(MNUMBER 4808)
 set(F_CPU 3333333)
 set(MCU   atmega${MNUMBER})
@@ -130,7 +131,9 @@ endif()
 
 
 #Optional: after first Compile comment out
+if(GenerateHWFiles)
 add_dependencies(${PROJECT_NAME} hwfiles)
+endif()
 
 # Compiling targets
 add_custom_target(strip ALL     ${AVRSTRIP} "${PROJECT_NAME}.elf" DEPENDS ${PROJECT_NAME})

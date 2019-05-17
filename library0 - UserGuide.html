@@ -499,7 +499,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Am besten wird das enthaltene CMakefile genutzt um das Projekt zu erstellen, um den UC zu wechseln muss lediglich die Variable 'Mnumber' und 'F_CPU' abgeändert werden.</p>
 </li>
 <li>
-<p>[Optional] um ein schnelleres Compilieren zu ermöglichen kann nach dem ersten Compilieren in Zeile 133 im CmakeFile eine Zeile auskommentiert werden welche automatische Dateien generiert.</p>
+<p>[Optional] um ein schnelleres Compilieren zu ermöglichen kann nach dem ersten Compilieren die Variable GenerateHWFiles auf FALSE gestellt werden.</p>
 </li>
 <li>
 <p>Die Library kann auf Windows und Linux genutzt werden, sollte auf dem Ziel-Windows "sh.exe" in der Shell vorhanden sein wird sich CMake beschweren und beim ersten Versuch abbrechen, zur Behebung muss dann ein zweites Mal CMake aufgerufen werden.</p>
@@ -1336,7 +1336,7 @@ int main() {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-15 13:10:20 +0200
+Last updated 2019-05-17 17:00:35 +0200
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
