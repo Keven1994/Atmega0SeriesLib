@@ -365,7 +365,7 @@ struct getRessource {
 };
 
 template<typename N>
-using getRessource_t = typename getRessource<N>::type;
+using getRessource = typename getRessource<N>::type;
 ----
 <1> Prüfung ob die Portmux-Variante existiert
 <2> Prüfung ob die I/O Pins Kollisionsfrei sind

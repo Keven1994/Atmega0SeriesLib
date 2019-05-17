@@ -613,8 +613,8 @@ using usartInstance = AVR::rc::Instance&lt;
 
 using RC = AVR::rc::RessourceController&lt;twiInstance,usartInstance&gt;; <i class="conum" data-value="2"></i><b>(2)</b>
 
-using twiRessource = RC::getRessource_t&lt;twiInstance&gt;;
-using usartRessource = RC::getRessource_t&lt;usartInstance&gt;; <i class="conum" data-value="3"></i><b>(3)</b>
+using twiRessource = RC::getRessource&lt;twiInstance&gt;;
+using usartRessource = RC::getRessource&lt;usartInstance&gt;; <i class="conum" data-value="3"></i><b>(3)</b>
 
 using usart = AVR::usart::USART&lt;AVR::blocking,usartRessource&gt;;
 
@@ -642,7 +642,7 @@ using twi = AVR::twi::TWIMaster&lt;AVR::blocking,twiRessource , AVR::ReadWrite&g
 </table>
 </div>
 <div class="paragraph">
-<p>Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst, diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART). Danach wird der RessourceController mit den zu benutzenden Instanzen belegt, danach kann mit der getRessource_t Klassen-Methode die Ressource angefordert werden. Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led&#8217;s oder sonstiges) so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).</p>
+<p>Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst, diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART). Danach wird der RessourceController mit den zu benutzenden Instanzen belegt, danach kann mit der getRessource Klassen-Methode die Ressource angefordert werden. Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led&#8217;s oder sonstiges) so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -888,7 +888,7 @@ using twi = AVR::twi::TWIMaster&lt;AVR::blocking, twires, AVR::ReadWrite, handle
 </table>
 </div>
 <div class="paragraph">
-<p>Hier wird nochmal gezeigt wie so ein built-in Handler realisiert werden kann</p>
+<p>Hier wird nochmal gezeigt wie so ein built-in Handler realisiert werden kann.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1367,7 +1367,7 @@ int main() {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-17 18:46:02 +0200
+Last updated 2019-05-17 23:41:43 +0200
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

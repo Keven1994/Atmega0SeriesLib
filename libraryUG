@@ -80,8 +80,8 @@ using usartInstance = AVR::rc::Instance<
 
 using RC = AVR::rc::RessourceController<twiInstance,usartInstance>; # <2>
 
-using twiRessource = RC::getRessource_t<twiInstance>;
-using usartRessource = RC::getRessource_t<usartInstance>; # <3>
+using twiRessource = RC::getRessource<twiInstance>;
+using usartRessource = RC::getRessource<usartInstance>; # <3>
 
 using usart = AVR::usart::USART<AVR::blocking,usartRessource>;
 
@@ -92,7 +92,7 @@ using twi = AVR::twi::TWIMaster<AVR::blocking,twiRessource , AVR::ReadWrite>; # 
 <3> Anfordern einer Ressource
 <4> Übergeben einer Ressource
 
-Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst, diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART). Danach wird der RessourceController mit den zu benutzenden Instanzen belegt, danach kann mit der getRessource_t Klassen-Methode die Ressource angefordert werden. Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led's oder sonstiges) so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).
+Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst, diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART). Danach wird der RessourceController mit den zu benutzenden Instanzen belegt, danach kann mit der getRessource Klassen-Methode die Ressource angefordert werden. Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led's oder sonstiges) so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).
 
 [source,C++]
 ----
