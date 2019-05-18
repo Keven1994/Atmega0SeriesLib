@@ -17,6 +17,28 @@
 
 namespace utils {
 
+#ifdef __AVR__
+    template<typename T>
+    const char* toString(T value){
+        static char str[sizeof(T)*8]{};
+        if(value == 0) return "0";
+        int n = 0;
+        T tmp = value;
+        while(tmp != 0) {
+            n++;
+            tmp/=10;
+        }
+
+        str[n--] = '\0';
+
+        while(n >= 0){
+            str[n--] = (value % 10) + 48;
+            value /=10;
+        }
+
+        return str;
+    }
+#endif
     static constexpr auto strlen(const char* str){
         auto n = 0;
         while(str[n++] != '\0');

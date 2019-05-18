@@ -42,8 +42,9 @@ using usartRessource = AVR::rc::Instance<
         AVR::rc::Number<2>, //using instance '0'
         AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
+        using ADC_Comp = AVR::adc::ADC_Comp<led1,led2>;
 using adcRessource = AVR::rc::Instance<
-        AVR::adc::ADC_Comp<led1,led2>, // using ressource SPI
+        ADC_Comp , // using ressource SPI
         AVR::rc::Number<0>, //using instance '0'
         AVR::portmux::PortMux<0>>; // using portmux 0 alternative
 
@@ -67,7 +68,7 @@ using usartres = RC::getRessource<usartRessource>;
 using adcres = RC::getRessource<adcRessource >;
 
 
-using ADC1 = AVR::adc::ADC<adcres >;
+using ADC1 = AVR::adc::ADC<ADC_Comp, adcres >;
 
 using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::NoFifo ,AVR::Interrupts<testPA> >,res, AVR::WriteOnly>;
 
@@ -85,10 +86,25 @@ ISR(SPI0_INT_vect){
 }
 
 int main() {
-    //spi::init();
- ADC1::init();
-    while(true){
+    AVR::dbgout::init();
 
+ ADC1::init();
+ ADC1::selectChannel<led1>();
+ ADC1::startConversion();
+ bool b = false;
+ uint16_t result;
+    while(true){
+        if(ADC1::value(result)){
+            b = true;
+        }
+        if(b){
+            AVR::dbgout::put(utils::toString(result));
+            AVR::dbgout::put('\n');
+            AVR::dbgout::flush();
+            ADC1::startConversion();
+            b=false;
+        }
+        AVR::delay<AVR::ms,500>();
     }
 }
 

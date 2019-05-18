@@ -152,6 +152,7 @@ namespace AVR {
 			template<typename N>
 			struct getRessource {
                 static constexpr auto Instance = N::Instance;
+                static constexpr auto Alternative = N::Alternative;
 				using type = utils::tuple<typename get_ressource_help<N, FIRST, INSTANCES...>::inst,typename get_ressource_help<N, FIRST, INSTANCES...>::alt>;
                     static_assert(!std::is_same<typename type::t2, void>::value, "portmux not found");
                     static_assert(checkRessource<FIRST, INSTANCES...>(), "I/O Pins conflicting");
