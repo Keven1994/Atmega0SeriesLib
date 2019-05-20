@@ -413,4 +413,73 @@ static constexpr bool checkRessourceHelper(){
 Die Prüfung auf Kollisionsfreiheit Funktioniert so, dass auf der aktuellen Stufe immer überprüft wird ob irgendein Element der aktuellen Pinliste in der nächsten enthalten ist, danach wird die aktuelle Liste mit der nächsten vereinigt und als erste Liste übergeben, das geht solange bis es in 'pins' keine weiteren Listen mehr gibt.
 
 NOTE: Die CheckInstance Methode funktioniert Analog (bloß das die Pinlisten nicht überprüft werden sondern die HW-Instanzen)
+
+TWI Command und Callback Aufbau
+
+Die TWI Schnittstelle ist grundsätzlich so Aufgebaut dass sie (wenn mit Fifos benutzt) genauso verwendet werden kann wie die anderen Kommunikationsschnittstellen, die einzige Besonderheit ist das Callback beim lesen. Damit diese einfache Bedienung der Schnittstelle möglich ist, müssen Intern die Command Strukturen gespeichert werden.
+
+[source,C++]
+----
+static inline auto noop = []{}; # <1>
+
+template<bool singlemode = false, bool callback = false>
+struct Command {
+	uint8_t address = 0; # <2>
+	uint8_t bytes = 0; # <3>
+	readWrite access = write; # <4>
+	void (*Callback)() = (void (*)()) noop; # <5>
+
+	void operator=(const volatile Command &other) volatile {
+		address = other.address;
+		bytes = other.bytes;
+		access = other.access;
+		Callback = other.Callback;
+	}
+};
+----
+<1> Leerer Funktionsaufruf (wenn geschrieben wird)
+<2> Adresse des anderen Device
+<3> Anzahl zu lesender/schreibender Bytes
+<4> Lesen oder Schreiben
+<5> Callback für lesen
+
+Die Command Struktur wird benötigt um gewisse Informationen zur Laufzeit zu speichern und auszuwerten. Diese Struktur wiederum wird in einer Fifo gespeichert, wenn z.B. Bytes gelesen werden sollen so wird eine entsprechende Command Struktur erzeugt und in der Fifo abgelegt. 
  
+NOTE: Die oben gezeigte Command Struktur besitzt noch einige Spezialisierungen um bei verschiedenen Condtionen nicht benötigte Member auszulassen (z.B bei einem WriteOnly wird weder das Callback- noch das Accessmember benötigt).
+
+[source,C++]
+----
+static inline void put(bit_width *data, uint8_t size) {
+
+	if constexpr(_TWI::isWriteOnly)
+		CommandStack.push_back(command{(address << 1), size}); # <1>
+	else
+		CommandStack.push_back(command{(address << 1), size, write}); # <2>
+	for (uint8_t i = 0; i < size; i++)
+		_TWI::fifoOut.push_back(data[i]);
+}
+----
+<1> Command Konstruktor für WriteOnly 
+<2> Command Konstruktor für ReadWrite
+
+In diesem Beispiel wird gezeigt wie die Command Struktur genutzt wird um Befehle in eine Fifo zu legen, während dem Periodic Aufruf oder der Interrupt Routine können die Befehle dann aus der Fifo entnommen und verarbeitet werden.
+
+[source,C++]
+----
+if(TWIMaster::current.access == read){ # <1>
+	if ( TWIMaster::current.bytes > 1) { # <2>
+		TWIMaster::_TWI::receive();
+	} else if( TWIMaster::current.bytes == 1) {
+		stopTransactionNack();
+		TWIMaster::_TWI::receive();
+		TWIMaster::current.bytes = 0;
+		TWIMaster::current.Callback();
+	}
+} else {
+	if ( TWIMaster::current.bytes > 0) {
+		TWIMaster::_TWI::transfer();
+	} else {
+		stopTransaction();
+	}
+}
+----

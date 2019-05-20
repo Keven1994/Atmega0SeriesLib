@@ -72,39 +72,23 @@ using ADC1 = AVR::adc::ADC<ADC_Comp, adcres >;
 
 using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::NoFifo ,AVR::Interrupts<testPA> >,res, AVR::WriteOnly>;
 
-using _twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite>;
+static constexpr const char* hello = "Hello Slave";
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::ReadWrite>;
 
-static inline auto handler = [](){
-    while (!_twi::endTransaction());
-    while(!_twi::startTransaction<42,AVR::twi::access::Read>());
-};
-
-using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite, handler>;
-
-ISR(SPI0_INT_vect){
-//    spi::intHandler(42);
+ISR(TWI0_TWIM_vect){
+    twi::intHandler();
 }
 
 int main() {
-    AVR::dbgout::init();
 
- ADC1::init();
- ADC1::selectChannel<led1>();
- ADC1::startConversion();
- bool b = false;
- uint16_t result;
+    twi::init();
+    static constexpr auto len = utils::strlen(hello);
+    PORTD.DIR = 0xff;
+    PORTD.OUT = 1 << 4;
+    twi::put<42>((uint8_t*)hello,len);
+    twi::put<42>((uint8_t*)hello,len);
     while(true){
-        if(ADC1::value(result)){
-            b = true;
-        }
-        if(b){
-            AVR::dbgout::put(utils::toString(result));
-            AVR::dbgout::put('\n');
-            AVR::dbgout::flush();
-            ADC1::startConversion();
-            b=false;
-        }
-        AVR::delay<AVR::ms,500>();
+        AVR::delay<AVR::ms,200>();
     }
 }
 

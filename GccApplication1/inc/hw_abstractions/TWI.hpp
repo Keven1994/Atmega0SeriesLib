@@ -602,7 +602,9 @@ namespace AVR {
                     using statebits = typename TWIMaster::Status::type::special_bit;
                     if constexpr (TWIMaster::InterruptEnabled) {
                         if (statereg.areSet(statebits::Busstate_idle)) {
-                            if (TWIMaster::CommandStack.pop_front(TWIMaster::current)) {
+                            typename TWIMaster::command tmp;
+                            if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                TWIMaster::current = tmp;
                                 readCondition();
                             }
                         }
@@ -623,15 +625,31 @@ namespace AVR {
                             TWIMaster::_TWI::receive();
                             TWIMaster::current.bytes = 0;
                             TWIMaster::current.Callback();
+                            typename TWIMaster::command tmp;
+                            if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                TWIMaster::current = tmp;
+
+                                while(! (alt::Scl::pin0::isOn() && alt::Sda::pin0::isOn()));
+
+                                readCondition();
+                            }
                         }
                     } else if constexpr(TWIMaster::isWriteOnly) {
                         if ( TWIMaster::current.bytes > 0) {
                             TWIMaster::_TWI::transfer();
                         } else {
                             stopTransaction();
+                            typename TWIMaster::command tmp;
+                            if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                TWIMaster::current = tmp;
+                                while(! (alt::Scl::pin0::isOn() && alt::Sda::pin0::isOn()));
+
+                                writeCondition();
+                            }
                         }
                     } else {
                         resetNack();
+                        bool newCommand = false;
                         if(TWIMaster::current.access == read){
                             if ( TWIMaster::current.bytes > 1) {
                                 TWIMaster::_TWI::receive();
@@ -640,15 +658,35 @@ namespace AVR {
                                 TWIMaster::_TWI::receive();
                                 TWIMaster::current.bytes = 0;
                                 TWIMaster::current.Callback();
+                                typename TWIMaster::command tmp;
+                                if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                    TWIMaster::current = tmp;
+                                    newCommand = true;
+                                }
                             }
                         } else {
                             if ( TWIMaster::current.bytes > 0) {
                                 TWIMaster::_TWI::transfer();
                             } else {
                                 stopTransaction();
+                                typename TWIMaster::command tmp;
+                                if (TWIMaster::CommandStack.pop_front(tmp)) {
+                                    TWIMaster::current = tmp;
+                                    newCommand = true;
+                                }
+                            }
+                        }
+                        if(newCommand){
+                            while(! (alt::Scl::pin0::isOn() && alt::Sda::pin0::isOn()));
+                            if(TWIMaster::current.access == read){
+                                readCondition();
+                            } else {
+                                writeCondition();
                             }
                         }
                     }
+
+
                 }
 
                 //initialize and start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
