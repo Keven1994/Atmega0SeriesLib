@@ -436,43 +436,44 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
-<body class="article toc2 toc-left">
+<body class="book toc2 toc-left">
 <div id="header">
 <h1>0 Series Library Userguide</h1>
 <div id="toc" class="toc2">
-<div id="toctitle">Table of Contents</div>
+<div id="toctitle">Inhaltsverzeichnis</div>
 <ul class="sectlevel1">
-<li><a href="#_programmierung">Programmierung</a></li>
-<li><a href="#_grundsätzliches">Grundsätzliches</a></li>
-<li><a href="#_basics">Basics</a></li>
-<li><a href="#_ressourcecontroller">Ressourcecontroller</a></li>
-<li><a href="#_eventsystem">Eventsystem</a></li>
-<li><a href="#_twi">TWI</a>
+<li><a href="#_programmierung">1. Programmierung</a></li>
+<li><a href="#_grundsätzliches">2. Grundsätzliches</a></li>
+<li><a href="#_basics">3. Basics</a></li>
+<li><a href="#_ressourcecontroller">4. RessourceController</a></li>
+<li><a href="#_eventsystem">5. Eventsystem</a></li>
+<li><a href="#_twi">6. TWI</a>
 <ul class="sectlevel2">
-<li><a href="#_beispielbehandlung_twi_address_nack">Beispielbehandlung TWI Address-NACK</a></li>
-<li><a href="#_lesen_mit_fifo_keine_interrupts">Lesen mit FiFo, keine Interrupts</a></li>
-<li><a href="#_schreiben_mit_fifo_keine_interrupts">Schreiben mit FiFo, keine Interrupts</a></li>
-<li><a href="#_lesen_nicht_blockierend_keine_interrupts_keine_fifo">Lesen nicht blockierend, keine Interrupts, keine FiFo</a></li>
-<li><a href="#_lesen_nicht_blockierend_scoped_variante">Lesen nicht blockierend, Scoped-Variante</a></li>
-<li><a href="#_schreiben_nicht_blockierend_scoped_variante">Schreiben nicht blockierend, Scoped-Variante</a></li>
-<li><a href="#_schreiben_nicht_blockierend_fifo_mit_interrupts">Schreiben nicht blockierend, FiFo mit Interrupts</a></li>
-<li><a href="#_lesen_nicht_blockierend_fifo_mit_interrupts">Lesen nicht blockierend, FiFo mit Interrupts</a></li>
-<li><a href="#_lesen_und_schreiben_nicht_blockierend_fifo_mit_interrupts">Lesen und schreiben nicht blockierend, FiFo mit Interrupts</a></li>
+<li><a href="#_beispielbehandlung_twi_address_nack">6.1. Beispielbehandlung TWI Address-NACK</a></li>
+<li><a href="#_lesen_mit_fifo_keine_interrupts">6.2. Lesen mit FiFo, keine Interrupts</a></li>
+<li><a href="#_schreiben_mit_fifo_keine_interrupts">6.3. Schreiben mit FiFo, keine Interrupts</a></li>
+<li><a href="#_lesen_nicht_blockierend_keine_interrupts_keine_fifo">6.4. Lesen nicht blockierend, keine Interrupts, keine FiFo</a></li>
+<li><a href="#_lesen_nicht_blockierend_scoped_variante">6.5. Lesen nicht blockierend, Scoped-Variante</a></li>
+<li><a href="#_schreiben_nicht_blockierend_scoped_variante">6.6. Schreiben nicht blockierend, Scoped-Variante</a></li>
+<li><a href="#_schreiben_nicht_blockierend_fifo_mit_interrupts">6.7. Schreiben nicht blockierend, FiFo mit Interrupts</a></li>
+<li><a href="#_lesen_nicht_blockierend_fifo_mit_interrupts">6.8. Lesen nicht blockierend, FiFo mit Interrupts</a></li>
+<li><a href="#_lesen_und_schreiben_nicht_blockierend_fifo_mit_interrupts">6.9. Lesen und schreiben nicht blockierend, FiFo mit Interrupts</a></li>
 </ul>
 </li>
-<li><a href="#_spi">SPI</a>
+<li><a href="#_spi">7. SPI</a>
 <ul class="sectlevel2">
-<li><a href="#_schreiben_nicht_blockierend_fifo_ohne_interrupts">Schreiben, nicht blockierend, FiFo ohne Interrupts</a></li>
-<li><a href="#_schreiben_nicht_blockierend_fifo_mit_interrupts_2">Schreiben, nicht blockierend, FiFo mit Interrupts</a></li>
+<li><a href="#_schreiben_nicht_blockierend_fifo_ohne_interrupts">7.1. Schreiben, nicht blockierend, FiFo ohne Interrupts</a></li>
+<li><a href="#_schreiben_nicht_blockierend_fifo_mit_interrupts_2">7.2. Schreiben, nicht blockierend, FiFo mit Interrupts</a></li>
 </ul>
 </li>
-<li><a href="#_usart">USART</a></li>
+<li><a href="#_usart">8. USART</a></li>
+<li><a href="#_quellen">Quellen</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_programmierung">Programmierung</h2>
+<h2 id="_programmierung">1. Programmierung</h2>
 <div class="sectionbody">
 <div class="ulist">
 <div class="title">Um die Programme auf die Chips der Atmega 0 Serie zu flashen gibt es grundsätzlich 2 Methoden:</div>
@@ -488,15 +489,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_grundsätzliches">Grundsätzliches</h2>
+<h2 id="_grundsätzliches">2. Grundsätzliches</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p>Die Library stützt sich auf den AVR-GCC 8.3+, es werden intern unter anderem Concepts genutzt, die Verwendung eines aktuellen C++ Compilers ist daher notwendig.</p>
+<p>Die Library stützt sich auf den AVR-GCC 8.3+, es werden intern unter anderem Concepts genutzt, die Verwendung eines aktuellen cpp Compilers ist daher notwendig.</p>
 </li>
 <li>
-<p>Am besten wird das enthaltene CMakefile genutzt um das Projekt zu erstellen, um den UC zu wechseln muss lediglich die Variable 'Mnumber' und 'F_CPU' abgeändert werden.</p>
+<p>Am besten wird das enthaltene CMakefile genutzt um das Projekt zu erstellen, um den UC zu wechseln muss lediglich die Variable <code>Mnumber</code> und <code>F_CPU</code> abgeändert werden.</p>
 </li>
 <li>
 <p>[Optional] um ein schnelleres Compilieren zu ermöglichen kann nach dem ersten Compilieren die Variable GenerateHWFiles auf FALSE gestellt werden.</p>
@@ -514,46 +515,76 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Port, PortPin und der Ressource Controller sind Standardmäßig inkludiert und müssen nicht nochmal explizit inkludiert werden.</p>
 </li>
 <li>
-<p>Es ist notwendig, dass die von Atmel bereitgestellten header, library-files sowie device-specs der toolchain hinzugefügt werden.</p>
+<p>Es ist notwendig, dass die von Microchip bereitgestellten Header, Library-files sowie device-specs der Toolchain hinzugefügt werden.</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_basics">Basics</h2>
+<h2 id="_basics">3. Basics</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Zunächst wird betrachtet wie die Ports oder auch spezifische Pins über die Library angesteuert werden.</p>
 </div>
 <div class="listingblock">
+<div class="title">Abbildung 1. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">#include "MCUSelect.hpp"
-#include "hw_abstractions/Delay.hpp"
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+</pre></td>
+  <td class="code"><pre><span class="preprocessor">#include</span> <span class="include">&quot;MCUSelect.hpp&quot;</span>
+<span class="preprocessor">#include</span> <span class="include">&quot;hw_abstractions/Delay.hpp&quot;</span>
 
-using portA = AVR::port::Port&lt;AVR::port::A&gt;;
-using portC = AVR::port::Port&lt;AVR::port::C&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
-using led1 = AVR::port::Pin&lt;portA,2&gt;;
-using led3 = AVR::port::Pin&lt;portA,3&gt;;
-using led4 = AVR::port::Pin&lt;portA,4&gt;;
-using led5 = AVR::port::Pin&lt;portA,5&gt;; <i class="conum" data-value="2"></i><b>(2)</b>
+<span class="directive">using</span> portA = AVR::port::Port&lt;AVR::port::A&gt;;
+<span class="directive">using</span> portC = AVR::port::Port&lt;AVR::port::C&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
+<span class="directive">using</span> led1 = AVR::port::Pin&lt;portA,<span class="integer">2</span>&gt;;
+<span class="directive">using</span> led3 = AVR::port::Pin&lt;portA,<span class="integer">3</span>&gt;;
+<span class="directive">using</span> led4 = AVR::port::Pin&lt;portA,<span class="integer">4</span>&gt;;
+<span class="directive">using</span> led5 = AVR::port::Pin&lt;portA,<span class="integer">5</span>&gt;; <i class="conum" data-value="2"></i><b>(2)</b>
 
-using led2 = typename portC::pins::pin3; <i class="conum" data-value="3"></i><b>(3)</b>
+<span class="directive">using</span> led2 = <span class="keyword">typename</span> portC::pins::pin3; <i class="conum" data-value="3"></i><b>(3)</b>
 
-int main() {
+<span class="predefined-type">int</span> main() {
 
     portA::setDir&lt;AVR::port::Out&gt;(); <i class="conum" data-value="4"></i><b>(4)</b>
     led2::setOutput(); <i class="conum" data-value="5"></i><b>(5)</b>
-    while(true){
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
         led1::toggle();
-        if(led2::isOn())
+        <span class="keyword">if</span>(led2::isOn())
             led3::toggle();
         led2::toggle();
         AVR::port::pinsOutToggle&lt;led4,led5&gt;(); <i class="conum" data-value="6"></i><b>(6)</b>
-        AVR::delay&lt;AVR::ms,500&gt;(); <i class="conum" data-value="7"></i><b>(7)</b>
+        AVR::delay&lt;AVR::ms,<span class="integer">500</span>&gt;(); <i class="conum" data-value="7"></i><b>(7)</b>
     }
 
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -589,36 +620,78 @@ int main() {
 </table>
 </div>
 <div class="paragraph">
-<p>Zunächst werden die Ports ausgewählt welche angesprochen werden sollen, hier in diesem Falle Port A und C. Sollte bei der Auswahl ein Compiler Fehler auftreten wurde ein nicht existenter Port ausgewählt (der Atmega4808 besitzt z.B. keinen Port B oder E obwohl es Defines dafür gibt). Der nächste Schritt ist die Auswahl von spezifischen Pins, dafür wird dem template-Alias der zuvor gewählte Port sowie die Pin Nummer angegeben. Hier muss darauf geachtet werden dass die spezifischen Pins NICHT auf Verfügbarkeit geprüft werden, um sicher zu gehen können die Pins auch aus dem Port entnommen werden (s.a. Led2), die hier enthaltenen Pins sind definitiv physikalisch vorhanden. Nachdem die Auswahl für Ports und/oder Pins getroffen wurden können auf diesen Operationen ausgeführt werden. Es könne sowohl auf den Ports als auch auf den Pins spezifische Operationen ausgeführt werden (z.B. toggle, on, off,setDir ….). Sollen auf mehreren Pins gleichzeitig Operationen ausgeführt werden, so können die freien Funktionen in AVR::port genutzt werden. Bei den freien Funktionen ist zu beachten, dass nur Pins des gleichen Ports übergeben werden können, verschiedene Ports lösen einen Compiler-Fehler aus. Die Port Klasse besitzt noch die Convenience-Methode „get“ um auf Register zuzugreifen, damit kann von außerhalb auf ein spezifisches Register (z.B. pin0ctrl) zugegriffen werden. Wenn möglich sollte diese Methode aber vermieden und vorhandene abstraktere Klassen-Methoden genutzt werden. Im obigen Beispiel findet sich die delay-Methode, diese wrappt die C _delay Methoden und rechnet je nach Einheit (us, ms, s) korrekt um. Des weiteren gibt es noch eine safeDelay-Methode, diese schaltet die Interrupts für die Dauer des wartens ab und funktioniert somit immer korrekt (sollten die Interrupts angeschaltet gewesen sein werden sie nach Ablauf des delays wieder aktiviert).</p>
+<p>Zunächst werden die Ports ausgewählt welche angesprochen werden sollen, hier in diesem Falle Port A und C.
+Sollte bei der Auswahl ein Compiler Fehler auftreten wurde ein nicht existenter Port ausgewählt
+(der Atmega4808 besitzt z.B. keinen Port B oder E obwohl es Defines dafür gibt).
+Der nächste Schritt ist die Auswahl von spezifischen Pins, dafür wird dem Template-Alias der zuvor gewählte Port sowie die
+Pin Nummer angegeben. Hier muss darauf geachtet werden dass die spezifischen Pins NICHT auf Verfügbarkeit geprüft werden,
+um sicher zu gehen können die Pins auch aus dem Port entnommen werden (s.a. Led2), die hier enthaltenen Pins sind definitiv
+physikalisch vorhanden. Nachdem die Auswahl für Ports und/oder Pins getroffen wurden können auf diesen Operationen ausgeführt werden.
+Es könne sowohl auf den Ports als auch auf den Pins spezifische Operationen ausgeführt werden (z.B. toggle, on, off,setDir ….).
+Sollen auf mehreren Pins gleichzeitig Operationen ausgeführt werden, so können die freien Funktionen in AVR::port genutzt werden.
+Bei den freien Funktionen ist zu beachten, dass nur Pins des gleichen Ports übergeben werden können,
+verschiedene Ports lösen einen Compiler-Fehler aus.
+Die Port Klasse besitzt noch die Convenience-Methode „get“ um auf Register zuzugreifen,
+damit kann von außerhalb auf ein spezifisches Register (z.B. pin0ctrl) zugegriffen werden.
+Wenn möglich sollte diese Methode aber vermieden und vorhandene abstraktere Klassen-Methoden genutzt werden.
+Im obigen Beispiel findet sich die <code>delay-Methode</code>, diese wrappt die C _delay Methoden und rechnet je nach Einheit (us, ms, s) korrekt um.
+Des weiteren gibt es noch eine <code>safeDelay-Methode</code>, diese schaltet die Interrupts für die Dauer des Wartens ab und funktioniert somit
+immer korrekt (sollten die Interrupts angeschaltet gewesen sein werden sie nach Ablauf des Delays wieder aktiviert).</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_ressourcecontroller">Ressourcecontroller</h2>
+<h2 id="_ressourcecontroller">4. RessourceController</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Die Library stellt eine Klasse zur Verfügung mit welcher die Ressourcen auf ihre Kollisionsfreiheit überprüft werden können. Wenn diese Klasse genutzt wird ist es ausgeschlossen dass darin angeforderte Ressourcen sich überschneiden, wenn z.B TWI PortA Pin 3 braucht und eine weitere Ressource diesen Pin belegen wollen würde, so würde das Programm nicht kompilieren und eine entsprechende Fehlermeldung ausgegeben.</p>
+<p>Die Library stellt eine Klasse zur Verfügung mit welcher die Ressourcen auf ihre Kollisionsfreiheit überprüft werden können.
+Wenn diese Klasse genutzt wird ist es ausgeschlossen dass darin angeforderte Ressourcen sich überschneiden,
+wenn z.B TWI PortA Pin 3 braucht und eine weitere Ressource diesen Pin belegen wollen würde,
+so würde das Programm nicht kompilieren und eine entsprechende Fehlermeldung ausgegeben.</p>
 </div>
 <div class="listingblock">
+<div class="title">Abbildung 2. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using twiInstance = AVR::rc::Instance&lt;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> twiInstance = AVR::rc::Instance&lt;
         AVR::twi::TWI,
-        AVR::rc::Number&lt;0&gt;,
-        AVR::portmux::PortMux&lt;0&gt;&gt;;
+        AVR::rc::Number&lt;<span class="integer">0</span>&gt;,
+        AVR::portmux::PortMux&lt;<span class="integer">0</span>&gt;&gt;;
 
-using usartInstance = AVR::rc::Instance&lt;
+<span class="directive">using</span> usartInstance = AVR::rc::Instance&lt;
         AVR::usart::USART_Comp,
-        AVR::rc::Number&lt;2&gt;,
-        AVR::portmux::PortMux&lt;0&gt;&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
+        AVR::rc::Number&lt;<span class="integer">2</span>&gt;,
+        AVR::portmux::PortMux&lt;<span class="integer">0</span>&gt;&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
 
-using RC = AVR::rc::RessourceController&lt;twiInstance,usartInstance&gt;; <i class="conum" data-value="2"></i><b>(2)</b>
+<span class="directive">using</span> RC = AVR::rc::RessourceController&lt;twiInstance,usartInstance&gt;; <i class="conum" data-value="2"></i><b>(2)</b>
 
-using twiRessource = RC::getRessource&lt;twiInstance&gt;;
-using usartRessource = RC::getRessource&lt;usartInstance&gt;; <i class="conum" data-value="3"></i><b>(3)</b>
+<span class="directive">using</span> twiRessource = RC::getRessource&lt;twiInstance&gt;;
+<span class="directive">using</span> usartRessource = RC::getRessource&lt;usartInstance&gt;; <i class="conum" data-value="3"></i><b>(3)</b>
 
-using usart = AVR::usart::USART&lt;AVR::blocking,usartRessource&gt;;
+<span class="directive">using</span> usart = AVR::usart::USART&lt;AVR::blocking,usartRessource&gt;;
 
-using twi = AVR::twi::TWIMaster&lt;AVR::blocking,twiRessource , AVR::ReadWrite&gt;; <i class="conum" data-value="4"></i><b>(4)</b></code></pre>
+<span class="directive">using</span> twi = AVR::twi::TWIMaster&lt;AVR::blocking,twiRessource , AVR::ReadWrite&gt;; <i class="conum" data-value="4"></i><b>(4)</b>
+</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -642,17 +715,34 @@ using twi = AVR::twi::TWIMaster&lt;AVR::blocking,twiRessource , AVR::ReadWrite&g
 </table>
 </div>
 <div class="paragraph">
-<p>Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst, diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART). Danach wird der RessourceController mit den zu benutzenden Instanzen belegt, danach kann mit der getRessource Klassen-Methode die Ressource angefordert werden. Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led&#8217;s oder sonstiges) so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).</p>
+<p>Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst,
+diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART).
+Danach wird der RessourceController mit den zu benutzenden Instanzen belegt,
+danach kann mit der getRessource Klassen-Methode die Ressource angefordert werden.
+Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led`s oder sonstiges)
+so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).</p>
 </div>
 <div class="listingblock">
+<div class="title">Abbildung 3. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using led1 = Pin&lt;PortA, 0&gt;;
-using led2 = Pin&lt;PortA, 1&gt;;
-using led3 = Pin&lt;PortD, 6&gt;;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> led1 = Pin&lt;PortA, <span class="integer">0</span>&gt;;
+<span class="directive">using</span> led2 = Pin&lt;PortA, <span class="integer">1</span>&gt;;
+<span class="directive">using</span> led3 = Pin&lt;PortD, <span class="integer">6</span>&gt;;
 
-using gRes = AVR::rc::GenericRessource&lt;led1,led2,led3&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
+<span class="directive">using</span> gRes = AVR::rc::GenericRessource&lt;led1,led2,led3&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
 
-using RC = AVR::rc::RessourceController&lt;twiIntance,usartInstance,gRes &gt;; <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+<span class="directive">using</span> RC = AVR::rc::RessourceController&lt;twiIntance,usartInstance,gRes &gt;; <i class="conum" data-value="2"></i><b>(2)</b>
+</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -668,17 +758,33 @@ using RC = AVR::rc::RessourceController&lt;twiIntance,usartInstance,gRes &gt;; <
 </table>
 </div>
 <div class="paragraph">
-<p>Wenn alle Ressourcen mit dem RessourceController überprüft werden ist ein Konflikt der Ressourcen Belegung zur Compile-Zeit ausgeschlossen. Zu beachten ist allerdings dass bei den meisten Ressourcen wie z.B. TWI, USART und SPI alle Pins welche dort benutzt werden können auch geprüft werden. Sollte also z.B. MasterSPI als ReadOnly konfiguriert werden so wird logischerweise der Miso-Pin nicht benutzt, aber im RessourceController trotzdem geprüft.</p>
+<p>Wenn alle Ressourcen mit dem RessourceController überprüft werden ist ein Konflikt der Ressourcen Belegung zur Compile-Zeit ausgeschlossen.
+Zu beachten ist allerdings dass bei den meisten Ressourcen wie z.B. TWI,
+USART und SPI alle Pins welche dort benutzt werden können auch geprüft werden.
+Sollte also z.B. MasterSPI als ReadOnly konfiguriert werden so wird logischerweise der Miso-Pin nicht benutzt,
+aber im RessourceController trotzdem geprüft.</p>
 </div>
 <div class="listingblock">
+<div class="title">Abbildung 4. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using spiRessource = AVR::rc::Instance&lt;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> spiRessource = AVR::rc::Instance&lt;
 AVR::spi::SPI,
-AVR::rc::Number&lt;0&gt;,
-AVR::portmux::PortMux&lt;0&gt;&gt;;
+AVR::rc::Number&lt;<span class="integer">0</span>&gt;,
+AVR::portmux::PortMux&lt;<span class="integer">0</span>&gt;&gt;;
 
-using uncheckedSPI = AVR::rc::UncheckedRessource_t&lt;spiRessource&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
-using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::Interrupts&lt;&gt; &gt;,uncheckedSPI , AVR::ReadOnly&gt;; <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+<span class="directive">using</span> uncheckedSPI = AVR::rc::UncheckedRessource_t&lt;spiRessource&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
+<span class="directive">using</span> spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<span class="integer">42</span>&gt; ,AVR::Interrupts&lt;&gt; &gt;,uncheckedSPI , AVR::ReadOnly&gt;; <i class="conum" data-value="2"></i><b>(2)</b>
+</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -694,15 +800,19 @@ using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,A
 </table>
 </div>
 <div class="paragraph">
-<p>Sollte der besagte Pin trotzdem von einer anderen Ressource verwendet werden besteht die Möglichkeit eine Ressource von der Prüfung auszuschließen indem UncheckedRessource verwendet wird.</p>
+<p>Sollte der besagte Pin trotzdem von einer anderen Ressource verwendet werden besteht die Möglichkeit
+eine Ressource von der Prüfung auszuschließen indem UncheckedRessource verwendet wird.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_eventsystem">Eventsystem</h2>
+<h2 id="_eventsystem">5. Eventsystem</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Das Eventsystem der 0 Serie ermöglicht Peripherie Abhängige Funktionalitäten mit deren Hilfe die Peripherie ohne Interrupts Synchron und Asynchron miteinander kommunizieren kann. Das Eventsystem kann nur so konfiguriert werden dass je Kanal ein Generator läuft und dieser Kanal jeweils von beliebig vielen Users abgehört werden kann. Das Eventsystem ist hauptsächlich dazu gedacht Interrupts und den damit verbundenen Overhead zu vermeiden.</p>
+<p>Das Eventsystem der 0 Serie ermöglicht Peripherie Abhängige Funktionalitäten mit deren Hilfe die Peripherie ohne
+Interrupts Synchron und Asynchron miteinander kommunizieren kann.
+Das Eventsystem kann nur so konfiguriert werden dass je Kanal ein Generator läuft und dieser Kanal jeweils von beliebig vielen
+Users abgehört werden kann. Das Eventsystem ist hauptsächlich dazu gedacht Interrupts und den damit verbundenen Overhead zu vermeiden.</p>
 </div>
 <div class="ulist">
 <div class="title">Generatoren:</div>
@@ -717,7 +827,7 @@ using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,A
 <p>Des weiteren muss auch die Eventlänge beachtet werden, ein Generator kann ein Event z.B. als Pulse oder auch als Level ausgeben (hat wiederum Auswirkungen auf den User).</p>
 </li>
 <li>
-<p>Die Bedingungen, die Eventlänge sowie die Constraints müssen vor der Verwendung im Manual nachgelesen werden.</p>
+<p>Die Bedingungen, die Eventlänge sowie die Constraints müssen vor der Verwendung im Handbuch nachgelesen werden.</p>
 </li>
 </ul>
 </div>
@@ -751,23 +861,37 @@ Es können auch Software-Events generiert werden (immer Synchron als Strobe).
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-Wichtig ist zu beachten ob die Events die der Generator erzeugt Synchron oder Asynchron sind, dies muss im Manual nachgelesen werden.
+Wichtig ist zu beachten ob die Events die der Generator erzeugt Synchron oder Asynchron sind, dies muss im Handbuch nachgelesen werden.
 </td>
 </tr>
 </table>
 </div>
 <div class="listingblock">
+<div class="title">Abbildung 5. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using ch0 = AVR::eventsystem::Channel&lt;0&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
-using ch0_gen = typename ch0::generators::generals::spi0_sck; <i class="conum" data-value="2"></i><b>(2)</b>
-using user0 = typename ch0::users::evtca0;
-using user1 = typename ch0::users::evtcb0; <i class="conum" data-value="3"></i><b>(3)</b>
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> ch0 = AVR::eventsystem::Channel&lt;<span class="integer">0</span>&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
+<span class="directive">using</span> ch0_gen = <span class="keyword">typename</span> ch0::generators::generals::spi0_sck; <i class="conum" data-value="2"></i><b>(2)</b>
+<span class="directive">using</span> user0 = <span class="keyword">typename</span> ch0::users::evtca0;
+<span class="directive">using</span> user1 = <span class="keyword">typename</span> ch0::users::evtcb0; <i class="conum" data-value="3"></i><b>(3)</b>
 
-int main() {
-    ch0::template registerListener&lt;user0,user1&gt;(); <i class="conum" data-value="4"></i><b>(4)</b>
-    ch0::template setGenerator&lt;ch0_gen &gt;(); <i class="conum" data-value="5"></i><b>(5)</b>
+<span class="predefined-type">int</span> main() {
+    ch0::<span class="keyword">template</span> registerListener&lt;user0,user1&gt;(); <i class="conum" data-value="4"></i><b>(4)</b>
+    ch0::<span class="keyword">template</span> setGenerator&lt;ch0_gen &gt;(); <i class="conum" data-value="5"></i><b>(5)</b>
     ch0::softwareEvent(); <i class="conum" data-value="6"></i><b>(6)</b>
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -804,11 +928,11 @@ int main() {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_twi">TWI</h2>
+<h2 id="_twi">6. TWI</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Die TWI Schnittstelle ist aus Aufwandsgründen nur für den Master Modus eingerichtet, die Quick-Command Funktionalität wurde aus Gründen der Kompatibilität zwischen TWI und I²C abgeschaltet, hier wurden Probleme bei der Kommunikation zwischen verschiedenen Geräten sichtbar. Ansonsten kann die TWI-Master Schnittstelle mit allen möglichen Eigenschaften konfiguriert werden, empfehlenswert ist aber lediglich die Anpassung der Zugriffsart (RW / R / W) sowie Blockierend / nicht blockierend oder auch Interruptdriven, ob eine FiFo genutzt wird und Instanzauswahl (wenn die anderen Eigenschaften angepassst werden so ist das Verhalten NICHT getestet), nachfolgend einige Beispiele.
-Die Frequenzrate wird über die init Methode festgelegt, sofern fastmode plus nicht aktiviert ist (default Einstellung ist aus), so ist die rate auf 400khz beschränkt.</p>
+<p>Die TWI Schnittstelle ist aus Aufwandsgründen nur für den Master Modus eingerichtet, die Quick-Command Funktionalität wurde aus Gründen der Kompatibilität zwischen TWI und I²C abgeschaltet, hier wurden Probleme bei der Kommunikation zwischen verschiedenen Geräten sichtbar. Ansonsten kann die TWI-Master Schnittstelle mit allen möglichen Eigenschaften konfiguriert werden, empfehlenswert ist aber lediglich die Anpassung der Zugriffsart (RW / R / W) sowie Blockierend / nicht blockierend oder auch Interruptdriven, ob eine FiFo genutzt wird und Instanzauswahl (wenn die anderen Eigenschaften angepasst werden so ist das Verhalten NICHT getestet), nachfolgend einige Beispiele.
+Die Frequenzrate wird über die init Methode festgelegt, sofern fastmode plus nicht aktiviert ist (Default Einstellung ist aus), so ist die rate auf 400khz beschränkt.</p>
 </div>
 <div class="admonitionblock warning">
 <table>
@@ -823,17 +947,29 @@ Es wird nicht kontrolliert ob der Slave die Adresse bestätigt hat ,dieser Fall 
 </table>
 </div>
 <div class="sect2">
-<h3 id="_beispielbehandlung_twi_address_nack">Beispielbehandlung TWI Address-NACK</h3>
+<h3 id="_beispielbehandlung_twi_address_nack">6.1. Beispielbehandlung TWI Address-NACK</h3>
 <div class="listingblock">
+<div class="title">Abbildung 6. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">auto rd = twi::scopedRead&lt;43&gt;();
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+</pre></td>
+  <td class="code"><pre><span class="directive">auto</span> rd = twi::scopedRead&lt;<span class="integer">43</span>&gt;();
 
-while(! twi::writeComplete()) { <i class="conum" data-value="1"></i><b>(1)</b>
-    while(! twi::slaveAcknowledged()) { <i class="conum" data-value="2"></i><b>(2)</b>
-        while (!twi::endTransaction());  <i class="conum" data-value="3"></i><b>(3)</b>
-        rd = twi::scopedRead&lt;43&gt;(); <i class="conum" data-value="4"></i><b>(4)</b>
+<span class="keyword">while</span>(! twi::writeComplete()) { <i class="conum" data-value="1"></i><b>(1)</b>
+    <span class="keyword">while</span>(! twi::slaveAcknowledged()) { <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="keyword">while</span> (!twi::endTransaction());  <i class="conum" data-value="3"></i><b>(3)</b>
+        rd = twi::scopedRead&lt;<span class="integer">43</span>&gt;(); <i class="conum" data-value="4"></i><b>(4)</b>
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -857,29 +993,50 @@ while(! twi::writeComplete()) { <i class="conum" data-value="1"></i><b>(1)</b>
 </table>
 </div>
 <div class="paragraph">
-<p>Hier wird außerhalb der Schnittstelle zuerst effektiv auf das Beenden der Start-Condition gewartet, danach wird eine Stop-Condition ausgelöst damit die Start-Condition wiederholt werden kann. Die Behandlung besteht hier darin es solange zu versuchen bis der Slave bestätigt, andere Behandlungsmethoden sind z.B. das versuchen einer anderen Adresse oder eine andere Programm-Routine auszuführen. Eine weitere Möglichkeit ist der Schnittstelle als 4. Parameter einen Handler in form eines lambda oder einer Funktion mitzugeben, per Default Parameter ist keiner festgelegt ('AVR::DefaultNackHandler'). Intern wird nach der Start-Condition gewartet bis die Adresse geschrieben wurde und der Slave geantwortet hat, sollte hier ein NACK festgestellt werden so wird der NackHandler so lange ausgeführt bis ein ACK erhalten wurde oder der Handler ein true zurückgibt (z.B. könnte hier Punk 3 und 4 als lambda und return false an die TWI-Schnittstelle übergeben werden).</p>
+<p>Hier wird außerhalb der Schnittstelle zuerst effektiv auf das Beenden der Start-Condition gewartet,
+danach wird eine Stop-Condition ausgelöst damit die Start-Condition wiederholt werden kann.
+Die Behandlung besteht hier darin es solange zu versuchen bis der Slave bestätigt,
+andere Behandlungsmethoden sind z.B. das versuchen einer anderen Adresse oder eine andere Programm-Routine auszuführen.
+Eine weitere Möglichkeit ist der Schnittstelle als 4. Parameter einen Handler in form eines Lambda oder einer Funktion mitzugeben,
+per Default Parameter ist keiner festgelegt (<code>AVR::DefaultNackHandler</code>).
+Intern wird nach der Start-Condition gewartet bis die Adresse geschrieben wurde und der Slave geantwortet hat,
+sollte hier ein NACK festgestellt werden so wird der NackHandler so lange ausgeführt bis ein ACK erhalten wurde oder der Handler ein
+true zurückgibt (z.B. könnte hier Punk 3 und 4 als Lambda und return false an die TWI-Schnittstelle übergeben werden).</p>
 </div>
 <div class="listingblock">
+<div class="title">Abbildung 7. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using _twi = AVR::twi::TWIMaster&lt;AVR::blocking, twires, AVR::ReadWrite&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> _twi = AVR::twi::TWIMaster&lt;AVR::blocking, twires, AVR::ReadWrite&gt;; <i class="conum" data-value="1"></i><b>(1)</b>
 
-static inline auto handler = [](){
-    while (!_twi::endTransaction());
-    while(!_twi::startTransaction&lt;42,AVR::twi::access::Read&gt;());
+<span class="directive">static</span> <span class="directive">inline</span> <span class="directive">auto</span> handler = [](){
+    <span class="keyword">while</span> (!_twi::endTransaction());
+    <span class="keyword">while</span>(!_twi::startTransaction&lt;<span class="integer">42</span>,AVR::twi::access::Read&gt;());
 }; <i class="conum" data-value="2"></i><b>(2)</b>
 
-using twi = AVR::twi::TWIMaster&lt;AVR::blocking, twires, AVR::ReadWrite, handler&gt;; <i class="conum" data-value="3"></i><b>(3)</b></code></pre>
+<span class="directive">using</span> twi = AVR::twi::TWIMaster&lt;AVR::blocking, twires, AVR::ReadWrite, handler&gt;; <i class="conum" data-value="3"></i><b>(3)</b>
+</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Deklarieren der Schnittstelle ohne handler</td>
+<td>Deklarieren der Schnittstelle ohne Handler</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Definieren des handlers</td>
+<td>Definieren des Handlers</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
@@ -892,32 +1049,59 @@ using twi = AVR::twi::TWIMaster&lt;AVR::blocking, twires, AVR::ReadWrite, handle
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lesen_mit_fifo_keine_interrupts">Lesen mit FiFo, keine Interrupts</h3>
+<h3 id="_lesen_mit_fifo_keine_interrupts">6.2. Lesen mit FiFo, keine Interrupts</h3>
 <div class="listingblock">
+<div class="title">Abbildung 8. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::NoInterrupts&gt;,twires , AVR::ReadOnly&gt;;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<span class="integer">42</span>&gt;,AVR::NoInterrupts&gt;,twires , AVR::ReadOnly&gt;;
 
-volatile bool wasread = false;
+<span class="directive">volatile</span> <span class="predefined-type">bool</span> wasread = <span class="predefined-constant">false</span>;
 
-static inline void Callback (){
-    wasread=true;
+<span class="directive">static</span> <span class="directive">inline</span> <span class="directive">void</span> Callback (){
+    wasread=<span class="predefined-constant">true</span>;
     uint8_t item;
-    while(twi::getInputFifo().pop_front(item))
+    <span class="keyword">while</span>(twi::getInputFifo().pop_front(item))
         AVR::dbgout::put(item);
 } <i class="conum" data-value="1"></i><b>(1)</b>
 
-int main() {
-    twi::init&lt;100000&gt;(); <i class="conum" data-value="2"></i><b>(2)</b>
+<span class="predefined-type">int</span> main() {
+    twi::init&lt;<span class="integer">100000</span>&gt;(); <i class="conum" data-value="2"></i><b>(2)</b>
     AVR::dbgout::init();
-    while(true){
-        twi::get&lt;42,Callback&gt;(12); <i class="conum" data-value="3"></i><b>(3)</b>
-        while(!wasread)
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        twi::get&lt;<span class="integer">42</span>,Callback&gt;(<span class="integer">12</span>); <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="keyword">while</span>(!wasread)
             twi::periodic(); <i class="conum" data-value="4"></i><b>(4)</b>
         AVR::dbgout::flush();
-        AVR::delay&lt;AVR::ms,200&gt;();
-        wasread = false;
+        AVR::delay&lt;AVR::ms,<span class="integer">200</span>&gt;();
+        wasread = <span class="predefined-constant">false</span>;
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -941,28 +1125,52 @@ int main() {
 </table>
 </div>
 <div class="paragraph">
-<p>Dieses Beispiel zeigt die Konfiguration der Schnittstelle als nicht blockierend, Readonly, mit Fifo und ohne Interrupts, bei der TWI Schnittstelle wurde auf eine nicht blockierende Variante ohne FiFo verzichtet, da diese Version mangels Abstraktion zu fehleranfällig wäre. Die get Methode wird mit den template Parametern der Addresse und einer Callback Funktion (oder auch lambda) versehen, als Parameter wird die Anzahl der zu lesenden Bytes übergeben. Ohne Interrupts muss in der Schleife periodic aufgerufen werden, sonst werden weder Daten empfangen noch gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und der Benutzer kann festlegen was passieren soll (sinnvoll ist auf jedenfall die FiFo zu leeren wie im Beispiel).</p>
+<p>Dieses Beispiel zeigt die Konfiguration der Schnittstelle als nicht blockierend, ReadOnly, mit Fifo und ohne Interrupts,
+bei der TWI Schnittstelle wurde auf eine nicht blockierende Variante ohne FiFo verzichtet, da diese Version mangels Abstraktion zu
+fehleranfällig wäre. Die get Methode wird mit den Template Parametern der Adresse und einer Callback Funktion (oder auch Lambda)
+versehen, als Parameter wird die Anzahl der zu lesenden Bytes übergeben. Ohne Interrupts muss in der Schleife <code>periodic</code> aufgerufen
+werden, sonst werden weder Daten empfangen noch gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und der Benutzer kann festlegen was passieren soll
+ (sinnvoll ist auf jeden fall die Fifo zu leeren wie im Beispiel).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_schreiben_mit_fifo_keine_interrupts">Schreiben mit FiFo, keine Interrupts</h3>
+<h3 id="_schreiben_mit_fifo_keine_interrupts">6.3. Schreiben mit FiFo, keine Interrupts</h3>
 <div class="listingblock">
+<div class="title">Abbildung 9. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">static constexpr const char* hello = "Hello Slave";
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td>
+  <td class="code"><pre><span class="directive">static</span> <span class="directive">constexpr</span> <span class="directive">const</span> <span class="predefined-type">char</span>* hello = <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello Slave</span><span class="delimiter">&quot;</span></span>;
 
-int main() {
+<span class="predefined-type">int</span> main() {
     twi::init();
 
-    static constexpr auto len = utils::strlen(hello);
+    <span class="directive">static</span> <span class="directive">constexpr</span> <span class="directive">auto</span> len = utils::strlen(hello);
 
-    while(true){
-        twi::put&lt;42&gt;((uint8_t*)hello,len);
-            while( twi::dataToSend()) <i class="conum" data-value="1"></i><b>(1)</b>
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        twi::put&lt;<span class="integer">42</span>&gt;((uint8_t*)hello,len);
+            <span class="keyword">while</span>( twi::dataToSend()) <i class="conum" data-value="1"></i><b>(1)</b>
                 twi::periodic();
 
-        AVR::delay&lt;AVR::ms,200&gt;();
+        AVR::delay&lt;AVR::ms,<span class="integer">200</span>&gt;();
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -974,30 +1182,52 @@ int main() {
 </table>
 </div>
 <div class="paragraph">
-<p>Hier im Beispiel wird die Verwendung des Schreibens gezeigt, hier wird solange periodic aufgerufen bis keine Daten zum Schreiben mehr vorhanden sind.</p>
+<p>Hier im Beispiel wird die Verwendung des Schreibens gezeigt, hier wird solange <code>periodic</code> aufgerufen bis keine Daten zum
+Schreiben mehr vorhanden sind.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lesen_nicht_blockierend_keine_interrupts_keine_fifo">Lesen nicht blockierend, keine Interrupts, keine FiFo</h3>
+<h3 id="_lesen_nicht_blockierend_keine_interrupts_keine_fifo">6.4. Lesen nicht blockierend, keine Interrupts, keine FiFo</h3>
 <div class="listingblock">
+<div class="title">Abbildung 10. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::NoFifo,AVR::NoInterrupts&gt;,twires , AVR::ReadOnly&gt;;
-static constexpr uint8_t size = 12;
-static uint8_t arr[size];
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::NoFifo,AVR::NoInterrupts&gt;,twires , AVR::ReadOnly&gt;;
+<span class="directive">static</span> <span class="directive">constexpr</span> uint8_t size = <span class="integer">12</span>;
+<span class="directive">static</span> uint8_t arr[size];
 
-int main() {
+<span class="predefined-type">int</span> main() {
     twi::init();
-    while(true){
-        while(!twi::startTransaction&lt;42,AVR::twi::access::Read&gt;()); <i class="conum" data-value="1"></i><b>(1)</b>
-        uint8_t tmp = 0;
-        while(tmp != size){
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        <span class="keyword">while</span>(!twi::startTransaction&lt;<span class="integer">42</span>,AVR::twi::access::Read&gt;()); <i class="conum" data-value="1"></i><b>(1)</b>
+        uint8_t tmp = <span class="integer">0</span>;
+        <span class="keyword">while</span>(tmp != size){
             tmp += twi::receive(arr,size-tmp); <i class="conum" data-value="2"></i><b>(2)</b>
         }
 
-        AVR::delay&lt;AVR::ms,200&gt;();
+        AVR::delay&lt;AVR::ms,<span class="integer">200</span>&gt;();
 
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -1013,28 +1243,51 @@ int main() {
 </table>
 </div>
 <div class="paragraph">
-<p>wird keine FiFo genutzt dann wird von der receive Methode die Anzahl gelesener Bytes zurückgegeben (bei einem einzelnen Lesevorgang ein Boolean ob ein Byte gelesen wurde), logischerweise muss der Anwender ohne FiFo eigene Maßnahmen treffen um entsprechend viele Bytes zu lesen (siehe Beispiel code). Auch das Auslösen der Start – sowie StopCondition müssen dann manuell eingepflegt werden, Ausnahme betrifft das lesen, hier wird die stop-Condition mit dem lesen des letzen Bytes austomatisch ausgeführt.</p>
+<p>wird keine FiFo genutzt dann wird von der <code>receive</code> Methode die Anzahl gelesener Bytes zurückgegeben
+(bei einem einzelnen Lesevorgang ein Boolean ob ein Byte gelesen wurde), logischerweise muss der Anwender ohne FiFo eigene Maßnahmen
+treffen um entsprechend viele Bytes zu lesen (siehe Beispiel code). Auch das Auslösen der Start – sowie StopCondition müssen
+dann manuell eingepflegt werden, Ausnahme betrifft das lesen,
+hier wird die Stop-Condition mit dem lesen des letzten Bytes automatisch ausgeführt.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lesen_nicht_blockierend_scoped_variante">Lesen nicht blockierend, Scoped-Variante</h3>
+<h3 id="_lesen_nicht_blockierend_scoped_variante">6.5. Lesen nicht blockierend, Scoped-Variante</h3>
 <div class="listingblock">
+<div class="title">Abbildung 11. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">static constexpr uint8_t size = 12;
-static uint8_t arr[size];
-int main() {
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td>
+  <td class="code"><pre><span class="directive">static</span> <span class="directive">constexpr</span> uint8_t size = <span class="integer">12</span>;
+<span class="directive">static</span> uint8_t arr[size];
+<span class="predefined-type">int</span> main() {
     twi::init();
-    while(true){
-        uint8_t tmp = 0;
-        auto rd = twi::scopedRead&lt;42&gt;(); <i class="conum" data-value="1"></i><b>(1)</b>
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        uint8_t tmp = <span class="integer">0</span>;
+        <span class="directive">auto</span> rd = twi::scopedRead&lt;<span class="integer">42</span>&gt;(); <i class="conum" data-value="1"></i><b>(1)</b>
         uint8_t data;
-        while(tmp != 11){
-            if(rd.receive(data)) <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="keyword">while</span>(tmp != <span class="integer">11</span>){
+            <span class="keyword">if</span>(rd.receive(data)) <i class="conum" data-value="2"></i><b>(2)</b>
                 arr[tmp++] = data;
         }
-        while(!rd.receiveLast(data)); <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="keyword">while</span>(!rd.receiveLast(data)); <i class="conum" data-value="3"></i><b>(3)</b>
         arr[tmp] = data;
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -1054,56 +1307,98 @@ int main() {
 </table>
 </div>
 <div class="paragraph">
-<p>Alternativ können bei nicht verwenden der nicht blockierenden NoFifo Varianten auch Scoped Varianten genutzt werden, somit muss sich nicht mehr explizit um die Start-Stop Conditions gekümmert werden, auch hier gilt die Ausnahme des Lesens (siehe Beispiel).</p>
+<p>Alternativ können bei nicht verwenden der nicht blockierenden NoFifo Varianten auch Scoped Varianten genutzt werden,
+somit muss sich nicht mehr explizit um die Start/Stop-Conditions gekümmert werden, auch hier gilt die Ausnahme des Lesens (siehe Beispiel).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_schreiben_nicht_blockierend_scoped_variante">Schreiben nicht blockierend, Scoped-Variante</h3>
+<h3 id="_schreiben_nicht_blockierend_scoped_variante">6.6. Schreiben nicht blockierend, Scoped-Variante</h3>
 <div class="listingblock">
+<div class="title">Abbildung 12. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">static constexpr const char* hello = "Hello Slave";
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td>
+  <td class="code"><pre><span class="directive">static</span> <span class="directive">constexpr</span> <span class="directive">const</span> <span class="predefined-type">char</span>* hello = <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello Slave</span><span class="delimiter">&quot;</span></span>;
 
-int main() {
+<span class="predefined-type">int</span> main() {
     twi::init();
 
-    static constexpr auto len = utils::strlen(hello);
+    <span class="directive">static</span> <span class="directive">constexpr</span> <span class="directive">auto</span> len = utils::strlen(hello);
 
-    while(true){
-        auto wr = twi::scopedWrite&lt;42&gt;();
-        for(uint8_t i = 0; i &lt; len; ) {
-            if (wr.send((uint8_t) *(hello + i)))
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        <span class="directive">auto</span> wr = twi::scopedWrite&lt;<span class="integer">42</span>&gt;();
+        <span class="keyword">for</span>(uint8_t i = <span class="integer">0</span>; i &lt; len; ) {
+            <span class="keyword">if</span> (wr.send((uint8_t) *(hello + i)))
                 i++;
         }
 
-        AVR::delay&lt;AVR::ms,200&gt;();
+        AVR::delay&lt;AVR::ms,<span class="integer">200</span>&gt;();
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Hier wird noch die ScopedWrite Variante gezeigt, somit muss der Nutzer sich nicht um Start-Stop Conditions kümmern.</p>
+<p>Hier wird noch die ScopedWrite Variante gezeigt, somit muss der Nutzer sich nicht um Start/Stop-Conditions kümmern.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_schreiben_nicht_blockierend_fifo_mit_interrupts">Schreiben nicht blockierend, FiFo mit Interrupts</h3>
+<h3 id="_schreiben_nicht_blockierend_fifo_mit_interrupts">6.7. Schreiben nicht blockierend, FiFo mit Interrupts</h3>
 <div class="listingblock">
+<div class="title">Abbildung 13. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">static constexpr const char* hello = "Hello Slave";
-using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::WriteOnly&gt;;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td>
+  <td class="code"><pre><span class="directive">static</span> <span class="directive">constexpr</span> <span class="directive">const</span> <span class="predefined-type">char</span>* hello = <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello Slave</span><span class="delimiter">&quot;</span></span>;
+<span class="directive">using</span> twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<span class="integer">42</span>&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::WriteOnly&gt;;
 
 ISR(TWI0_TWIM_vect){ <i class="conum" data-value="1"></i><b>(1)</b>
     twi::intHandler(); <i class="conum" data-value="2"></i><b>(2)</b>
 }
 
-int main() {
+<span class="predefined-type">int</span> main() {
     twi::init();
-    static constexpr auto len = utils::strlen(hello);
+    <span class="directive">static</span> <span class="directive">constexpr</span> <span class="directive">auto</span> len = utils::strlen(hello);
 
-    while(true){
-        twi::put&lt;42&gt;((uint8_t*)hello,len);
-        AVR::delay&lt;AVR::ms,200&gt;();
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        twi::put&lt;<span class="integer">42</span>&gt;((uint8_t*)hello,len);
+        AVR::delay&lt;AVR::ms,<span class="integer">200</span>&gt;();
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -1119,40 +1414,71 @@ int main() {
 </table>
 </div>
 <div class="paragraph">
-<p>Diese Interrupt gesteuerte Version wird im Intervall von 200 ms den String Hello Slave an den Slave mit der Addresse 42 senden.</p>
+<p>Diese Interrupt gesteuerte Version wird im Intervall von 200 ms den String Hello Slave an den Slave mit der Adresse 42 senden.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lesen_nicht_blockierend_fifo_mit_interrupts">Lesen nicht blockierend, FiFo mit Interrupts</h3>
+<h3 id="_lesen_nicht_blockierend_fifo_mit_interrupts">6.8. Lesen nicht blockierend, FiFo mit Interrupts</h3>
 <div class="listingblock">
+<div class="title">Abbildung 14. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::ReadOnly&gt;;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<span class="integer">42</span>&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::ReadOnly&gt;;
 
-volatile bool wasread = false;
+<span class="directive">volatile</span> <span class="predefined-type">bool</span> wasread = <span class="predefined-constant">false</span>;
 
 ISR(TWI0_TWIM_vect){
     twi::intHandler();
 }
 
-static inline void Callback (){
-    wasread=true;
+<span class="directive">static</span> <span class="directive">inline</span> <span class="directive">void</span> Callback (){
+    wasread=<span class="predefined-constant">true</span>;
     uint8_t item;
-    while(twi::getInputFifo().pop_front(item))
+    <span class="keyword">while</span>(twi::getInputFifo().pop_front(item))
         AVR::dbgout::put(item);
 }
 
-int main() {
+<span class="predefined-type">int</span> main() {
     twi::init();
     AVR::dbgout::init();
-    while(true){
-        twi::get&lt;42,Callback&gt;(12);
-        while(!wasread)
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        twi::get&lt;<span class="integer">42</span>,Callback&gt;(<span class="integer">12</span>);
+        <span class="keyword">while</span>(!wasread)
             ; <i class="conum" data-value="1"></i><b>(1)</b>
         AVR::dbgout::flush();
-        AVR::delay&lt;AVR::ms,200&gt;();
-        wasread = false;
+        AVR::delay&lt;AVR::ms,<span class="integer">200</span>&gt;();
+        wasread = <span class="predefined-constant">false</span>;
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -1164,40 +1490,73 @@ int main() {
 </table>
 </div>
 <div class="paragraph">
-<p>Diese Version erhält vom Slave mit der Addresse 42 je Iteration 12 Datenbytes, nachdem diese gelesen wurden wird der Callback ausgeführt (in diesem Falle werden die Datenbytes über die Debug-Schnittstelle an den PC gesendet → nur 4808 verfügbar und die innere While-Schleife der main Methode unterbrochen).</p>
+<p>Diese Version erhält vom Slave mit der Adresse 42 je Iteration 12 Datenbytes, nachdem diese gelesen wurden wird der Callback
+ausgeführt (in diesem Falle werden die Datenbytes über die Debug-Schnittstelle an den PC gesendet → nur 4808 verfügbar und die innere
+While-Schleife der main Methode unterbrochen).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lesen_und_schreiben_nicht_blockierend_fifo_mit_interrupts">Lesen und schreiben nicht blockierend, FiFo mit Interrupts</h3>
+<h3 id="_lesen_und_schreiben_nicht_blockierend_fifo_mit_interrupts">6.9. Lesen und schreiben nicht blockierend, FiFo mit Interrupts</h3>
 <div class="listingblock">
+<div class="title">Abbildung 15. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::ReadWrite&gt;;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> twi = AVR::twi::TWIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<span class="integer">42</span>&gt;,AVR::Interrupts&lt;&gt;&gt;,twires , AVR::ReadWrite&gt;;
 
 ISR(TWI0_TWIM_vect){
     twi::intHandler();
 }
 
-volatile bool wasread = false;
-static inline void Callback (){
-    wasread=true;
+<span class="directive">volatile</span> <span class="predefined-type">bool</span> wasread = <span class="predefined-constant">false</span>;
+<span class="directive">static</span> <span class="directive">inline</span> <span class="directive">void</span> Callback (){
+    wasread=<span class="predefined-constant">true</span>;
     uint8_t item;
-    while(twi::getInputFifo().pop_front(item))
+    <span class="keyword">while</span>(twi::getInputFifo().pop_front(item))
         AVR::dbgout::put(item);
 }
 
-int main() {
+<span class="predefined-type">int</span> main() {
     twi::init();
     AVR::dbgout::init();
-    while(true){
-        twi::get&lt;42,Callback&gt;(12); <i class="conum" data-value="1"></i><b>(1)</b>
-        while(!wasread)
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        twi::get&lt;<span class="integer">42</span>,Callback&gt;(<span class="integer">12</span>); <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="keyword">while</span>(!wasread)
             ;
         AVR::dbgout::flush();
-        twi::put&lt;42&gt;('H'); <i class="conum" data-value="2"></i><b>(2)</b>
-        AVR::delay&lt;AVR::ms,200&gt;();
-        wasread = false;
+        twi::put&lt;<span class="integer">42</span>&gt;(<span class="error">`</span>H<span class="error">`</span>); <i class="conum" data-value="2"></i><b>(2)</b>
+        AVR::delay&lt;AVR::ms,<span class="integer">200</span>&gt;();
+        wasread = <span class="predefined-constant">false</span>;
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -1219,37 +1578,66 @@ int main() {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_spi">SPI</h2>
+<h2 id="_spi">7. SPI</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Das SPI-Interface ist ähnlich gestaltet wie bei TWI, mit der Ausnahme dass hier in keinem Fall auf start- oder stop-Conditions oder der gleichen geachtet werden muss. Weiterhin wird auch ein Interrupthandler für die Benutzung ohne Fifo und der Slave Modus zur Verfügung gestellt. Hier gibt es keine Option in der init Methode die Frequenz einzustellen, dies geschieht über die Prescaler-Option während der Schnittstellen-Konfiguration.</p>
+<p>Das SPI-Interface ist ähnlich gestaltet wie bei TWI, mit der Ausnahme dass hier in keinem Fall auf Start- oder Stop-Conditions
+oder dergleichen geachtet werden muss. Weiterhin wird auch ein Interrupthandler für die Benutzung ohne Fifo und der
+Slave Modus zur Verfügung gestellt. Hier gibt es keine Option in der init Methode die Frequenz einzustellen,
+dies geschieht über die Prescaler-Option während der Schnittstellen-Konfiguration.</p>
 </div>
 <div class="sect2">
-<h3 id="_schreiben_nicht_blockierend_fifo_ohne_interrupts">Schreiben, nicht blockierend, FiFo ohne Interrupts</h3>
+<h3 id="_schreiben_nicht_blockierend_fifo_ohne_interrupts">7.1. Schreiben, nicht blockierend, FiFo ohne Interrupts</h3>
 <div class="listingblock">
+<div class="title">Abbildung 16. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::NoInterrupts &gt;,res, AVR::ReadWrite&gt;;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<span class="integer">42</span>&gt; ,AVR::NoInterrupts &gt;,res, AVR::ReadWrite&gt;;
 
-int main() {
+<span class="predefined-type">int</span> main() {
     spi::init();
     AVR::dbgout::init();
-    while(true){
-        spi::put('h');
-        spi::put('e');
-        spi::put('l');
-        spi::put('l');
-        spi::put('o');
-        for(uint8_t i = 0; i &lt; 5; i++) {
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        spi::put(<span class="error">`</span>h<span class="error">`</span>);
+        spi::put(<span class="error">`</span>e<span class="error">`</span>);
+        spi::put(<span class="error">`</span>l<span class="error">`</span>);
+        spi::put(<span class="error">`</span>l<span class="error">`</span>);
+        spi::put(<span class="error">`</span>o<span class="error">`</span>);
+        <span class="keyword">for</span>(uint8_t i = <span class="integer">0</span>; i &lt; <span class="integer">5</span>; i++) {
             spi::periodic();
-            AVR::delay &lt; AVR::us, 5 &gt; ();
+            AVR::delay &lt; AVR::us, <span class="integer">5</span> &gt; ();
         }
         uint8_t item;
-       while(spi::getInputFifo().pop_front(item)) {
+       <span class="keyword">while</span>(spi::getInputFifo().pop_front(item)) {
            AVR::dbgout::put(item);
        }
         AVR::dbgout::flush();
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -1266,41 +1654,69 @@ Die Nicht blockierende Variante ohne Interrupts lässt sich ebenso verwenden wie
 </div>
 </div>
 <div class="sect2">
-<h3 id="_schreiben_nicht_blockierend_fifo_mit_interrupts_2">Schreiben, nicht blockierend, FiFo mit Interrupts</h3>
+<h3 id="_schreiben_nicht_blockierend_fifo_mit_interrupts_2">7.2. Schreiben, nicht blockierend, FiFo mit Interrupts</h3>
 <div class="listingblock">
+<div class="title">Abbildung 17. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt; ,AVR::Interrupts&lt;&gt; &gt;,res, AVR::ReadWrite&gt;;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> spi = AVR::spi::SPIMaster&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<span class="integer">42</span>&gt; ,AVR::Interrupts&lt;&gt; &gt;,res, AVR::ReadWrite&gt;;
 
 ISR(SPI0_INT_vect){
     spi::intHandler();
 }
 
-int main() {
+<span class="predefined-type">int</span> main() {
     spi::init();
     AVR::dbgout::init();
-    while(true){
-        spi::put('h');
-        spi::put('e');
-        spi::put('l');
-        spi::put('l');
-        spi::put('o');
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        spi::put(<span class="error">`</span>h<span class="error">`</span>);
+        spi::put(<span class="error">`</span>e<span class="error">`</span>);
+        spi::put(<span class="error">`</span>l<span class="error">`</span>);
+        spi::put(<span class="error">`</span>l<span class="error">`</span>);
+        spi::put(<span class="error">`</span>o<span class="error">`</span>);
         uint8_t item;
-       while(spi::getInputFifo().pop_front(item)) {
+       <span class="keyword">while</span>(spi::getInputFifo().pop_front(item)) {
            AVR::dbgout::put(item);
        }
         AVR::dbgout::flush();
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Hier zu sehen ist eine Interrupt-Version des SPI, um die gelesenen Bytes auszugeben muss lediglich die fifo ausgelesen werden (siehe Beispiel). Wird eine ReadWrite Variante genutzt so wird die Library eine Null transferieren sofern keine Nutzdaten vorhanden sind. Sollte keine Fifo verwendet und kein WriteOnly eingestellt sein so muss ein Protokolladapter festgelegt werden.</p>
+<p>Hier zu sehen ist eine Interrupt-Version des SPI, um die gelesenen Bytes auszugeben muss lediglich die Fifo ausgelesen werden
+(siehe Beispiel). Wird eine ReadWrite Variante genutzt so wird die Library eine Null transferieren sofern keine Nutzdaten vorhanden sind.
+Sollte keine Fifo verwendet und kein WriteOnly eingestellt sein so muss ein Protokolladapter festgelegt werden.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_usart">USART</h2>
+<h2 id="_usart">8. USART</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Die USART Schnittstelle lässt sich im Grunde genauso bedienen wie SPI und TWI.</p>
@@ -1320,8 +1736,31 @@ int main() {
 <p>Für den Atmega4808 ist ein Debug-Interface in der Library enthalten (AVR::dbgout → include Datei = inc/Boards/CuriosityNanoIOT.hpp), mit diesem kann für das IoT-Devboard von Microchip über das USB-Interface bequem kommuniziert werden, dabei ist zu beachten das dieses blockierend arbeitet und USART2 benutzt.</p>
 </div>
 <div class="listingblock">
+<div class="title">Abbildung 18. Auszug aus main.cpp</div>
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="C++">using usart =AVR::usart::USART&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;42&gt;, AVR::Interrupts&lt;&gt;&gt;,usartres, AVR::ReadWrite&gt;;
+<pre class="CodeRay highlight"><code data-lang="cpp"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td>
+  <td class="code"><pre><span class="directive">using</span> usart =AVR::usart::USART&lt;AVR::notBlocking&lt;AVR::UseFifo&lt;<span class="integer">42</span>&gt;, AVR::Interrupts&lt;&gt;&gt;,usartres, AVR::ReadWrite&gt;;
 
 ISR(USART2_DRE_vect){
     usart::txHandler();
@@ -1330,17 +1769,18 @@ ISR(USART2_RXC_vect){
     usart::rxHandler();
 } <i class="conum" data-value="2"></i><b>(2)</b>
 
-int main() {
-    usart::init&lt;115200&gt;(); <i class="conum" data-value="3"></i><b>(3)</b>
-    while(true){
-        usart::put('h');
-        usart::put('e');
-        usart::put('l');
-        usart::put('l');
-        usart::put('o');
-        AVR::delay&lt;AVR::ms,200&gt;();
+<span class="predefined-type">int</span> main() {
+    usart::init&lt;<span class="integer">115200</span>&gt;(); <i class="conum" data-value="3"></i><b>(3)</b>
+    <span class="keyword">while</span>(<span class="predefined-constant">true</span>){
+        usart::put(<span class="error">`</span>h<span class="error">`</span>);
+        usart::put(<span class="error">`</span>e<span class="error">`</span>);
+        usart::put(<span class="error">`</span>l<span class="error">`</span>);
+        usart::put(<span class="error">`</span>l<span class="error">`</span>);
+        usart::put(<span class="error">`</span>o<span class="error">`</span>);
+        AVR::delay&lt;AVR::ms,<span class="integer">200</span>&gt;();
     }
-}</code></pre>
+}</pre></td>
+</tr></table></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -1360,17 +1800,142 @@ int main() {
 </table>
 </div>
 <div class="paragraph">
-<p>Hier im Beispiel wird die Verwendung der Interrupt Variante für Read und Write Zugang beschrieben, beachtet werden muss dass der TX Vector nicht verwendet werden darf, stattdessen muss der DRE Vector verwendet werden.</p>
+<p>Hier im Beispiel wird die Verwendung der Interrupt Variante für Read und Write Zugang beschrieben,
+beachtet werden muss dass der TX Vector nicht verwendet werden darf, stattdessen muss der DRE Vector verwendet werden.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quellen">Quellen</h2>
+<div class="sectionbody">
+<div class="ulist bibliography">
+<ul class="bibliography">
+<li>
+<p><a id="ZLib"></a>[ZLib] Keven Klöckner. Atmega 0 Series Lib:
+<a href="https://github.com/Keven1994/Atmega0SeriesLib" class="bare">https://github.com/Keven1994/Atmega0SeriesLib</a></p>
+</li>
+<li>
+<p><a id="libcpp"></a>[libcpp] Free Software Foundation, Inc. Libstdc++:
+<a href="https://gcc.gnu.org/" class="bare">https://gcc.gnu.org/</a></p>
+</li>
+<li>
+<p><a id="BMCPP"></a>[BMCPP] Prof. Dr.-Ing Wilhelm Meier. BmCPP
+<a href="https://sourceforge.net/projects/wmucpp/" class="bare">https://sourceforge.net/projects/wmucpp/</a></p>
+</li>
+<li>
+<p><a id="MDok"></a>[MDok] Microchip. Atmega 0-series Family Data Sheet
+<a href="http://ww1.microchip.com/downloads/en/DeviceDoc/megaAVR0-series-Family-Data-Sheet-DS40002015B.pdf" class="bare">http://ww1.microchip.com/downloads/en/DeviceDoc/megaAVR0-series-Family-Data-Sheet-DS40002015B.pdf</a></p>
+</li>
+<li>
+<p><a id="ASF"></a>[ASF] Microchip. Advanced Software Framework:
+<a href="http://ww1.microchip.com/downloads/en/DeviceDoc/asf-standalone-archive-3.46.0.94.zip" class="bare">http://ww1.microchip.com/downloads/en/DeviceDoc/asf-standalone-archive-3.46.0.94.zip</a></p>
+</li>
+<li>
+<p><a id="PUGI"></a>[PUGI] Arseny Kapoulkine. Pugi XML-Parser:
+<a href="https://pugixml.org/" class="bare">https://pugixml.org/</a></p>
+</li>
+<li>
+<p><a id="STM"></a>[STM] STMicroelectronics. STM Hal Dokumentation:
+<a href="https://www.st.com/content/ccc/resource/technical/document/user_manual/2f/71/ba/b8/75/54/47/cf/DM00105879.pdf/files/DM00105879.pdf/jcr:content/translations/en.DM00105879.pdf" class="bare">https://www.st.com/content/ccc/resource/technical/document/user_manual/2f/71/ba/b8/75/54/47/cf/DM00105879.pdf/files/DM00105879.pdf/jcr:content/translations/en.DM00105879.pdf</a></p>
+</li>
+</ul>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-05-17 23:41:43 +0200
+Last updated 2019-05-27 09:14:35 +0200
 </div>
 </div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js"></script>
+<style>
+/* Stylesheet for CodeRay to match GitHub theme | MIT License | http://foundation.zurb.com */
+pre.CodeRay{background:#f7f7f8}
+.CodeRay .line-numbers{border-right:1px solid currentColor;opacity:.35;padding:0 .5em 0 0}
+.CodeRay span.line-numbers{display:inline-block;margin-right:.75em}
+.CodeRay .line-numbers strong{color:#000}
+table.CodeRay{border-collapse:separate;border:0;margin-bottom:0;background:none}
+table.CodeRay td{vertical-align:top;line-height:inherit}
+table.CodeRay td.line-numbers{text-align:right}
+table.CodeRay td.code{padding:0 0 0 .75em}
+.CodeRay .debug{color:#fff !important;background:#000080 !important}
+.CodeRay .annotation{color:#007}
+.CodeRay .attribute-name{color:#000080}
+.CodeRay .attribute-value{color:#700}
+.CodeRay .binary{color:#509}
+.CodeRay .comment{color:#998;font-style:italic}
+.CodeRay .char{color:#04d}
+.CodeRay .char .content{color:#04d}
+.CodeRay .char .delimiter{color:#039}
+.CodeRay .class{color:#458;font-weight:bold}
+.CodeRay .complex{color:#a08}
+.CodeRay .constant,.CodeRay .predefined-constant{color:#008080}
+.CodeRay .color{color:#099}
+.CodeRay .class-variable{color:#369}
+.CodeRay .decorator{color:#b0b}
+.CodeRay .definition{color:#099}
+.CodeRay .delimiter{color:#000}
+.CodeRay .doc{color:#970}
+.CodeRay .doctype{color:#34b}
+.CodeRay .doc-string{color:#d42}
+.CodeRay .escape{color:#666}
+.CodeRay .entity{color:#800}
+.CodeRay .error{color:#808}
+.CodeRay .exception{color:inherit}
+.CodeRay .filename{color:#099}
+.CodeRay .function{color:#900;font-weight:bold}
+.CodeRay .global-variable{color:#008080}
+.CodeRay .hex{color:#058}
+.CodeRay .integer,.CodeRay .float{color:#099}
+.CodeRay .include{color:#555}
+.CodeRay .inline{color:#000}
+.CodeRay .inline .inline{background:#ccc}
+.CodeRay .inline .inline .inline{background:#bbb}
+.CodeRay .inline .inline-delimiter{color:#d14}
+.CodeRay .inline-delimiter{color:#d14}
+.CodeRay .important{color:#555;font-weight:bold}
+.CodeRay .interpreted{color:#b2b}
+.CodeRay .instance-variable{color:#008080}
+.CodeRay .label{color:#970}
+.CodeRay .local-variable{color:#963}
+.CodeRay .octal{color:#40e}
+.CodeRay .predefined{color:#369}
+.CodeRay .preprocessor{color:#579}
+.CodeRay .pseudo-class{color:#555}
+.CodeRay .directive{font-weight:bold}
+.CodeRay .type{font-weight:bold}
+.CodeRay .predefined-type{color:inherit}
+.CodeRay .reserved,.CodeRay .keyword {color:#000;font-weight:bold}
+.CodeRay .key{color:#808}
+.CodeRay .key .delimiter{color:#606}
+.CodeRay .key .char{color:#80f}
+.CodeRay .value{color:#088}
+.CodeRay .regexp .delimiter{color:#808}
+.CodeRay .regexp .content{color:#808}
+.CodeRay .regexp .modifier{color:#808}
+.CodeRay .regexp .char{color:#d14}
+.CodeRay .regexp .function{color:#404;font-weight:bold}
+.CodeRay .string{color:#d20}
+.CodeRay .string .string .string{background:#ffd0d0}
+.CodeRay .string .content{color:#d14}
+.CodeRay .string .char{color:#d14}
+.CodeRay .string .delimiter{color:#d14}
+.CodeRay .shell{color:#d14}
+.CodeRay .shell .delimiter{color:#d14}
+.CodeRay .symbol{color:#990073}
+.CodeRay .symbol .content{color:#a60}
+.CodeRay .symbol .delimiter{color:#630}
+.CodeRay .tag{color:#008080}
+.CodeRay .tag-special{color:#d70}
+.CodeRay .variable{color:#036}
+.CodeRay .insert{background:#afa}
+.CodeRay .delete{background:#faa}
+.CodeRay .change{color:#aaf;background:#007}
+.CodeRay .head{color:#f8f;background:#505}
+.CodeRay .insert .insert{color:#080}
+.CodeRay .delete .delete{color:#800}
+.CodeRay .change .change{color:#66f}
+.CodeRay .head .head{color:#f4f}
+</style>
 </body>
 </html>

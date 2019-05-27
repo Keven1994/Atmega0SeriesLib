@@ -1,0 +1,1677 @@
+= Bericht Praxisprojekt
+:icons: font
+:source-highlighter: coderay
+:doctype: book
+:sectnums:
+:toc: left
+:toclevels: 4
+:listing-caption: Abbildung
+:chapter-label: Kapitel
+:toc-title: Inhaltsverzeichnis
+
+== Einleitung
+
+In diesem Projekt geht es darum eine Library für eine neue Microcontroller-Familie anzupassen und zu entwickeln, 
+als Grundlage dient die Library aus BMCPP <<BMCPP>>. 
+Da die Peripherie und die Microchip Library wesentlich unterschiedlich sind im Vergleich zu den älteren, 
+wie z.B. dem Atmega328, mussten auch in den grundsätzlichen Strukturen wie z.B. Port diverse Änderungen vorgenommen werden. 
+Die 0 Serie von Microchip besitzt eine wesentlich umfassendere Peripherie, diese beinhaltet vor allem auch ein Eventsystem 
+welches im Rahmen dieses Projektes betrachtet wird. Ziel des Projektes ist es eine moderne und leicht erweiterbare Library 
+für diese µC-Familie zu schaffen und diese dabei möglichst kompatibel zu der BMCPP Library zu gestalten.  
+Des Weiteren soll das Projekt Cross-Plattform fähig sein, d.h. es soll auf Windows sowie Linux kompilieren, 
+diese Vorraussetzung wird mit CMake als Build-Tool geschaffen. Zunächst wird hier die Tätigkeit im Rahmen des Projektes dargelegt, 
+hierzu wird Chronologisch der Fortschritt beschrieben und anhand von Codebeispielen verdeutlicht. 
+Als nächstes wird der Aufbau und das Design sowie spezielle Eigenschaften (wie z.B. die automatisch generierten Dateien) 
+der Library genauer beleuchtet. Zum Schluss wird Betrachtet wie das Software-Framework benutzt wird, 
+dies wird anhand von Codebeispielen und Erklärungen veranschaulicht.
+
+== Tätigkeiten
+
+=== Projektstart
+Zu Beginn des Projekts habe ich mir eine Struktur für die Ports und Register überlegt die mit dem BMCPP-Aufbau möglichst kompatibel ist, 
+allerdings auch die Verwendung der von Microchip mitgelieferten C-Strukturen ermöglicht. 
+
+.Auszug aus Register.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+	/*
+	function to cast the structs to Register
+	*/
+	[[nodiscard]] static inline volatile Register& getRegister(volatile mem_width& reg) {
+		return reinterpret_cast<volatile Register&>(reg);
+	} # <1>
+----
+<1> Konstruktion des Registers durch die C-Struktur
+
+Hier war der Hintergedanke die neue Library möglichst kompatibel sowie flexibel hinsichtlich Änderungen von Microchip zu gestalten. Des Weiteren wurde bei der Erstellung der Software-Architektur auf die leichte Erweiterbarkeit sowie Cross-Plattformfähigkeit Wert gelegt, deswegen wurde als Build-Tool CMake gewählt. Zunächst hatte ich nach dem Grundgerüst (Port, Pins und Register) das neue Eventsystem betrachtet.Das Eventsystem der 0 Serie ist jedoch Abhängig von der Peripherie eines µCs und somit für jeden µC einmalig. Aus dieser Erkenntnis heraus entwarf ich die Schnittstelle für das Eventsystem möglichst Benutzerfreundlich und sicher, jedoch sind bei der Implementierung einige Anpassungen von Hand notwendig (z.B. fallen je nach Gerät wegen fehlender Peripherie einige Generatoren oder auch User weg). 
+
+.Auszug Atmega4808EventSystem.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+struct _generalGenerators { # <1>
+	
+	#define ic(x) typename utils::integralConstant<mem_width,x> # <2>
+	
+	using pdi = ic(EVSYS_GENERATOR_UPDI_gc);
+	using rtc_ovf = ic(EVSYS_GENERATOR_RTC_OVF_gc);
+	using rtc_cmp = ic(EVSYS_GENERATOR_RTC_CMP_gc);
+	//lines omitted...
+----
+<1> Generatoren die in allen Channels vorhanden sind
+<2> Makro für eine kürzere und übersichtlichere Schreibweise
+
+.Auszug aus Atmega4808EventSystem.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<uint8_t number>
+struct generatorChannel;
+	
+template<>
+struct generatorChannel<0> {
+	
+	using generals = _generalGenerators;
+	using RTCDivGenerator = type1RTC; # <1>
+		
+	template<uint8_t pinNumber>
+	struct PortAGenerator {
+		static_assert(pinNumber < 8, "only pins [0,7] allowed");
+		using portAPin = utils::integralConstant<mem_width,(0x40+pinNumber)>;
+	}; # <2>
+		
+	template<uint8_t pinNumber>
+	struct PortBGenerator {
+		static_assert(pinNumber < 8, "only pins [0,7] allowed");
+		using portBPin = utils::integralConstant<mem_width,(0x48+pinNumber)>;
+	};
+};
+----
+<1> Es gibt 2 Gruppen RTC Generatoren
+<2> Pro Port gibt es 8 Einstellbare Generatoren 
+
+Das hier gezeigte Design ist leicht zu modifizieren und verhindert das der Benutzer den Kanälen falschen Werten übergibt (z.B. kann der Benutzer nicht versehentlich einen PortC-Pin als Generator in Channel 0 einstellen).
+Zum testen und validieren während des Projekts habe ich ein AVR-Development Board genutzt und die Programme mit dem eingebauten debug-Chip und Atmel-Studio auf den µC geflasht. Eine weitere Aufgabe war es daher andere Programmiermethoden für die 0 Serie zu testen, da dieser mit der neuen UPDI - Methode Programmiert werden. 
+
+.Hierzu evaluierte ich zwei Methoden:
+* https://github.com/ElTangas/jtag2updi hier wird ein Atmega328 oder ein vergleichbarer Chip zu einem Programmer umfunktioniert, hierzu kann z.B. ein fertiges Arduino-Board genutzt werden.
+* https://github.com/mraardvark/pyupdi hier wird mithilfe eines USB-UART Adapters geflasht, hier muss darauf geachtet werden dass der Widerstand stimmt, sollte der Widerstand nicht funktionieren muss eine Diode mit der Anode zu UPDI und Kathode zu Tx verbunden werden.
+
+=== Woche 1
+Nach Besprechung des Projekts musste die bisherige Struktur abgeändert werden, sodass die Komponenten anhand von den verschiedenen Registertypen (Flag, Toggle, Data, Control, R, RW) beschrieben werden können. Zunächst habe ich die Port Komponente dahingehend angepasst, währenddessen fiel mir auf, dass durch mehrere static inline Variablen unnötiger Overhead entstand. Das Problem war hier, dass der GCC doppelte Referenz-Variable durch eine jump-table auflöst statt eine Variable wegzuoptimieren (Clang entfernt eine der doppelten Variablen). Nach einigem herumprobieren löste ich das Problem durch die Ersetzung der Variablen durch eine function-reference. 
+
+.Auszug aus ATmega4808Port.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+		struct ports{ 
+			NoConstructors(ports); 
+			struct A{ 
+				NoConstructors(A); 
+				// [[gnu::always_inline]] static inline auto& value { return PORTA; } # <1>
+				[[gnu::always_inline]] static inline auto& value() { return PORTA; } # <2>
+				struct pins { 
+					static inline constexpr Pin pin0{0}, pin1{1}, pin2{2}, pin3{3}, pin4{4}, pin5{5},pin6{6}, pin7{7}; 
+				}; 
+				//lines omitted
+----
+<1> Alte Variante, produziert Overhead durch jump-tables
+<2> Version als function-reference, wird immer inlined -> kein Overhead
+
+Danach habe ich die anderen Komponenten entsprechend angepasst, die SPI Implementierung wurde getestet mithilfe eines Logic Analyzers. Dann Habe ich einen Parser geschrieben der es ermöglicht durch String Parameter geeignete Strukturen für die Komponentenbeschreibungen zu erstellen. Der nächste Schritt war die Suche nach einem geeigneten cpp XML-Parser um die atdf (aus <<ASF>>) Dateien auszulesen, ich entschied mich dann für den pugi xml Parser (<<PUGI>>). Danach analysierte ich die Struktur der `atdf` Datei und entwarf einen Prototypen um die dort beschriebene Hardware in C++ Strukturen zu schreiben. Nach längerem einlesen habe ich schließlich herausgefunden wie das Problem der physisch nicht existenten IO-Ports gelöst werden kann (`signals` Node), das Programm wurde demnach erweitert. 
+Somit können zur Compile-Zeit schon nicht existente Komponenten ausgeschlossen werden.
+
+.Auszug aus der Atmega4808.atdf <<ASF>>
+[source,XML]
+----
+  <instance name="USART0">
+	<register-group address-space="data" name="USART0" name-in-module="USART" offset="0x0800"/>
+	<signals>
+	  <signal field="PORTMUX.USARTROUTEA.USART0" function="USART0_ALT" group="RXD" pad="PA5"/>
+		#...
+	  <signal field="PORTMUX.USARTROUTEA.USART0" function="USART0" group="XDIR" pad="PA3"/>
+	</signals>
+  </instance>
+----
+Nachdem das Programm auf meinem Windows System korrekt funktionierte testete ich es auch auf Linux, da es auch dort ohne Probleme lief mussten hier keine Änderungen erfolgen. 
+
+.Danach folgten einige Bugfixes:
+* Mapping der Bitfeld Namen in korrekte Präprozessor Makros der Microchip library: bisherige Prüfung ob die Maske gleich 0xff ist war unzureichend und nicht portabel. -> Verwendung von std::bitset 
+* Benennung der Pins in den einzelnen Gruppen: Die Verwendung der Pin Nummer um diesen zu benennen könnte zu Problemen (mehrfache Definitionen) führen. -> Verwendung eines gruppenlokalen Counters. 
+* Bei einem Test fiel ein logischer Bug durch den der Pfad im Namespace auftauchte. -> Trennung von Name und Pfad. 
+* Einige "register-group"-Nodes hatten "mods"-Kinder vor Bitfield, führte zu fehlenden Enums. -> Zusätzliche Prüfung und Schleife wurden notwendig um den Fall zu behandeln. 
+* Ein logischer Fehler führte dazu, dass immer alle Pins jeder Gruppe einer Funktion vorkamen. -> Komplexeres Verfahren zum einsortieren wurde notwendig. 
+
+.Auszug aus parser/main.cpp <<ZLib>>
+[source,cpp,numbered]
+----
+auto bs = std::bitset<32>(static_cast<size_t>(node2.attribute("mask").as_int())); # <1>
+//if (node2.attribute("mask").as_int() == 0xff) # <2>
+if (bs.count() > 1) { # <3>
+	for (uint32_t i = 0; bs.test(i) && i < 32; i++) {
+		mbuilder.addEnumEntry(
+				utils::toCamelCase(node2.attribute("name").as_string()) + std::to_string(i),
+				modName + "_" + node2.attribute("name").as_string() + std::to_string(i) + "_bm");
+	}
+}
+----
+<1> std::bitset für eine Abstrakte Verwendung von Bit-Operationen
+<2> Alte Version prüft nur ob alle Pins für das Enum verwendet werden
+<3> Neue Version testet ob es mindestens 2 sind, deutet dann auf ein Enum hin
+
+Dann habe ich zum Evaluierungszweck die automatisch generierten Dateien für den Atmega 4808 (Port und SPI) implementiert, 
+die Port Variante wurde zum Zweck der Lesbarkeit leicht angepasst. 
+Abschließend habe ich noch einige Funktionen zum besseren Verwenden der Pins eingebaut. 
+
+=== Woche 2
+
+.Nach der letzten Besprechung habe ich das SPI interface leicht angepasst:
+* doIfSet Methode wurde implementiert, diese führt eine Funktion aus wenn die angegebenen Bits im Flag Register gesetzt sind.
+* Die Namensgebung der Spezialisierung wurde auf die treffenderen Varianten `blocking` und `notBlocking` geändert (mit doIfTest kann auch ohne Interrupt "nicht blockierend" und/oder gelesen/geschrieben werden).
+
+.Auszug aus SPI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<auto& funcRef, typename... FlagsToTest>
+requires(utils::sameTypes<InterruptFlagBits, FlagsToTest...>() && etl::Concepts::Callable<decltype(funcRef)>)
+static inline auto doIfSet(FlagsToTest... flags) {
+	using retType = decltype(funcRef());
+	if (reg<InterruptFlags>().areSet(flags...)) { # <1>
+		if constexpr (! std::is_same_v<retType,void>) # <2>
+			return funcRef();
+		else
+			funcref();
+	}
+	if constexpr (! std::is_same_v<retType,void>)
+		return retType{}; # <3>
+}
+----
+<1> Im Flag Register nachsehen ob das Flag gesetzt ist
+<2> Nachschauen ob der Rückgabetyp `void` ist
+<3> Rückgabe Default Wert des Rückgabetyps
+
+Für die Flag Register habe ich noch eine RW Spezialisierung hinzugefügt weil es auch flag-Register gibt welche getogglt werden können.Im Parser gab es einen "Fehler" der Dazu führte dass wenn ein DEFAULT im Attribut `values` Stand, das Präprozessormakro inkorrekt 
+gedeutet wurde (DEFAULT musste ausgeschnitten werden). 
+Ein weiterer Bug wurde behoben bei der Auswertung der Registertypen: es musste noch überprüft werden ob Control und Flag Register 
+auch tatsächlich Bitfelder als Kinder haben. Der nächste Schritt war die Vereinfachung der internen Struktur, hierzumussten innerhalb der HW Beschreibung die `hw_abstraction` includes sowiedie Vorwärtsdeklarationen entfernt werden. Damit wurden für die bisherigenSchnittstellen SPI und Eventsystem weitreichende Bearbeitungen notwendig,danach wurden diese Schnittstellen auf das BMCPP Model angepasst.In diesem Zuge wurden weitere Anpassungen beim Parser notwendig, dadieser nun nicht mehr die AVR::port Schnittstelle nutzen konnte, der Parser hat hierzu den Port als Sonderfall zu behandeln.
+Dann wurde ich noch auf ein weiteres Problem aufmerksam, dies betrafwieder die Microchip HW-Beschreibung, auch bei anderen Komponenten alsdem Port sind teilweise Pins beschrieben welche physisch nicht existent sind.-> Lösung durch ausklammern einer Bedingung.
+
+.Auszug aus parser/main.cpp <<ZLib>>
+[source,cpp,numbered]
+----
+//if (modName != "PORT" && utils::contains(pins_available, (sig_pad)))
+if (utils::contains(pins_available, (sig_pad)))
+----
+
+Die Abfrage auf ungleich "PORT" hatte zur Folge dass auch nicht existente Pins hinzugefügt werden konnten (z.B. beim ADC).Als nächstes wandte ich mich an die Implementierung des TWI Interfaces, daich vorher noch nicht damit in Kontakt gekommen bin musste ich michzunächst einlesen. Der nächste Schritt war das testen des TWI nach demDatenblatt mithilfe eines Logic Analyzers. Nachdem ich die TWI Komponentekorrekt Konfiguriert hatte begann damit das Interface festzulegen.
+
+=== Woche 3
+
+Zunächst führte ich die Implementierung des TWI fort,hierzu musste ich verschiedene Tests mit dem Logic Analyzerdurchführen.Bei den Tests hatte ich einige Bugs feststellen können, so z.B. hatte icham Ende einer Transaktion keine Stop-Condition ausgelöst.Das nächste Problem welches mir auffiel ist dass ich keine Möglichkeiteingebaut hatte den `portmux` zu benutzen.dies regelte ich indem ich die Möglichkeit einbaute eine "Alternative" alsTypnamen zu wählen.Ein weiterer Parser Bug führte dazu dass Makro Namen falsch geparsedwurden, dieser wurde behoben durch eine weitere Abfrage.Des Weiteren änderte ich die Komponenten so ab dass man zwischen`Blocking` und `nonblocking` wählt und daraus dann der Zugriff resultiert(`nonblocking` Funktionen entfallen).Dann begann ich damit die Funktionen umzugestalten, sodass die neueSchnittstelle möglichst kompatibel zu der BMCPP Schnittstellewird.Die nächste Änderung betraf die Einführung einesResssource-Controller, hier wurden noch einige Änderungen innerhalbder Atmega und deren HW Klassen notwendig. Der Ressource-Controller hat zum Ziel die Ressourcen der einzelnen Komponenten auf 
+Kollisionen zu prüfen und somit zur Compile-Zeit eine Doppelbelegung auszuschließen. 
+
+.Auszug aus ATmega4808SPI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<bool dummy>
+struct inst<0,dummy> { # <1>
+	[[nodiscard,gnu::always_inline]] static inline auto& value()  { return SPI0;}
+	
+	template<auto N, bool dummy1 = true>
+	struct alt;
+	
+	template<bool dummy1>
+	struct alt<1, dummy1> { # <2>
+	//lines omitted
+----
+<1> Die Instanz z.B. SPI0
+<2> Die Portmux Variante z.B. SPI0 variante 0 (Default Portmux Einstellung)
+
+Die HW Strukturen mussten auf das obige Schema abgeändert werden, sonst ist es nicht möglich generisch auf diese zuzugreifen, dies wiederum ist aber die Grundvorraussetzung für den Ressource-Controller.
+
+=== Woche 4
+
+Zunächst hatte ich das CMake-file angepasst sodass es aufunterschiedlichen Plattformen ohne Probleme Kompiliert, dazu mussten diefesten Pfade entfernt werden. In der neueren CMake Version werden dieSystemvariablen (Path) genutzt um den Compiler zu finden. Im CMake Filewurde ein Bug gefixt der dazu führte, dass (u.a.) das Root-directory als includePfad hinzugefügt wurde und zu Permission Problemen führte. Als Lösung wurde die Verzeichnisstruktur leicht abgeändert.
+
+.Auszug aus CMakeLists.txt <<ZLib>>
+[source,CMake]
+----
+set(INC_PATH     "${BASE_PATH}/inc")
+# set(LIB_DIR_PATH "") # <1>
+set(LIB_DIR_PATH "${BASE_PATH}/lib")
+set(SRC_PATH     "${BASE_PATH}/src")
+----
+<1> Der Leere Pfad wird von CMake als root interpretiert
+
+Der Ressourcecontroller wurde für TWI und SPI implementiert, somit*muss* dieser genutzt werden um auf entsprechende Library Funktionenzuzugreifen.Für den Ressource-Controller wurde noch eine Testdatei hinzugefügt, dieseüberprüft die Richtigkeit des RC zur Compile-Zeit. Bei der Implemetierungwurde u.a. Ein Bug behoben welcher dazu führte dass die Rekursion durchdas Parameterpack frühzeitig endete und somit fehlerhaft war. Nach demRessourceController begann ich damit die SPI-Komponente umzuschreibensodass diese mit der Fifo aus der vorhandenen Library betrieben werdenkann. Dabei fiel mir auf dass Spezialisierungen für gewisse Klassen fälligwerden, das bedeutet es muss zwischen den "neuen" und den "alten"Microcontrollern unterschieden werden. Grundsätzlich wird dies mithilfe eines Concepts erledigt, 
+dieses stellt fest ob es sich um einen MCU der 0 Serie handelt, folglich wird dann die entsprechende Spezialisierung ausgewählt.
+
+.Auszug aus scoped.h <<BMCPP>>
+[source,cpp,numbered]
+----
+    template<typename T = Transaction, bool Active = true, typename MCU = DefaultMcuType, typename F1 = void, typename F2 = void>
+    using Scoped = std::conditional_t<etl::Concepts::ZeroAVR<MCU> && # <1>
+                                      !std::is_same_v<DisbaleInterrupt<ForceOn>,T> &&
+									  !std::is_same_v<DisbaleInterrupt<NoDisableEnable>,T>, # <2> 
+									  details::Z_Scoped<T, Active, MCU, F1, F2>, # <3>
+									  details::_Scoped<T, Active, MCU, F1, F2>>; # <4>
+----
+<1> Prüfung ob die MCU zur 0 Serie gehört
+<2> Prüfung auf ForceOn/NoDisableEnable -> hier werden nur `sei()` und `cli()` genutzt
+<3> Spezialisierung für die neue MCU-Familie
+<4> Spezialisierung für die alte MCU-Familie
+
+Nachdem ich dann die Klasse Scoped (benutzt in FiFo) kompatibel zur neuenLibrary gemacht hatte, baute ich noch ein, dass SPI als -read, writeOnly oderim readWrite Modus betrieben werden kann (spart Ressourcen). Als nächstesbegann ich damit USART einzubauen, dabei fiel (nach importieren dergenerierten Header Datei) ein weiterer Bug des Parsers auf.Der Parser identifizierte Komponenten fehlerhaft wenn innerhalb einer Instanzauch nur 1 Pin Invalide war, jedoch sollte dann nur die gruppe nichthinzugefügt werden.
+
+.Auszug aus parser/main.cpp <<ZLib>>
+[source,cpp,numbered]
+----
+if (utils::contains(pins_available, (sig_pad)) && grpValid) {
+	tmp.push_back(utils::triple<>{sig_func, sig_group, sig_pad});
+} else {
+	tmp.clear(); # <1>
+	break;
+}
+----
+<1> Wenn irgendein Pin fehlerhaft ist -> entferne alle Einträge und breche Generierung ab
+
+Aus Lesbarkeits- und Portierbarkeitsgründen tauschte ich (soweit möglich)eigene Metafunktionen durch die std-Varianten <<libcpp>> aus. Des Weiteren separierteich Port und PortPin (PortPin bekam eine eigene HeaderDatei). Für die PortKlasse habe ich wesentlich mehr abstrakte Funktionen hinzugefügt und dieFunktionen um spezielle Register anzufordern entfernt. Dieser Schritt warnotwendig um eine abstraktere Ebene zu erreichen, des weiteren kann durchdie Convenience-Funktion "get<typename Register>()" falls nötig auf die Register zugegriffenwerden.
+
+=== Woche 5
+
+Nach Besprechung hatte ich Zwecks Kompatibilität und Portabilität einegetAddress-Funktion für die 0-Reihe implementiert, in diesem Zugemusste der Parser angepasst werden, sodass Strukturen erzeugtwerden können wie sie in der “alten” Library vorhanden sind. 
+
+.Auszug aus ATmega4808SPI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+struct registers {
+	using ctrla = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,CTRLAMasks>,0x0>;
+	//...
+	using intflags = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,INTFLAGSMasks>,0x3>; # <1>
+	//...
+	intflags::type Intflags;
+	data::type Data; # <2>
+};
+----
+<1> Bisherige Register-Typdefinitionen
+<2> Zusätzliche Variablendeklarationen 
+
+Als nächstes hatte ich mir eine eine Struktur einfallen lassen um dieKommunikation über die verschiedenen Schnittstellen zuvereinheitlichen. Die verschiedene Peripherie lässt sich über dieOberklasse Communication jeweils als Blockierend/ nichtBlockierend(mit oder ohne Interrupts[mit Protokoll Adapter oder FiFo]),mit oder ohne Fifo sowie als RW, R-only oder W-only konfigurieren. 
+
+.Auszug aus Components.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<typename RW, typename accesstype, typename bit_width>
+struct Communication {
+	using Use_Fifo = typename accesstype::fifo;
+	static constexpr bool fifoEnabled = Use_Fifo::value > 0;
+	static constexpr bool InterruptEnabled = accesstype::intEnabled;
+	static constexpr bool isBlocking = std::is_same_v<accesstype,blocking>;
+	static constexpr bool isReadOnly = std::is_same_v<RW,ReadOnly>;
+	static constexpr bool isWriteOnly = std::is_same_v<RW,WriteOnly>; # <1>
+
+	using fifo_t = std::conditional_t<InterruptEnabled && fifoEnabled,
+			volatile etl::FiFo< bit_width,Use_Fifo::value> ,
+			std::conditional_t<! fifoEnabled,NoFifo,etl::FiFo< bit_width,Use_Fifo::value>>>; # <2>
+	static inline std::conditional_t<isReadOnly,NoFifo,fifo_t> fifoOut{};
+	static inline std::conditional_t<isWriteOnly,NoFifo,fifo_t> fifoIn{}; # <3>
+};
+----
+<1> Boolsche Konstanten für enable_if- und andere Funktionen  
+<2> Fifo Typbestimmung (volatile/nicht volatile/ keine Fifo)
+<3> In-/Output Fifos
+
+Im CMake File wurden unnötige Einträge entfernt sowie ein Bug gefixt:Cmake hatte in der Release Version von sich aus mit O3 statt Os kompiliert, dashat dazu geführt dass alle Funktionen inlined wurden und die Hex-Datei immens vergrößert wurde. In der SPIImplementierung waren noch einige Fehler in den enable_if Konditionen,dies wurde während diversen Tests behoben. Danach habe ich dieUSART Schnittstelle implementiert, dabei habe ich noch einigeAnpassungen im Design der Library vorgenommen und Testsdurchgeführt. Während den Tests an der USART Schnittstelle fiel mirwegen der Baudrate auf dass die CPU-Frequenz falsch eingestellt istund ein Fehler bei der Kalkulation der getRegister Methode in Port, hierhatte ich bei der Offset Kalkulation fälschlicherweise auf die Registergröße 
+statt auf 8-Bit gecasted (16-Bit Registeraddressen wurden falsch berechnet). 
+
+.Auszug aus Port.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<typename T, auto &inst>
+[[nodiscard, gnu::always_inline]] static inline auto &getRegister() {
+	using reg_t = typename T::type;
+	// auto offset = (typename reg_t::reg_size *) &inst() + T::value; # <1>
+	auto offset = (uint8_t *) &inst() + T::value;
+	return reg_t::getRegister(*((typename reg_t::reg_size*)offset));
+}
+----
+<1> Alte Version
+
+Die alte Version hat vor der Berechnung auf die Registergröße gecasted, allerdings sind die Offsets immer in Bytes angegeben, 
+somit kamen bei Offsets > 0 falsche Adressen heraus.
+
+Nachdem die USART Implementierung funktioniertebaute ich für das Board mit dem ich getestet habe (AVR Atmega 4808 IOTNano Curiosity) ein Debug Output ein, damit lassen sich sehr einfachAusgaben an den PC senden. Bei den USART Tests für denInterrupt-Mode fiel mir ein Fehler in meiner Scoped Implementierung auf,diese führte dazu das die Globalen Interrupts nicht wieder aktiviertwurden im Destruktor. Des Weiteren fiel mir auf dass die _delayFunktion der Microchip Library durch die Interrupts gestört wird, bei denTests war die Verzögerung viel zu hoch. Deswegen habe ich eigeneDelay-Funktionen eingebaut, unter anderem auch eine Safe DelayFunktion, während dem Delay sind dann Interrupts deaktiviert. 
+Der eigentliche Grund für die Störung der Delay-Funktion war, 
+dass der DRE Vector statt der TX-Vector benutzt werden muss wenn gesendet werden soll.
+Zum Schluss habe ich noch die Funktionen verschoben und etwasaufgeräumt damit man sich in der Header-Datei besser zurecht findet,außerdem habe ich die Struktur von USART auf SPI angewendet undgetestet ob alle Validen Konfigurationen Compilieren.
+
+=== Woche 6
+
+Zunächst habe ich das CMake-File so abgeändert dass bei einemmake-all Aufruf alle Atmega4808/09 Dateien generiert und in denpassenden Ordner gelegt werden. 
+
+.Auszug aus CMakeLists.txt <<ZLib>>
+[source,CMake]
+----
+add_custom_target(atmega4809 COMMAND untitled ${DEVICEFILE_4809} ${HWFOLDER_4809} 
+        WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe) 
+add_custom_target(atmega4808 COMMAND untitled "${DEVICEFILE_4808}" "${HWFOLDER_4808}" 
+        WORKING_DIRECTORY ${PARSER_PATH} DEPENDS hwfilesexe) # <1>
+add_custom_target(hwfiles DEPENDS atmega4808 atmega4809 ) # <2>
+add_custom_target(hwfilesexe COMMAND make all 
+        WORKING_DIRECTORY ${PARSER_PATH} 
+        DEPENDS hwfilescmake 
+        )  # <3>		
+add_custom_target(hwfilescmake COMMAND cmake -G "MinGW Makefiles" ./ 
+        WORKING_DIRECTORY ${PARSER_PATH} 
+        ) # <4>
+ 
+add_dependencies(${PROJECT_NAME} hwfiles) # <5>
+----
+<1> Erstellung der HW-Dateien
+<2> Festlegen welche HW-Dateien generiert werden
+<3> Erstellen des Parsers
+<4> Make-Datei für Parser erstellen
+<5> Festlegen das Parser erstellt wird
+
+Der Parser hatte noch kleinere Bugsund unnötige Ausgaben die ich noch entfernt habe. Der Nächste Schrittwar die Implementierung von TWI, diese ist soweit fertig für dieBenutzung mit FiFos. Die TWI Schnittstelle habe ich so Designt dassdie Klasse einen Command Stack und Output/Input FiFos verwaltet. DerHintergrund hier ist die hohe Flexibilität und die Angenehme Benutzungder Schnittstelle. Des Weiteren kann die Schnittstelle so konfiguriertwerden, dass viel Code eingespart wird z.B. wenn der Master nur liest(dann fallen diverse Prüfungen und/oder Datenmember weg). Beim testen fielen mir einigeSchwierigkeiten auf, ich hatte zunächst den Bus Status nicht abgefragtweil ich davon ausging dass die Abfrage der Wif Flag reicht (ohneAbfragen des Zustands hatte der Bus niemals eine Stop Conditiongesendet). Dieses Verhalten ist begründet durch den Smart Mode der neuen Microcontroller, 
+dieser führt bestimmte TWI Funktionen aus wenn auf gewisse Register zugegriffen wurde. 
+Nachdem der Bus korrekt gesendet hatte baute ich noch dieAuswahl der Frequenz ein. Anschließend hatte ich die SPI Schnittstellenoch mit Interrupts getestet und einen kleinen Bug behoben (FlagNamen waren falsch geschrieben und führten zu einem Compiler-Error).
+
+=== Woche 7
+
+Zuerst habe ich den TWI-Master fertig gestellt und damit einige Testsdurchgeführt (Funktion ohne Interrupts, mit Interrupts, scopedWritesowie mit und ohne FiFo). Als Nächstes hatte ich das CMake-File sowieeinige Header dahingehend angepasst, dass die Geräte-Auswahl nurnoch an einer Stelle im CMake-File passiert, somit wird das abändern inden Header-Dateien überflüssig. Als nächstes habe ich die Atmega4809Klasse auf den selben Stand wie die Atmega4808 gebracht. Alsnächstes war geplant die ADC-Schnittstelle zu implementieren, hier fielmir eine Schwachstelle meines Ressource-Controllers auf: DerRessource-Controller ging bisher davon aus, dass immer alleRessourcen einer Schnittstelle benutzt werden (beim ADC dann bis zu16 Pins). Wegen dieser Annahme musste ich ein Workaround für denRC hinzufügen um solche Komponenten anders zu überprüfen. 
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<typename instances, typename Component_t, typename instances2 = void>
+class RCComponent {
+//...
+	template<typename Alias, typename T = instances2>
+	struct comps {
+		using inst  = typename  instances::inst;
+		using alt  = typename  inst::alt;
+
+		static_assert(Meta::contains_all<typename instances2::template inst<Alias::Instance>::template alt<Alias::Alternative>::list,typename alt::list>::value, "not available pin was set up");
+	}; # <1>
+
+	template<typename Alias>
+	struct comps<Alias,void>{
+		using inst  = typename  instances::template inst<Alias::Instance>;
+		using alt  = typename  inst::template alt<Alias::Alternative>;
+	}; # <2>
+	//lines omitted...
+----
+<1> neue Struktur für festgelegte Pins
+<2> alte Struktur für die HS-Dateien
+
+Das Workaround bestand hauptsächlich daraus die oben gezeigte Spezialisierung hinzufügen, 
+weiterhin ermöglichte diese Änderung die Einführung einer GenericRessource, 
+diese kann verwendet werden um vom Benutzer festgelegte Pins zur Prüfung an den Ressource-Controller weiterzugeben.
+Bei der ADC Schnittstelle muss jetzt vom Benutzer angegeben werden welchePins benutzt werden, der RC überprüft dann nur diese. Später wird inder ADC Schnittstelle beim Auswahl des Kanals wieder überprüft ob derPin auch überprüft wurde (diese Funktion kann auch ausgeschaltetwerden, falsche Pins würden dann einen in der Klasse definiertenDefault-Wert für den ADCMux setzen), somit kann der Benutzer keinefalschen Pins übergeben. Zum Ende der Woche hatte ich ein Gerüst fürdie ADC-Klasse eingebaut und die Funktionalität desRessource-Controllers im Hinblick auf die Änderungen validiert.
+
+=== Woche 8
+
+Zunächst hatte ich für TWI bezüglich des Lesens ein Callback eingebaut,somit kann der Benutzer außerhalb der Schnittstelle nach Empfang derDaten festlegen was passiert. 
+
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<>
+struct Command<true,true> {
+	uint8_t address = 0;
+	uint8_t bytes = 0;
+	void (*Callback)() = (void (*)()) noop; # <1>
+
+	void operator=(const volatile Command &other) volatile {
+		address = other.address;
+		bytes = other.bytes;
+		Callback = other.Callback;
+	}
+};
+----
+<1> Default Value ist eine Funktion die nichts tut
+
+Zunächst hatte ich std::variant in Betrachtgezogen, da aber zur Laufzeit auch entschieden werden können muss,ob jetzt gerade gelesen oder geschrieben werden soll, schied diese Variante aus. 
+Das Callback feature wird in der Command Strukturals function-pointer gespeichert und zur Laufzeit aufgerufen, der Nutzerkann jedoch auch eine Lambda-Referenz übergeben. Als nächstes begann ich ein Testsystem für das Lesen überTWI aufzubauen, hierzu verwende ich den Atmega4808, einenLogic-Analyzer und meinen STM32F446RE. 
+
+.Auszug aus main.c
+[source,C]
+----
+int main(void) {
+  HAL_Init();
+
+  SystemClock_Config();
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_I2C1_Init();
+  MX_SPI1_Init();
+  MX_UART4_Init();
+
+  unsigned char* testData = (unsigned char*)"Hallo Master";
+  unsigned char arr[12];
+  while (1)
+  {
+	  //HAL_I2C_Slave_Transmit(&hi2c1, testData,12, 500);
+	  HAL_TWI_Transmit(&htwi1, testData,12,500);
+	  //HAL_SPI_Transmit(&hspi1, testData, 12, 50);
+	  //HAL_SPI_Receive(&hspi1, arr, 12, 50); # <1>
+	  HAL_Delay(120);
+  }
+}
+----
+<1> HAL Funktionen der STM-Library <<STM>>
+
+Der STM schickt in einer Quasi-Dauerschleife immer wieder einen String, der Atmega4808 mussden Bus korrekt Steuern und die Daten speichern sowie per USARTausgeben (kann dann einfach über Putty auf dem Terminal ausgegebenwerden). Der Logic-Analyzer hängt zusätzlich noch zwischendrin um dieBaudrate sowie Start-/Stop-Conditionen und etwaige Testausgabenaufzunehmen. 
+
+.Im Zuge der Tests (welche später auch als Beispiel-Code verwendet werden) sind einige Bugs aufgefallen:
+* Quick-Command war per Default angeschaltet, dieser hatteProbleme bereitet da er scheinbar nicht I²C kompatibel ist.
+* Das Blockierende Lesen war noch nicht fertig eingebaut.
+* Das Transactionsende beim Lesen von Master muss explizit mitdem Kommando Stop und dem setzen des NACK Bits im MasterControlB Register beendet werden (war nicht sehr ersichtlich ausder Doku).
+
+=== Woche 9
+
+Die Kernaufgabe dieser Woche war es den Userguide zu erstellen, indiesem Zuge wurden noch einige Bugs behoben und etwas am Designverändert. .Folgende Bugs habe ich entdeckt und behoben:* Die Current-Commando Variable muss als volatile deklariert werden.* Bei SPI wurde nicht beachtet dass für ein lesen als Master auchwenigstens eine 0 in das Datenregister geschrieben werden muss.* Bei SPI wurde der SS Pin nicht belegt, dies führt vor allem bei derSlave Variante zu Problemen.* In PortPin wurden intern noch die C-Strukturen statt die Registerverwendet.Bei der Erstellung der Doku wurden einige Probleme sichtbar die sichauf die Benutzung (das Design) der Library beziehen:Bei TWI fehlte bei den ScopedTransactions für das Lesen einreceiveLast (um die Transaktion korrekt abzuschließen).Eine `Reset` Methode fehlte um bei einer Fehlerbehandlung o.Ä. denZustand der TWI-Schnittstelle zurückzusetzen.Beim Eventsystem werden ab jetzt User *und* Generator aus demChannel bezogen weil es für den Benutzer übersichtlicher ist. DieRegisterListener Methode des Eventsystems kann jetzt beliebig vieleNutzer registrieren. Des weiteren habe ich eine Funktion eingebaut die es ermöglicht die Software-Events für den Channel auszulösen.
+Für TWI kann jetzt ein NACK-Handler übergeben werden damit diese Fehlersituation korrekt abgefangen werden kann.
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using _twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite>; # <1>
+
+static inline auto handler = [](){
+    while (!_twi::endTransaction());
+    while(!_twi::startTransaction<42,AVR::twi::access::Read>());
+}; # <2>
+
+using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite, handler>; # <3>
+----
+<1> Deklarieren der Schnittstelle ohne handler
+<2> Definieren des handlers
+<3> Einsetzen des Handlers in die Schnittstelle
+
+Bei dem Atmega4808 Dev-Board ist mir ein Designfehler aufgefallen der es verhindert das der SPI Anschluss im Slave-Modus betrieben werden kann und des Weiteren zu Verwirrung führt. Microchip hat auf dem Board neben dem MISO,MOSI und SCK der 0. Portmux Variante den SS der 1. Variante gesetzt, das erweckt den Eindruck der SS-Pin gehöre zu den anderen SPI Pins, aber das Design führt dazu, dass der Pin dort Wirkungslos ist, weil auf den UCs keine einzelnen Pins gerouted werden können.Nach Erkenntnis dieses Design-Fehlers bereitete ich noch eine entsprechende Fehlermeldung für Microchip vor und stellte diese zu.Aus Portabilitäts- sowie Ästheticgründen habe ich zum Schluss die Doku mit Asciidoctor erstellt.
+
+=== Woche 10
+
+In der letzten Woche der Praxisphase habe ich mich eindringend mit dem fertigstellen des User-Guide 
+sowie der Erstellung eines kleinen Development-Guides beschäftigt. Hintergrund hierzu ist, 
+dass später auch andere Entwickler die Funktionsweise zwecks Weiterentwicklung und Benutzung nachvollziehen können. 
+Kern des Development-Guides war hier vor allem der Ressource-Controller und der Aufbau der HW-Dateien sowie die Interaktion 
+dieser mit den µC-Klassen sowie des Ressource-Controllers.
+
+== Design und Aufbau der Library
+
+Es werden hier einige spezielle Aspekte der Library erwähnt, 
+der Großteil wie z.B. Register oder Port Strukturen setze ich als gegeben vorraus (s.a. <<BMCPP>>). 
+
+=== HW Files
+
+Die Software Basiert Komplett auf den im folgenden erläuterten automatisch generierten Dateien. 
+Aus der HW-Beschreibung von Microchip (*.atdf) wird mit einem mitgelieferten Parser eine C++ Struktur erzeugt, 
+diese Struktur wird später in der Library verwendet. Das vorliegende Design ist begründet durch die hohe Flexibilität hinsichtlich Änderungen durch 
+Microchip (durch die Defines der Microchip Library werden bei jedem Kompilieren die Änderungen mit übernommen) sowie die hervorragenden generischen Eigenschaften durch die automatische Erstellungen der Registerstrukturen.
+Anders als in BMCPP müssen von Hand keine Register in Header-Dateien geschrieben werden, das wird von dem Parser übernommen und spart somit Zeit und verhindert Flüchtigkeitsfehler.
+
+NOTE: Die EventSystem Dateien liegen zwar im selben Ordner wie die anderen HW-Dateien, jedoch sind diese wegen ihrer speziellen Struktur von Hand erstellt
+
+==== Der Header
+
+Jede HW-Datei beginnt nach dem obigen Schema, wegen der Namespaces sind die einzelnen Geräte und Komponenten eindeutig voneinander getrennt. Der erste include bezieht sich auf die Port-Abstraktion, diese wird innerhalb der HW-Dateien genutzt um übersichtliche Strukturen erzeugen zu können. Danach werden die Meta-Funktionen<<BMCPP>> inkludiert, hier wird die List genutzt um die Pins einer Komponente zu einer Liste zu packen, diese kann der Ressource-Controller verwenden um auf Kollisionen zu prüfen.
+
+.Auszug aus ATmega4808SPI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+#pragma once
+ #include "../../hw_abstractions/Port.hpp"
+ #include "../../tools/meta.h" # <1>
+
+namespace mega4808 { # <2>
+    namespace spi_details { # <3>
+----
+<1> Notwendige includes
+<2> Device-Namespace -> jeweils `mega` + die Nummer
+<3> Komponenten-Namespace -> jeweils die Komponente und `_details`
+
+
+==== Die Komponente
+
+.Die Komponenten Struktur besteht im Grunde aus 2 wesentlichen Teilen: 
+* Einige Enum-Klassen die Später den Registern als typ dient um Funktionen bereit zustellen, 
+somit ist das übergeben von unbenannten Werten nur erschwert möglich.
+* Die `registers` Struktur welche  die Registertyp-Deklarationen und Register-Variablen Deklarationen enthält.
+
+Die `registers` Struktur enthält alle definierten Register der Komponente, 
+diese sind aus der atdf-Datei abgeleitet und somit sind auch die Attribute des Typs gewählt 
+(Schreibschutz, Größe ....). Die Variablen Deklarationen sind in der Register Struktur vorhanden um die 
+Legacy Funktionen "getBaseAddress" aus der BareMetal-CPP Library zu ermöglichen, in der eigentlichen Library finden sie keine Anwendung. 
+Die Registertypen sind als Pair angegeben und habe noch den Offset-Wert mit angegeben für eine spezielle Funktion 
+innerhalb der Port Abstraktion.
+
+.Auszug aus ATmega4808SPI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+struct spiComponent {
+	//lines omitted....
+	enum class INTFLAGSMasks : mem_width {
+		Bufovf = SPI_BUFOVF_bm,
+		//...
+		Wrcol = SPI_WRCOL_bm
+	}; # <1>
+
+	struct registers {
+		using ctrla = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,CTRLAMasks>,0x0>;
+		using ctrlb = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,CTRLBMasks>,0x1>; # <2>
+		//...
+		intflags::type Intflags;
+		data::type Data; # <3>
+	}; 
+}; 
+----
+<1> Spezial-Bits für das Register `intflags` 
+<2> Registertypen und Namen
+<3> Register Variablen Deklarationen
+
+NOTE: Das Attribut `packed` muss nicht für die einzelnen Strukturen gesetzt werden, dem Compiler wird das Flag `fpack-struct` übergeben.
+
+==== Die Instanzen
+
+Der letzte Teil der HW Dateien besteht aus der `spis` Struktur, 
+diese ist eine Sammlung an Ressourcen-Instanzen der Komponente (z.B. USART0, USART1 ...). 
+Die `value` Funktion wird in der Library an verschiedenen Stellen verwendet, 
+z.B. in der Port Klasse um dann auf die verschiedenen Register des Ports zuzugreifen.
+Hier werden zunächst die Instanzen aufgelistet, auf die verschiedenen Instanzen kann 
+dann mit der entsprechenden Nummer zugegriffen werden (z.B. USART0 -> usarts::template inst<0>). 
+Innerhalb der verschiedenen Instanzen befinden sich dann noch die Mappings für die unterschiedlichen Portmux alternativen, 
+somit wird es einem Benutzer auch ermöglicht verschiedene Alternativen auszuwählen. 
+Erst innerhalb der Portmux Alternativen finden sich dann die unterschiedlichen Pin-Gruppen und die konkreten Pins. 
+Wenn also auf die Konkreten Pins zugegriffen werden soll geschieht dies mit der Angabe einer konkreten Instanz sowie der Portmux Alternative.
+
+.Auszug aus ATmega4808SPI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+//lines omitted...
+
+struct spis {
+	//...
+	template<bool dummy>
+	struct inst<0, dummy> # <1>
+	 {
+		//...
+		[[nodiscard,gnu::always_inline]] static inline auto& value()  { return SPI0;} # <2> 
+	
+		template<bool dummy1>
+		struct alt<1, dummy1> # <3> 
+		 {
+			struct Miso {
+				using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,1>;
+			};
+			//...
+			struct Ss {
+				using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,3>;
+			}; # <4>
+		
+			using list = Meta::List<typename Miso::pin0, typename Mosi::pin0, typename Sck::pin0, typename Ss::pin0>; # <5>
+		};
+	
+		template<bool dummy1>
+		struct alt<0, dummy1>
+		 {
+			//lines omitted...
+		};
+	
+	};
+
+};
+----
+<1> Konkrete Instanz einer Ressource
+<2> Funktion welche die von Microchip definierte Struktur zurückgibt
+<3> Die Portmux-Variante
+<4> die verschiedenen Gruppen innerhalb einer Portmux-Variante 
+<5> Liste von allen Pins die von der Ressource belegt werden können
+
+NOTE: Die hier beschriebenen Struktur ist nur relevant wenn die Komponente I/O Pins verwendet
+
+=== Die Microcontrollerklassen
+
+In den Microcontrollerklassen werden die HW-files inkludiert, 
+des Weiteren stellen die Klassen die Komponenten und deren Konfigurationen zur Verfügung (für die Top-Level Funktionen im AVR-Namespace).
+Die Microcontrollerklassen stellen die Konfigurationen für die Library zur Verfügung damit innerhalb der einzelnen Klassen schon vorab spezifische Einstellungen angepasst werden können.
+Somit können innerhalb dieser Familie Spezialfälle in den Microcontrollerklassen behandelt werden.
+Die Microcontrollerklassen können hinzugefügt werden indem eine fertige kopiert und in eine neue Header-Datei hinzugefügt wird. Anschließend müssen nur die entsprechenden namespaces, Port-Mappings und includes angepasst werden.
+Allerdings muss dann auch die entsprechende .atdf Datei hinzugefügt werden und im CMake-File muss die Datei-Generierung ergänzt werden.
+
+==== Header
+
+Zu Beginn werden in den Microcontrollerklassen die benötigten Include-Dateien und Typdefinitionen vorgenommen. 
+Dies ist zunächst der Typ `mem_width`, dieser bezeichnet die Speicherbreite (z.B. bei den 8-Bit µCs sind das immer 8 Bit), die zweite Typdefinition ist ptr_t und bezeichnet Zeigertyp.
+Der erste Hardware-Include muss der Port sein, der Port besitzt innerhalb der Library eine Sonderfunktion, da dieser verwendet wird um andere Funktionen zu ermöglichen. 
+Daraus folgt dann auch dass der Port eine Vorraussetzung für die anderen Library Funktionen ist. Nach dem Port können die verschiedenen HW-Dateien in beliebiger Reihenfolge inkludiert werden, 
+da diese immer nur in der entsprechenden Abstraktion benötigt werden. 
+.Danach kommen die Feststehenden Abstraktionen:
+* Die CPU: Ermöglicht das auslesen des Statusregister, diese Funktion wird innerhalb der Scoped-Klasse benutzt.
+* Der Resssource-Controller: die dort vorhandene RCComponent-Klasse wird verwendet um qualifizierte Klassen zu identifizieren. 
+* Die AtmegaZero Datei: Hier werden die Enum-Klassen aus den HW-Dateien nochmals in Atomare Einstellungen unterteilt damit die Schnittstelle besser konfiguriert werden kann.
+
+
+.Auszug aus Atmega4808.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+#pragma once
+using mem_width = uint8_t;
+using ptr_t = uintptr_t; # <1>
+#include "../hw_abstractions/Basics.hpp"
+
+//hw includes
+#include "hal/ATmega4808PORT.hpp"
+#include "mega4808/hal/Atmega4808EventSystem.hpp"
+#include "hal/ATmega4808SPI.hpp"
+//...
+#include "hal/ATmega4808ADC.hpp" # <2>
+#include "../hw_abstractions/CPU.hpp"
+#include "../hw_abstractions/RessourceController.hpp"
+#include "../DeviceFamilys/ATmegaZero.hpp" # <3>
+----
+<1> In folgenden includes benötigte Typdefinitionen
+<2> Hardware-Includes
+<3> Von der Library benötigte includes
+
+==== Klasse
+
+Innerhalb der Komponenten der Microcontrollerklassen befinden sich private Elemente, 
+der RessourceController und die Metafunktion benötigen Zugriff auf diese. Wie zuvor schon erwähnt wird die Verwendung des Ressource-Controller mehr oder weniger erzwungen, dies geschieht mit diesen private-Deklarationen, im Prinzip kann sich nur der Ressource-Controller auf die benötigten Elemente Zugriff verschaffen. 
+Umgehen kann man den Ressource-Controller entweder mit den ungeprüften Ressourcen (siehe <<RessourceController>>) oder durch die Verwendung der HW-Klassen in den entsprechenden namespaces.
+
+.Auszug aus Atmega4808.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<auto frequency>
+class Atmega4808 {
+
+	template<typename Alias>
+	friend struct AVR::rc::details::resolveComponent; # <1>
+//...
+	public:
+	struct isZero{}; # <2>
+	static constexpr auto clockFrequency = frequency;
+	template<typename T>
+	static inline constexpr bool is_atomic(){
+		return false;
+	} # <3>
+----
+<1> Friend-Deklaration für eine Metafunktion zur Bestimmung der Instanzen von Komponenten
+<2> Typdefinition für ein Concept
+<3> Legacy-Funktion aus BMCPP
+
+Damit bestimmte Tools aus BMCPP verwendet werden können müssen dort Spezialisierungen erstellt werden, dies wird ermöglicht durch die Concepts. ein Concept überprüft vor der Spezialisierung ob die `isZero` Struktur vorhanden ist, dies hat dann den Vorteil dass innerhalb der älteren Microcontrollerklassen nichts verändert werden muss.
+Die is_atomic Funktion musste aus kompatibilitätsgründen übernommen werden, diese Funktion wurde z.B. auch in der Scoped-Klasse aufgerufen.
+
+==== Spezialfall Port
+
+Innerhalb der Microcontrollerklasse ist der Port als Komponente ein Ausnahmefall, weil er nur dazu dient den Portnamen zuzuordnen (und ggf. die legacy BMCPP-Funktion ermöglicht). Der Port als Komponente wird in der Port-Abstraktion genutzt um die Port-Strukturen der Library zu erstellen hierzu wird das gezeigte Mapping angewandt, die daraus entstehenden Strukturen werden in der gesamten Library und vom Benutzer verwendet.
+
+.Auszug aus Atmega4808.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<typename p> # <1>
+struct Port {
+
+	using port = typename utils::condEqual<AVR::port::A, p, port_details::port<port_details::ports::porta>,
+			typename utils::condEqual<AVR::port::C, p, port_details::port<port_details::ports::portc>,
+					typename utils::condEqual<AVR::port::D, p, port_details::port<port_details::ports::portd>,
+							typename utils::condEqual<AVR::port::F, p, port_details::port<port_details::ports::portf>, void
+							>::type
+					>::type
+			>::type
+	>::type; # <2>
+
+	static constexpr auto baseAddress = port::port; # <3>
+	
+	private:
+	using Component_t = port_details::portComponent; # <4>
+};
+----
+<1> Übergabe des Portnamen
+<2> Übersetzung des Portnamen in den HW-Port
+<3> Hilfsvariable für die getBaseAddress Funktion
+<4> Typdeklaration der HW-Komponente
+
+==== Komponenten
+
+Diese Struktur zeigt den Aufbau einer Microcontrollerklasse mit der Eigenschaft, 
+dass die Komponente vom RessourceController verwaltet wird.
+Die Setting Struktur ermöglich eine einfache und flexible Konfiguration der Schnittstelle, 
+aus dieser werden später dann in den entsprechenden `init` Methoden die Register eingestellt.
+
+.Auszug aus Atmega4808.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+struct USART : public AVR::rc::details::RCComponent<usart_details::usarts, usart_details::usartComponent>, # <1>
+			   public AVR::details::AtmegaZero::template USART_C< usart_details::usartComponent> # <2> 
+			   {
+
+	template<USART::RS485Mode RSMode, USART::ReceiverMode receiverMode,
+			//...
+			>
+	struct USARTSetting {
+		using AConf = usart_details::usartComponent::CTRLAMasks;
+		using BConf = usart_details::usartComponent::CTRLBMasks;
+		using CConf = usart_details::usartComponent::CTRLCMasks;
+
+		static constexpr AConf rsmode = static_cast<AConf>(RSMode);
+		static constexpr AConf loopbackmode = LoopBackMode ? AConf::Lbme : static_cast<AConf>(0);
+		static constexpr BConf opendrainmode = OpenDrainMode ? BConf::Odme : static_cast<BConf>(0);
+		//...
+		static constexpr CConf msb = !Msb ? CConf::Udord : static_cast<CConf>(0);
+	}; # <3>
+private:
+	using Component_t = usart_details::usartComponent;
+};
+----
+<1> Legt fest dass die Komponente vom RessourceController gesteuert wird
+<2> Importiert die Enum-Klassen der 0 Familie aus der entsprechenden Komponente
+<3> Konfigurationen der Schnittstelle
+
+Das Erben von RCComponent ermöglicht es dem Ressource-Controller die verschiedenen Instanzen sowie die Register zu sehen (hier z.B. usarts und usartComponent). Der Ressource Controller braucht Zugriff auf die verschiedenen Instanzen des bestimmten µCs um Zugriff auf die Pin-Liste zu bekommen.
+Die zweite Oberklasse ermöglicht dann die Konfiguration über die Enum Klassen der 0 Serie, somit werden gut lesbare und Atomare Einstellungen für den Benutzer zur Verfügung gestellt. Der Vorteil der Oberklasse besteht hier darin, dass die Enums für die ganze Familie zur Verfügung stehen und nicht nur für einen µC (somit muss der Vorgang nicht für jeden µC einzeln vorgenommen werden).
+
+=== AtmegaZero Struktur
+
+Diese Struktur dient dazu die verschiedenen Einstellungen aus den HW-Dateien aufzugliedern und in sinnvolle Gruppen zu packen, 
+sodass in den Setting Strukturen vom Benutzer klare Einstellungen möglich sind. 
+In C-Style müssten die Benutzer den entsprechenden Registern per Makros und Bit-Operationen dann die entsprechenden Werte zuweisen, 
+diese Vorgehensweise ist unübersichtlich, fehleranfällig und wird hier ganz klar vermieden.
+
+.Auszug aus ATmegaZero.hpp <<ZLib>>
+[source,cpp,numbered]
+----         
+namespace AVR {
+    namespace details {
+        struct AtmegaZero {
+			//...
+template<typename twiComponent>
+struct TWI_C {
+	enum class SDASetup: mem_width {
+		SDASetup_off = static_cast<mem_width>(twiComponent::CTRLAMasks::Sdahold_off),
+		SDASetup_50ns = static_cast<mem_width>(twiComponent::CTRLAMasks::Sdahold_50ns) ,
+		SDASetup_300ns = static_cast<mem_width>(twiComponent::CTRLAMasks::Sdahold_300ns) ,
+		SDASetup_500ns = static_cast<mem_width>(twiComponent::CTRLAMasks::Sdahold_500ns) ,
+	};
+
+	enum class SDAHold: mem_width {
+	//...
+};
+----
+
+=== RessourceController
+
+Der Ressourcecontroller hat die Aufgabe die Ressourcen und ihre Pinbelegungen miteinander zu Vergleichen, hierzu verwendet der Ressourcecontroller die in den HW-files enthaltenen Pin-lists, der Parser fügt diese Listen automatisch hinzu, dies hat also den Vorteil dass ohne großen Aufwand während der Compile-Zeit schon Kollisionen ausgeschlossen werden können. Zusätzlich ist der Ressource-Controller so konzipiert, dass bei normaler Verwendung der Library das Verwenden des Ressource-Controller notwendig ist. Die Verwendung des Ressource-Controller kann auch Umgangen werden, diese Funktionalität wurde eingebaut damit man als erfahrener Benutzer sämtliche Möglichkeiten ausschöpfen kann.
+
+==== RCComponent
+
+Diese Struktur wird im RessourceController genutzt um z.B. auf die HW-Instanzen zuzugreifen um schließlich die IO Pins zu vergleichen. 
+Je nach Komponente ist e möglich dass nicht alle Pins überprüft werden die in den Komponenten verfügbar sind, z.B. der ADC.
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<typename instances, typename Component_t, typename instances2 = void>
+class RCComponent {
+
+	template<typename Alias>
+	friend struct AVR::rc::details::resolveComponent;
+
+	template<typename Alias, typename T = instances2>
+	struct comps {
+		using inst  = typename  instances::inst;
+		using alt  = typename  inst::alt;
+
+		static_assert(Meta::contains_all<typename instances2::template inst<Alias::Instance>::template alt<Alias::Alternative>::list,typename alt::list>::value, "not available pin was set up");
+	}; # <1>
+
+	template<typename Alias>
+	struct comps<Alias,void>{
+		using inst  = typename  instances::template inst<Alias::Instance>;
+		using alt  = typename  inst::template alt<Alias::Alternative>;
+	}; # <2>
+public:
+	static constexpr bool isRCComponent = true;
+
+	template<auto number>
+	static inline auto getBaseAddress(){
+		return (typename Component_t::registers*) &instances::template inst<number>::value();
+	} # <3>
+	
+};
+----
+<1> Spezialisierung für eine Teilprüfung der IO Pins
+<2> Spezialisierung für eine Vollprüfung der IO Pins
+<3> Realisierung der BCMPP legacy-Funktion getBaseAddress
+
+Hier wird die Comps-Struktur verwendet um zwischen den verschiedenen Komponenten (alle Pins überprüfen oder nicht) zu unterscheiden, wenn der Typ `void` entspricht so werden die Pins aus den HW-Dateien verwendet. Im zweiten Fall werden nicht die Pins aus den HW-Dateien, sondern die vom Benutzer übergebenen Pins verwendet.
+
+==== Die Kernklasse
+
+Hier wird als erstes die MCU übergeben (idr. DEFAULT_MCU), danach folgen eine bis beliebig viele Ressourcen (0 Ressourcen macht keinen Sinn). Die beiden Alias Metafunktionen sollen jeweils die erste oder 2. Ebene in der HW-Struktur einer Instanz zurückgeben und eine kürzere und übersichtlichere Schreibweise innerhalb des RC zur Folge haben.
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<typename MCU,typename FIRST,typename... INSTANCES>
+class ResController {
+	
+	template<typename Alias>
+	using resolveAlt = typename details::resolveComponent<Alias>::alt;
+	template<typename Alias>
+	using resolveInst = typename details::resolveComponent<Alias>::inst;
+----
+
+Hier zu sehen sind die einzelnen Prüfungen die der RessourceController durchführt während er die angeforderte Ressource frei gibt.
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<typename N>
+struct getRessource {
+	using type = utils::tuple<typename get_ressource_help<N, FIRST, INSTANCES...>::inst,typename get_ressource_help<N, FIRST, INSTANCES...>::alt>;
+		static_assert(!std::is_same<typename type::t2, void>::value, "portmux not found"); # <1>
+		static_assert(checkRessource<FIRST, INSTANCES...>(), "I/O Pins conflicting"); # <2>
+		static_assert(checkInstance<FIRST, INSTANCES...>(), # <3>
+					  "only 1 alternative from a single instance permitted");
+};
+
+template<typename N>
+using getRessource = typename getRessource<N>::type;
+----
+<1> Prüfung ob die Portmux-Variante existiert
+<2> Prüfung ob die I/O Pins Kollisionsfrei sind
+<3> Prüfung auf doppelt Belegung einer Instanz durch mehrere Portmux-Varianten
+
+Diese Prüfungen haben zu Folge dass der Benutzer keine doppelt belegten Pins, keine 2 verschiedenen Portmux-Alternativen aus derselben Instanz und keine nicht existierenden Ressourcen belegen kann.
+Die erste Prüfung wird einen Fehler produzieren wenn der Rückgabetyp der `get_ressource_help` Funktion `void` ist, d.h. die Funktion hat keine Ressource `N` gefunden.
+===== Zu Punkt 2
+
+Dies ist die Startfunktion um zu Prüfen ob die Pins Kollisionsfrei sind, 
+hierzu wird die Liste der Pins innerhalb der konkreten Instanzen benötigt. 
+Falls `pins` 0 Elemente enthält gibt es nur eine Ressource und somit keine Kollision, 
+ansonsten muss die rekursive Hilfsfunktion aufgerufen werden.
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<typename _first,typename... pins>
+static constexpr bool checkRessource() {
+	using first = typename resolveAlt<_first>::list;
+					
+	if constexpr(sizeof...(pins) == 0)
+	return true;
+	else return checkRessourceHelper<first,pins...>();
+}
+----
+
+Die Prüfung auf Kollisionsfreiheit Funktioniert so, dass auf der aktuellen Stufe immer überprüft wird ob irgendein Element der aktuellen Pinliste in der nächsten enthalten ist, danach wird die aktuelle Liste mit der nächsten vereinigt und als erste Liste übergeben, das geht solange bis es in `pins` keine weiteren Listen mehr gibt.
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+template<Meta::concepts::List first,typename _second, typename... pins>
+static constexpr bool checkRessourceHelper(){
+	
+	using second = typename resolveAlt<_second>::list;
+	
+	if constexpr(sizeof...(pins) > 0){
+		constexpr bool current = !Meta::contains_any<first, second>::value; # <1>
+		constexpr bool next =  checkRessourceHelper<Meta::concat_t<first,second>, pins...>(); # <2>
+		return  current && next ;
+	}
+	else {
+		return !Meta::contains_any<first,second>::value; # <3>
+	}
+}
+----
+<1> Aktuelle Rekursionsstufe
+<2> Nächste Rekursionsstufe
+<3> Rekursionsende
+
+NOTE: Die CheckInstance Methode funktioniert Analog (bloß das die Pinlisten nicht überprüft werden sondern die HW-Instanzen)
+
+=== TWI Command und Callback Aufbau
+
+Die TWI Schnittstelle ist grundsätzlich so Aufgebaut dass sie (wenn mit Fifos benutzt) genauso verwendet werden kann wie die anderen Kommunikationsschnittstellen, die einzige Besonderheit ist das Callback beim lesen. Damit diese einfache Bedienung der Schnittstelle möglich ist, müssen Intern die Command Strukturen gespeichert werden.
+
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+static inline auto noop = []{}; # <1>
+
+template<bool singlemode = false, bool callback = false>
+struct Command {
+	uint8_t address = 0; # <2>
+	uint8_t bytes = 0; # <3>
+	readWrite access = write; # <4>
+	void (*Callback)() = (void (*)()) noop; # <5>
+
+	void operator=(const volatile Command &other) volatile {
+		address = other.address;
+		bytes = other.bytes;
+		access = other.access;
+		Callback = other.Callback;
+	}
+};
+----
+<1> Leerer Funktionsaufruf (wenn geschrieben wird)
+<2> Adresse des anderen Device
+<3> Anzahl zu lesender/schreibender Bytes
+<4> Lesen oder Schreiben
+<5> Callback für lesen
+
+Die Command Struktur wird benötigt um gewisse Informationen zur Laufzeit zu speichern und auszuwerten. 
+Diese Struktur wiederum wird in einer Fifo gespeichert, wenn z.B. Bytes gelesen werden sollen so wird eine entsprechende 
+Command Struktur erzeugt und in der Fifo abgelegt. Eine statische Callback Funktion wäre hier nicht sinnvoll, da auch zur Laufzeit entschieden wird ob das aktuelle Kommando ein Lese-oder Schreibvorgang ist.
+ 
+NOTE: Die oben gezeigte Command Struktur besitzt noch einige Spezialisierungen um bei verschiedenen Konditionen nicht benötigte Member auszulassen (z.B bei einem WriteOnly wird weder das Callback- noch das Accessmember benötigt).
+
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+static inline void put(bit_width *data, uint8_t size) {
+
+	if constexpr(_TWI::isWriteOnly)
+		CommandStack.push_back(command{(address << 1), size}); # <1>
+	else
+		CommandStack.push_back(command{(address << 1), size, write}); # <2>
+	for (uint8_t i = 0; i < size; i++)
+		_TWI::fifoOut.push_back(data[i]);
+}
+----
+<1> Command Konstruktor für WriteOnly 
+<2> Command Konstruktor für ReadWrite
+
+In diesem Beispiel wird gezeigt wie die Command Struktur genutzt wird um Befehle in eine Fifo zu legen, 
+während dem Periodic Aufruf oder der Interrupt Routine können die Befehle dann aus der Fifo entnommen und verarbeitet werden. 
+Das Kommando wird hier erzeugt mit dem Konstruktor: uint8_t Adresse und uint8_t Größe, wenn die Schnittstelle als ReadWrite konfiguriert ist, muss noch die Information hinzugefügt werden, dass es ein Schreibvorgang ist.
+Beim Lesen verhält es sich Analog, jedoch mit dem Zusatz, dass als letztes Member noch ein Callback in die Command-Struktur gelegt wird.
+
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+//RW Branch
+bool newCommand = false; # <1>
+
+if(TWIMaster::current.access == read){ # <2>
+	if ( TWIMaster::current.bytes > 1) {
+		TWIMaster::_TWI::receive();
+	} else if( TWIMaster::current.bytes == 1) {
+		stopTransactionNack();
+		TWIMaster::_TWI::receive();
+		TWIMaster::current.bytes = 0;
+		TWIMaster::current.Callback();
+		typename TWIMaster::command tmp;
+		if (TWIMaster::CommandStack.pop_front(tmp)) {
+			TWIMaster::current = tmp;
+			newCommand = true;
+		}
+	}
+}
+----
+<1> Boolsche Variable zur Feststellung ob ein neues Kommando folgt
+<2> Prüfung auf Zugriffsart
+
+Zunächst wird im IH unterschieden ob es sich beim aktuellen Element um ein Lese- oder Schreibvorgang handelt, je nachdem wird dann die receive() oder die transfer() Methode aufgerufen, diese Methoden führen dann noch Aktionen auf dem `current` Member der Oberklasse aus (dekrementieren der bytes Variable). Im Lesevorgang muss speziell geprüft werden ob noch ein Element zu versenden ist, wenn ja muss vor der receive() Methode ein Nack mit einer Stop-Condition gesendet und abschließend der Callback ausgeführt werden, alle anderen Vorgehensweisen führen zu Buskollisionen oder anderen ungewünschten Verhaltensweisen. Der nächste Schritt ist das herausnehmen des neuen Kommandos aus der Fifo, nebenbei wird die Variable newCommand auf `true` gesetzt, diese wird anschließend genutzt um zu prüfen ob noch auf die Stop-Condition gewartet werden muss.
+
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+if(newCommand){
+	while(! (alt::Scl::pin0::isOn() && alt::Sda::pin0::isOn())); # <1>
+	if(TWIMaster::current.access == read){
+		readCondition(); 
+	} else {
+		writeCondition();
+	} # <2>
+}
+---- 
+<1> Warten auf die Beendigung der Stop-Condition
+<2> Auslösen der neuen Read oder Write Start-Condition
+
+Nachdem das neue Kommando übernommen wurde ist es notwendig auf das Beenden der Stop-Condition zu warten, direkt danach kann dann die neue Start-Condition gesendet werden, ansonsten wird der IH nicht wieder aufgerufen und das nächste Element nicht gesendet.
+
+== Benutzung der Library
+
+=== Programmierung
+
+.Um die Programme auf die Chips der Atmega 0 Serie zu flashen gibt es grundsätzlich 2 Methoden:
+* https://github.com/ElTangas/jtag2updi hier wird ein Atmega328 oder ein vergleichbarer Chip zu einem Programmer umfunktioniert, hierzu kann z.B. ein fertiges Arduino-Board genutzt werden.
+* https://github.com/mraardvark/pyupdi hier wird mithilfe eines USB-UART Adapters geflashed, hier muss darauf geachtet werden dass der Widerstand stimmt, sollte der Widerstand nicht funktionieren muss eine Diode mit der Anode zu UPDI und Kathode zu Tx verbunden werden.
+
+=== Grundsätzliches
+
+* Die Library stützt sich auf den AVR-GCC 8.3+, es werden intern unter anderem Concepts genutzt, die Verwendung eines aktuellen cpp Compilers ist daher notwendig.
+* Am besten wird das enthaltene CMakefile genutzt um das Projekt zu erstellen, um den UC zu wechseln muss lediglich die Variable `Mnumber` und `F_CPU` abgeändert werden.
+* [Optional] um ein schnelleres Compilieren zu ermöglichen kann nach dem ersten Compilieren die Variable GenerateHWFiles auf FALSE gestellt werden.
+* Die Library kann auf Windows und Linux genutzt werden, sollte auf dem Ziel-Windows "sh.exe" in der Shell vorhanden sein wird sich CMake beschweren und beim ersten Versuch abbrechen, zur Behebung muss dann ein zweites Mal CMake aufgerufen werden.
+* Es sollten nur die HW-Abstraktionen inkludiert werden, ansonsten kann kein ordnungsgemäßes funktionieren gewährleistet werden.
+* Der Erste Include MUSS MCUSelect.hpp sein, hier findet die Auswahl des Gerätes statt.
+* Port, PortPin und der Ressource Controller sind Standardmäßig inkludiert und müssen nicht nochmal explizit inkludiert werden.
+* Es ist notwendig, dass die von Microchip bereitgestellten Header, Library-files sowie device-specs der Toolchain hinzugefügt werden. 
+
+=== Basics
+Zunächst wird betrachtet wie die Ports oder auch spezifische Pins über die Library angesteuert werden.
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+#include "MCUSelect.hpp"
+#include "hw_abstractions/Delay.hpp"
+
+using portA = AVR::port::Port<AVR::port::A>;
+using portC = AVR::port::Port<AVR::port::C>; # <1>
+using led1 = AVR::port::Pin<portA,2>;
+using led3 = AVR::port::Pin<portA,3>;
+using led4 = AVR::port::Pin<portA,4>;
+using led5 = AVR::port::Pin<portA,5>; # <2>
+
+using led2 = typename portC::pins::pin3; # <3>
+
+int main() {
+
+    portA::setDir<AVR::port::Out>(); # <4>
+    led2::setOutput(); # <5>
+    while(true){
+        led1::toggle();
+        if(led2::isOn())
+            led3::toggle();
+        led2::toggle();
+        AVR::port::pinsOutToggle<led4,led5>(); # <6>
+        AVR::delay<AVR::ms,500>(); # <7>
+    }
+	
+}
+----
+<1> Portauswahl
+<2> Pinauswahl
+<3> Sichere Pinauswahl über den Port
+<4> Pin auf Output setzen mit Port Funktion
+<5> Pin auf Output setzen mit Pin Funktion
+<6> Mehrere Pins mit freier Funktion togglen
+<7> Delay-Funktion
+
+Zunächst werden die Ports ausgewählt welche angesprochen werden sollen, hier in diesem Falle Port A und C. 
+Sollte bei der Auswahl ein Compiler Fehler auftreten wurde ein nicht existenter Port ausgewählt 
+(der Atmega4808 besitzt z.B. keinen Port B oder E obwohl es Defines dafür gibt). 
+Der nächste Schritt ist die Auswahl von spezifischen Pins, dafür wird dem Template-Alias der zuvor gewählte Port sowie die 
+Pin Nummer angegeben. Hier muss darauf geachtet werden dass die spezifischen Pins NICHT auf Verfügbarkeit geprüft werden, 
+um sicher zu gehen können die Pins auch aus dem Port entnommen werden (s.a. Led2), die hier enthaltenen Pins sind definitiv 
+physikalisch vorhanden. Nachdem die Auswahl für Ports und/oder Pins getroffen wurden können auf diesen Operationen ausgeführt werden. 
+Es könne sowohl auf den Ports als auch auf den Pins spezifische Operationen ausgeführt werden (z.B. toggle, on, off,setDir ….). 
+Sollen auf mehreren Pins gleichzeitig Operationen ausgeführt werden, so können die freien Funktionen in AVR::port genutzt werden. 
+Bei den freien Funktionen ist zu beachten, dass nur Pins des gleichen Ports übergeben werden können, 
+verschiedene Ports lösen einen Compiler-Fehler aus. 
+Die Port Klasse besitzt noch die Convenience-Methode „get“ um auf Register zuzugreifen, 
+damit kann von außerhalb auf ein spezifisches Register (z.B. pin0ctrl) zugegriffen werden. 
+Wenn möglich sollte diese Methode aber vermieden und vorhandene abstraktere Klassen-Methoden genutzt werden. 
+Im obigen Beispiel findet sich die `delay-Methode`, diese wrappt die C _delay Methoden und rechnet je nach Einheit (us, ms, s) korrekt um. 
+Des weiteren gibt es noch eine `safeDelay-Methode`, diese schaltet die Interrupts für die Dauer des Wartens ab und funktioniert somit 
+immer korrekt (sollten die Interrupts angeschaltet gewesen sein werden sie nach Ablauf des Delays wieder aktiviert).
+
+
+=== RessourceController
+
+Die Library stellt eine Klasse zur Verfügung mit welcher die Ressourcen auf ihre Kollisionsfreiheit überprüft werden können. 
+Wenn diese Klasse genutzt wird ist es ausgeschlossen dass darin angeforderte Ressourcen sich überschneiden, 
+wenn z.B TWI PortA Pin 3 braucht und eine weitere Ressource diesen Pin belegen wollen würde, 
+so würde das Programm nicht kompilieren und eine entsprechende Fehlermeldung ausgegeben.
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using twiInstance = AVR::rc::Instance<
+        AVR::twi::TWI,
+        AVR::rc::Number<0>,
+        AVR::portmux::PortMux<0>>;
+
+using usartInstance = AVR::rc::Instance<
+        AVR::usart::USART_Comp, 
+        AVR::rc::Number<2>, 
+        AVR::portmux::PortMux<0>>; # <1>
+
+using RC = AVR::rc::RessourceController<twiInstance,usartInstance>; # <2>
+
+using twiRessource = RC::getRessource<twiInstance>;
+using usartRessource = RC::getRessource<usartInstance>; # <3>
+
+using usart = AVR::usart::USART<AVR::blocking,usartRessource>;
+
+using twi = AVR::twi::TWIMaster<AVR::blocking,twiRessource , AVR::ReadWrite>; # <4>
+----
+<1> Auswahl der gewünschten Ressourcen Instanzauswahl
+<2> Instanziieren des RessourceController mit den gewünschten Ressourcen
+<3> Anfordern einer Ressource
+<4> Übergeben einer Ressource
+
+Zuerst wird die spezifische Instance einer Ressource festgelegt, diese besteht aus der Ressource selbst, 
+diese sind immer in den dazugehörigen namespaces abgelegt (z.B. TWI/USART). 
+Danach wird der RessourceController mit den zu benutzenden Instanzen belegt, 
+danach kann mit der getRessource Klassen-Methode die Ressource angefordert werden. 
+Sollten anderweitig noch Pins genutzt werden (z.B vom Benutzer für led`s oder sonstiges) 
+so kann/sollte eine GenericRessource erzeugt und übergeben werden (Auch hier wird die physikalische Existenz der Pins nicht überprüft!).
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using led1 = Pin<PortA, 0>;
+using led2 = Pin<PortA, 1>;
+using led3 = Pin<PortD, 6>;
+
+using gRes = AVR::rc::GenericRessource<led1,led2,led3>; # <1>
+
+using RC = AVR::rc::RessourceController<twiIntance,usartInstance,gRes >; # <2>
+----
+<1> Instanziieren einer generischen Ressource
+<2> Instanziieren des RessourceControllers mit der generischen Ressource
+
+Wenn alle Ressourcen mit dem RessourceController überprüft werden ist ein Konflikt der Ressourcen Belegung zur Compile-Zeit ausgeschlossen. 
+Zu beachten ist allerdings dass bei den meisten Ressourcen wie z.B. TWI, 
+USART und SPI alle Pins welche dort benutzt werden können auch geprüft werden. 
+Sollte also z.B. MasterSPI als ReadOnly konfiguriert werden so wird logischerweise der Miso-Pin nicht benutzt, 
+aber im RessourceController trotzdem geprüft. 
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using spiRessource = AVR::rc::Instance<
+AVR::spi::SPI, 
+AVR::rc::Number<0>, 
+AVR::portmux::PortMux<0>>; 
+
+using uncheckedSPI = AVR::rc::UncheckedRessource_t<spiRessource>; # <1>
+using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrupts<> >,uncheckedSPI , AVR::ReadOnly>; # <2>
+----
+<1> Instanziieren einer ungeprüften Ressource
+<2> Übergabe der ungeprüften Ressource an SPI
+
+Sollte der besagte Pin trotzdem von einer anderen Ressource verwendet werden besteht die Möglichkeit 
+eine Ressource von der Prüfung auszuschließen indem UncheckedRessource verwendet wird.
+
+=== Eventsystem
+
+Das Eventsystem der 0 Serie ermöglicht Peripherie Abhängige Funktionalitäten mit deren Hilfe die Peripherie ohne 
+Interrupts Synchron und Asynchron miteinander kommunizieren kann. 
+Das Eventsystem kann nur so konfiguriert werden dass je Kanal ein Generator läuft und dieser Kanal jeweils von beliebig vielen 
+Users abgehört werden kann. Das Eventsystem ist hauptsächlich dazu gedacht Interrupts und den damit verbundenen Overhead zu vermeiden.
+
+.Generatoren: 
+* Je Kanal kann ein Generator eingeschaltet werden, diese haben bestimmte Bedingungen um Events auszulösen, z.B. löst der SPI-Generator immer zum Master-Takt ein Event aus. 
+* Beachtet werden müssen hier auch die Constraints, Wenn z.B. ein PortPin als Generator festgelegt wird, soll ein Event ausgelöst werden bei einem High-Pegel, dazu muss aber der Pegel für mindestens einen Taktzyklus Stabil sein. 
+* Des weiteren muss auch die Eventlänge beachtet werden, ein Generator kann ein Event z.B. als Pulse oder auch als Level ausgeben (hat wiederum Auswirkungen auf den User). 
+* Die Bedingungen, die Eventlänge sowie die Constraints müssen vor der Verwendung im Handbuch nachgelesen werden.
+
+NOTE: Es können auch Software-Events generiert werden (immer Synchron als Strobe).
+
+.User: 
+* Je Kanal können beliebig viele User registriert werden, die Benutzer reagieren dann auf die Events welche von dem Generator erzeugt werden. 
+* Wenn z.B. ein Pin als User gewählt wird, so wird das Event auf den Pin abgebildet, also falls ein Event generiert wird, so ist der Pegel High, sonst Low (beachte Eventlänge).
+
+WARNING: Wichtig ist zu beachten ob die Events die der Generator erzeugt Synchron oder Asynchron sind, dies muss im Handbuch nachgelesen werden.
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using ch0 = AVR::eventsystem::Channel<0>; # <1>
+using ch0_gen = typename ch0::generators::generals::spi0_sck; # <2>
+using user0 = typename ch0::users::evtca0; 
+using user1 = typename ch0::users::evtcb0; # <3>
+
+int main() {
+    ch0::template registerListener<user0,user1>(); <4>
+    ch0::template setGenerator<ch0_gen >(); # <5>
+    ch0::softwareEvent(); # <6>
+}
+----
+<1> Kanalauswahl
+<2> Generatorauwahl
+<3> Userauswahl
+<4> User auf Kanal registrieren
+<5> Generator an Kanal zuweisen
+<6> Software-Event auslösen
+
+Zunächst wird der Kanal ausgewählt welcher benutzt werden soll (Kanal 0- maximal 8), sollte hier ein ungültiger Kanal gewählt werden wird das Programm nicht kompilieren. Als nächstes wird der Generator und der/die Benutzer ausgewählt. Dann werden die Benutzer auf den Kanal eingestellt und der Generator wird für den Kanal eingestellt. Das Eventsystem ermöglicht des Weiteren das Auslösen von Software-Events, dies wird mir der entsprechenden Funktion ermöglicht.
+
+=== TWI
+
+Die TWI Schnittstelle ist aus Aufwandsgründen nur für den Master Modus eingerichtet, die Quick-Command Funktionalität wurde aus Gründen der Kompatibilität zwischen TWI und I²C abgeschaltet, hier wurden Probleme bei der Kommunikation zwischen verschiedenen Geräten sichtbar. Ansonsten kann die TWI-Master Schnittstelle mit allen möglichen Eigenschaften konfiguriert werden, empfehlenswert ist aber lediglich die Anpassung der Zugriffsart (RW / R / W) sowie Blockierend / nicht blockierend oder auch Interruptdriven, ob eine FiFo genutzt wird und Instanzauswahl (wenn die anderen Eigenschaften angepasst werden so ist das Verhalten NICHT getestet), nachfolgend einige Beispiele.
+Die Frequenzrate wird über die init Methode festgelegt, sofern fastmode plus nicht aktiviert ist (Default Einstellung ist aus), so ist die rate auf 400khz beschränkt.
+
+WARNING: Es wird nicht kontrolliert ob der Slave die Adresse bestätigt hat ,dieser Fall sollte/muss abgefangen werden!
+
+==== Beispielbehandlung TWI Address-NACK
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+auto rd = twi::scopedRead<43>();
+
+while(! twi::writeComplete()) { # <1>
+    while(! twi::slaveAcknowledged()) { # <2>
+        while (!twi::endTransaction());  # <3>
+        rd = twi::scopedRead<43>(); # <4>
+    }
+}
+----
+<1> Warten auf Beendigung der Start-Condition
+<2> Acknowledgment abfragen
+<3> Stop-Condition auslösen
+<4> Neuer Versuch starten
+
+Hier wird außerhalb der Schnittstelle zuerst effektiv auf das Beenden der Start-Condition gewartet, 
+danach wird eine Stop-Condition ausgelöst damit die Start-Condition wiederholt werden kann. 
+Die Behandlung besteht hier darin es solange zu versuchen bis der Slave bestätigt, 
+andere Behandlungsmethoden sind z.B. das versuchen einer anderen Adresse oder eine andere Programm-Routine auszuführen. 
+Eine weitere Möglichkeit ist der Schnittstelle als 4. Parameter einen Handler in form eines Lambda oder einer Funktion mitzugeben, 
+per Default Parameter ist keiner festgelegt (`AVR::DefaultNackHandler`). 
+Intern wird nach der Start-Condition gewartet bis die Adresse geschrieben wurde und der Slave geantwortet hat, 
+sollte hier ein NACK festgestellt werden so wird der NackHandler so lange ausgeführt bis ein ACK erhalten wurde oder der Handler ein 
+true zurückgibt (z.B. könnte hier Punk 3 und 4 als Lambda und return false an die TWI-Schnittstelle übergeben werden).
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using _twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite>; # <1>
+
+static inline auto handler = [](){
+    while (!_twi::endTransaction());
+    while(!_twi::startTransaction<42,AVR::twi::access::Read>());
+}; # <2>
+
+using twi = AVR::twi::TWIMaster<AVR::blocking, twires, AVR::ReadWrite, handler>; # <3>
+----
+<1> Deklarieren der Schnittstelle ohne Handler
+<2> Definieren des Handlers
+<3> Einsetzen des Handlers in die Schnittstelle
+
+Hier wird nochmal gezeigt wie so ein built-in Handler realisiert werden kann.
+
+==== Lesen mit FiFo, keine Interrupts
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::NoInterrupts>,twires , AVR::ReadOnly>;
+
+volatile bool wasread = false;
+
+static inline void Callback (){
+    wasread=true;
+    uint8_t item;
+    while(twi::getInputFifo().pop_front(item))
+        AVR::dbgout::put(item);
+} # <1>
+
+int main() {
+    twi::init<100000>(); # <2>
+    AVR::dbgout::init();
+    while(true){
+        twi::get<42,Callback>(12); # <3>
+        while(!wasread)
+            twi::periodic(); # <4>
+        AVR::dbgout::flush();
+        AVR::delay<AVR::ms,200>();
+        wasread = false;
+    }
+}
+----
+<1> Definition des Read-Callbacks
+<2> Initialisieren der TWI-Schnittstelle mit 100 KHZ-Frequenz
+<3> Lese-Anforderung mit Callback
+<4> Periodic Aufruf
+
+Dieses Beispiel zeigt die Konfiguration der Schnittstelle als nicht blockierend, ReadOnly, mit Fifo und ohne Interrupts, 
+bei der TWI Schnittstelle wurde auf eine nicht blockierende Variante ohne FiFo verzichtet, da diese Version mangels Abstraktion zu 
+fehleranfällig wäre. Die get Methode wird mit den Template Parametern der Adresse und einer Callback Funktion (oder auch Lambda) 
+versehen, als Parameter wird die Anzahl der zu lesenden Bytes übergeben. Ohne Interrupts muss in der Schleife `periodic` aufgerufen 
+werden, sonst werden weder Daten empfangen noch gesendet. Wenn der Lesevorgang vollendet wurde (die angegebene Anzahl an Bytes wurde gelesen), wird die Callback Funktion aufgerufen und der Benutzer kann festlegen was passieren soll 
+ (sinnvoll ist auf jeden fall die Fifo zu leeren wie im Beispiel).
+
+==== Schreiben mit FiFo, keine Interrupts 
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+static constexpr const char* hello = "Hello Slave";
+
+int main() {
+    twi::init();
+
+    static constexpr auto len = utils::strlen(hello);
+
+    while(true){
+        twi::put<42>((uint8_t*)hello,len);
+            while( twi::dataToSend()) # <1>
+                twi::periodic();
+
+        AVR::delay<AVR::ms,200>();
+    }
+}
+----
+<1> Überprüfen ob in der Fifo nicht gesendete Daten sind
+
+Hier im Beispiel wird die Verwendung des Schreibens gezeigt, hier wird solange `periodic` aufgerufen bis keine Daten zum 
+Schreiben mehr vorhanden sind.
+
+==== Lesen nicht blockierend, keine Interrupts, keine FiFo
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::NoFifo,AVR::NoInterrupts>,twires , AVR::ReadOnly>;
+static constexpr uint8_t size = 12;
+static uint8_t arr[size];
+
+int main() {
+    twi::init();
+    while(true){
+        while(!twi::startTransaction<42,AVR::twi::access::Read>()); # <1>
+        uint8_t tmp = 0;
+        while(tmp != size){
+            tmp += twi::receive(arr,size-tmp); # <2>
+        }
+        
+        AVR::delay<AVR::ms,200>();
+        
+    }
+}
+----
+<1> Auslösen der Start-Condition für lesen
+<2> Lesen mit Rückgabe der gelesenen Bytes
+
+wird keine FiFo genutzt dann wird von der `receive` Methode die Anzahl gelesener Bytes zurückgegeben 
+(bei einem einzelnen Lesevorgang ein Boolean ob ein Byte gelesen wurde), logischerweise muss der Anwender ohne FiFo eigene Maßnahmen 
+treffen um entsprechend viele Bytes zu lesen (siehe Beispiel code). Auch das Auslösen der Start – sowie StopCondition müssen 
+dann manuell eingepflegt werden, Ausnahme betrifft das lesen, 
+hier wird die Stop-Condition mit dem lesen des letzten Bytes automatisch ausgeführt.
+
+==== Lesen nicht blockierend, Scoped-Variante
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+static constexpr uint8_t size = 12;
+static uint8_t arr[size];
+int main() {
+    twi::init();
+    while(true){
+        uint8_t tmp = 0;
+        auto rd = twi::scopedRead<42>(); # <1>
+        uint8_t data;
+        while(tmp != 11){
+            if(rd.receive(data)) # <2>
+                arr[tmp++] = data;
+        }
+        while(!rd.receiveLast(data)); # <3>
+        arr[tmp] = data;
+}
+----
+<1> Erzeugen einer Scoped-Transaktion
+<2> Lesen eines Bytes
+<3> Lesen des Letzten Bytes
+
+Alternativ können bei nicht verwenden der nicht blockierenden NoFifo Varianten auch Scoped Varianten genutzt werden, 
+somit muss sich nicht mehr explizit um die Start/Stop-Conditions gekümmert werden, auch hier gilt die Ausnahme des Lesens (siehe Beispiel).
+
+==== Schreiben nicht blockierend, Scoped-Variante
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+static constexpr const char* hello = "Hello Slave";
+
+int main() {
+    twi::init();
+
+    static constexpr auto len = utils::strlen(hello);
+
+    while(true){
+        auto wr = twi::scopedWrite<42>();
+        for(uint8_t i = 0; i < len; ) {
+            if (wr.send((uint8_t) *(hello + i)))
+                i++;
+        }
+        
+        AVR::delay<AVR::ms,200>();
+    }
+}
+----
+
+Hier wird noch die ScopedWrite Variante gezeigt, somit muss der Nutzer sich nicht um Start/Stop-Conditions kümmern.
+
+==== Schreiben nicht blockierend, FiFo mit Interrupts
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+static constexpr const char* hello = "Hello Slave";
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::WriteOnly>;
+
+ISR(TWI0_TWIM_vect){ # <1>
+    twi::intHandler(); # <2>
+}
+
+int main() {
+    twi::init();
+    static constexpr auto len = utils::strlen(hello);
+	
+    while(true){
+        twi::put<42>((uint8_t*)hello,len);
+        AVR::delay<AVR::ms,200>();
+    }
+}
+----
+<1> Definition des entsprechenden Interrupt-Vektors
+<2> Aufruf des Interrupt-Handlers
+
+Diese Interrupt gesteuerte Version wird im Intervall von 200 ms den String Hello Slave an den Slave mit der Adresse 42 senden.
+
+==== Lesen nicht blockierend, FiFo mit Interrupts
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::ReadOnly>;
+
+volatile bool wasread = false;
+
+ISR(TWI0_TWIM_vect){
+    twi::intHandler();
+}
+
+static inline void Callback (){
+    wasread=true;
+    uint8_t item;
+    while(twi::getInputFifo().pop_front(item))
+        AVR::dbgout::put(item);
+}
+
+int main() {
+    twi::init();
+    AVR::dbgout::init();
+    while(true){
+        twi::get<42,Callback>(12);
+        while(!wasread)
+            ; # <1>
+        AVR::dbgout::flush();
+        AVR::delay<AVR::ms,200>();
+        wasread = false;
+    }
+}
+----
+<1> Kein Periodic da Interruptgesteuert
+
+Diese Version erhält vom Slave mit der Adresse 42 je Iteration 12 Datenbytes, nachdem diese gelesen wurden wird der Callback 
+ausgeführt (in diesem Falle werden die Datenbytes über die Debug-Schnittstelle an den PC gesendet → nur 4808 verfügbar und die innere 
+While-Schleife der main Methode unterbrochen).
+
+==== Lesen und schreiben nicht blockierend, FiFo mit Interrupts
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using twi = AVR::twi::TWIMaster<AVR::notBlocking<AVR::UseFifo<42>,AVR::Interrupts<>>,twires , AVR::ReadWrite>;
+
+ISR(TWI0_TWIM_vect){
+    twi::intHandler();
+}
+
+volatile bool wasread = false;
+static inline void Callback (){
+    wasread=true;
+    uint8_t item;
+    while(twi::getInputFifo().pop_front(item))
+        AVR::dbgout::put(item);
+}
+
+int main() {
+    twi::init();
+    AVR::dbgout::init();
+    while(true){
+        twi::get<42,Callback>(12); # <1>
+        while(!wasread)
+            ;
+        AVR::dbgout::flush();
+        twi::put<42>(`H`); # <2>
+        AVR::delay<AVR::ms,200>();
+        wasread = false;
+    }
+}
+----
+<1> Lesen von 12 Bytes
+<2> Schreiben eines Bytes
+
+Als abschließendes Beispiel wird hier noch eine kombinierte Version gezeigt (lesen und Schreiben).
+
+=== SPI
+
+Das SPI-Interface ist ähnlich gestaltet wie bei TWI, mit der Ausnahme dass hier in keinem Fall auf Start- oder Stop-Conditions 
+oder dergleichen geachtet werden muss. Weiterhin wird auch ein Interrupthandler für die Benutzung ohne Fifo und der 
+Slave Modus zur Verfügung gestellt. Hier gibt es keine Option in der init Methode die Frequenz einzustellen, 
+dies geschieht über die Prescaler-Option während der Schnittstellen-Konfiguration.
+
+==== Schreiben, nicht blockierend, FiFo ohne Interrupts
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::NoInterrupts >,res, AVR::ReadWrite>;  
+
+int main() {
+    spi::init();
+    AVR::dbgout::init();
+    while(true){
+        spi::put(`h`);
+        spi::put(`e`);
+        spi::put(`l`);
+        spi::put(`l`);
+        spi::put(`o`);
+        for(uint8_t i = 0; i < 5; i++) {
+            spi::periodic();
+            AVR::delay < AVR::us, 5 > ();
+        } 
+        uint8_t item;
+       while(spi::getInputFifo().pop_front(item)) {
+           AVR::dbgout::put(item);
+       }
+        AVR::dbgout::flush();
+    }
+}
+----
+
+NOTE: Die Nicht blockierende Variante ohne Interrupts lässt sich ebenso verwenden wie die TWI-Schnittstelle.
+
+==== Schreiben, nicht blockierend, FiFo mit Interrupts
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using spi = AVR::spi::SPIMaster<AVR::notBlocking<AVR::UseFifo<42> ,AVR::Interrupts<> >,res, AVR::ReadWrite>; 
+
+ISR(SPI0_INT_vect){
+    spi::intHandler();
+}
+
+int main() {
+    spi::init();
+    AVR::dbgout::init();
+    while(true){
+        spi::put(`h`);
+        spi::put(`e`);
+        spi::put(`l`);
+        spi::put(`l`);
+        spi::put(`o`);
+        uint8_t item;
+       while(spi::getInputFifo().pop_front(item)) {
+           AVR::dbgout::put(item);
+       }
+        AVR::dbgout::flush();
+    }
+}
+----
+
+Hier zu sehen ist eine Interrupt-Version des SPI, um die gelesenen Bytes auszugeben muss lediglich die Fifo ausgelesen werden 
+(siehe Beispiel). Wird eine ReadWrite Variante genutzt so wird die Library eine Null transferieren sofern keine Nutzdaten vorhanden sind. 
+Sollte keine Fifo verwendet und kein WriteOnly eingestellt sein so muss ein Protokolladapter festgelegt werden.
+
+=== USART
+
+Die USART Schnittstelle lässt sich im Grunde genauso bedienen wie SPI und TWI.
+
+.Hier müssen besonders 2 Dinge beachtet werden:
+* Baudrate: Hier ist es essentiell wichtig dass vor allem der F_CPU Wert stimmt und das eine zu dem Ziel-Gerät passende Baudrate eingestellt ist (default 115200).
+* Besonderheit Interrupts: Hier gibt es 2 Interrupt Vectoren (der TX-Vector wird nicht beachtet) und deswegen auch 2 Interrupt-Handler (tx/rxHandler).
+
+Für den Atmega4808 ist ein Debug-Interface in der Library enthalten (AVR::dbgout → include Datei = inc/Boards/CuriosityNanoIOT.hpp), mit diesem kann für das IoT-Devboard von Microchip über das USB-Interface bequem kommuniziert werden, dabei ist zu beachten das dieses blockierend arbeitet und USART2 benutzt.
+
+.Auszug aus main.cpp
+[source,cpp,numbered]
+----
+using usart =AVR::usart::USART<AVR::notBlocking<AVR::UseFifo<42>, AVR::Interrupts<>>,usartres, AVR::ReadWrite>;
+
+ISR(USART2_DRE_vect){
+    usart::txHandler();
+} # <1>
+ISR(USART2_RXC_vect){
+    usart::rxHandler();
+} # <2>
+
+int main() {
+    usart::init<115200>(); # <3>
+    while(true){
+        usart::put(`h`);
+        usart::put(`e`);
+        usart::put(`l`);
+        usart::put(`l`);
+        usart::put(`o`);
+        AVR::delay<AVR::ms,200>();
+    }
+}
+----
+<1> Transfer Vektor (DRE)
+<2> Receive Vektor (TXC)
+<3> Initialisierung der Schnittstelle mit 115,2 KHZ-Baudrate
+
+Hier im Beispiel wird die Verwendung der Interrupt Variante für Read und Write Zugang beschrieben, 
+beachtet werden muss dass der TX Vector nicht verwendet werden darf, stattdessen muss der DRE Vector verwendet werden.
+
+[bibliography]
+== Quellen
+
+- [[[ZLib]]] Keven Klöckner. Atmega 0 Series Lib:
+https://github.com/Keven1994/Atmega0SeriesLib
+- [[[libcpp]]] Free Software Foundation, Inc. Libstdc++:
+https://gcc.gnu.org/
+- [[[BMCPP]]] Prof. Dr.-Ing Wilhelm Meier. BmCPP
+https://sourceforge.net/projects/wmucpp/
+- [[[MDok]]] Microchip. Atmega 0-series Family Data Sheet
+http://ww1.microchip.com/downloads/en/DeviceDoc/megaAVR0-series-Family-Data-Sheet-DS40002015B.pdf
+- [[[ASF]]] Microchip. Advanced Software Framework:
+http://ww1.microchip.com/downloads/en/DeviceDoc/asf-standalone-archive-3.46.0.94.zip
+- [[[PUGI]]] Arseny Kapoulkine. Pugi XML-Parser:
+https://pugixml.org/
+- [[[STM]]] STMicroelectronics. STM Hal Dokumentation:
+https://www.st.com/content/ccc/resource/technical/document/user_manual/2f/71/ba/b8/75/54/47/cf/DM00105879.pdf/files/DM00105879.pdf/jcr:content/translations/en.DM00105879.pdf

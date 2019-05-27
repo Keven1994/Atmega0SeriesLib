@@ -1,21 +1,35 @@
 = 0 Series Library Dev-Guide
 :icons: font
-:source-highlighter: prettify
+:source-highlighter: coderay
+:doctype: book
+:sectnums:
 :toc: left
+:toclevels: 4
+:listing-caption: Abbildung
+:chapter-label: Kapitel
+:toc-title: Inhaltsverzeichnis
 
 == Vorwort
 
-In diesem Guide werden einige *spezielle* Aspekte der Library erwähnt, der Großteil wie z.B. Register oder Port Strukturen setze ich als gegeben vorraus.
+Es werden hier einige spezielle Aspekte der Library erwähnt, 
+der Großteil wie z.B. Register oder Port Strukturen setze ich als gegeben vorraus (s.a. <<BMCPP>>). 
 
 == HW Files
 
-Die Software Basiert Komplett auf den im folgenden erläuterten automatisch generierten Dateien. Aus der HW-Beschreibung von Atmel (*.atdf) wird mit einem mitgelieferten Parser eine C++ Struktur erzeugt, diese Struktur wird später in der Library verwendet.
+Die Software Basiert Komplett auf den im folgenden erläuterten automatisch generierten Dateien. 
+Aus der HW-Beschreibung von Microchip (*.atdf) wird mit einem mitgelieferten Parser eine C++ Struktur erzeugt, 
+diese Struktur wird später in der Library verwendet. Das vorliegende Design ist begründet durch die hohe Flexibilität hinsichtlich Änderungen durch 
+Microchip (durch die Defines der Microchip Library werden bei jedem Kompilieren die Änderungen mit übernommen) sowie die hervorragenden generischen Eigenschaften durch die automatische Erstellungen der Registerstrukturen.
+Anders als in BMCPP müssen von Hand keine Register in Header-Dateien geschrieben werden, das wird von dem Parser übernommen und spart somit Zeit und verhindert Flüchtigkeitsfehler.
 
-NOTE: Die EventSystem Dateien liegen zwar im selben Ordner, jedoch sind diese wegen ihrer speziellen Struktur von Hand erstellt
+NOTE: Die EventSystem Dateien liegen zwar im selben Ordner wie die anderen HW-Dateien, jedoch sind diese wegen ihrer speziellen Struktur von Hand erstellt
 
 === Der Header
 
-[source, C++]
+Jede HW-Datei beginnt nach dem obigen Schema, wegen der Namespaces sind die einzelnen Geräte und Komponenten eindeutig voneinander getrennt. Der erste include bezieht sich auf die Port-Abstraktion, diese wird innerhalb der HW-Dateien genutzt um übersichtliche Strukturen erzeugen zu können. Danach werden die Meta-Funktionen<<BMCPP>> inkludiert, hier wird die List genutzt um die Pins einer Komponente zu einer Liste zu packen, diese kann der Ressource-Controller verwenden um auf Kollisionen zu prüfen.
+
+.Auszug aus ATmega4808SPI.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 #pragma once
  #include "../../hw_abstractions/Port.hpp"
@@ -25,71 +39,74 @@ namespace mega4808 { # <2>
     namespace spi_details { # <3>
 ----
 <1> Notwendige includes
-<2> Device-Namespace -> jeweils 'mega' + die Nummer
-<3> Komponenten-Namespace -> jeweils die Komponente und '_details'
+<2> Device-Namespace -> jeweils `mega` + die Nummer
+<3> Komponenten-Namespace -> jeweils die Komponente und `_details`
 
-Jede HW-Datei beginnt nach dem obigen Schema, wegen der Namespaces sind die einzelnen Geräte und Komponenten eindeutig voneinander getrennt.
 
 === Die Komponente
 
-[source,C++]
+.Die Komponenten Struktur besteht im Grunde aus 2 wesentlichen Teilen: 
+* Einige Enum-Klassen die Später den Registern als typ dient um Funktionen bereit zustellen, 
+somit ist das übergeben von unbenannten Werten nur erschwert möglich.
+* Die `registers` Struktur welche  die Registertyp-Deklarationen und Register-Variablen Deklarationen enthält.
+
+Die `registers` Struktur enthält alle definierten Register der Komponente, 
+diese sind aus der atdf-Datei abgeleitet und somit sind auch die Attribute des Typs gewählt 
+(Schreibschutz, Größe ....). Die Variablen Deklarationen sind in der Register Struktur vorhanden um die 
+Legacy Funktionen "getBaseAddress" aus der BareMetal-CPP Library zu ermöglichen, in der eigentlichen Library finden sie keine Anwendung. 
+Die Registertypen sind als Pair angegeben und habe noch den Offset-Wert mit angegeben für eine spezielle Funktion 
+innerhalb der Port Abstraktion.
+
+.Auszug aus ATmega4808SPI.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 struct spiComponent {
-
 	//lines omitted....
-	
 	enum class INTFLAGSMasks : mem_width {
 		Bufovf = SPI_BUFOVF_bm,
-		Dreif = SPI_DREIF_bm,
-		Rxcif = SPI_RXCIF_bm,
-		Ssif = SPI_SSIF_bm,
-		Txcif = SPI_TXCIF_bm,
-		If = SPI_IF_bm,
+		//...
 		Wrcol = SPI_WRCOL_bm
 	}; # <1>
 
 	struct registers {
 		using ctrla = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,CTRLAMasks>,0x0>;
-		using ctrlb = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,CTRLBMasks>,0x1>;
-		using data = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Data>,0x4>;
-		using intctrl = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,INTCTRLMasks>,0x2>;
-		using intflags = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,INTFLAGSMasks>,0x3>; # <2>
-		ctrla::type Ctrla;
-		ctrlb::type Ctrlb;
-		intctrl::type Intctrl;
+		using ctrlb = utils::Pair<reg::Register<reg::accessmode::RW,reg::specialization::Control,CTRLBMasks>,0x1>; # <2>
+		//...
 		intflags::type Intflags;
 		data::type Data; # <3>
 	}; 
 }; 
 ----
-<1> Spezial-Bits für das Register 'intflags' 
+<1> Spezial-Bits für das Register `intflags` 
 <2> Registertypen und Namen
 <3> Register Variablen Deklarationen
 
-.Die Komponenten Struktur besteht im Grunde aus 2 wesentlichen Teilen: 
-* Einige Enum-Klassen die Später den Registern als typ dient um Funktionen bereit zustellen, somit ist das übergeben von nichtbenannten Werten nur erschwert möglich.
-* Die 'registers' Struktur welche  die Registertyp-Deklarationen und Register-Variablen Deklarationen enthält.
-
-Die 'registers' Struktur enthält alle definierten Register der Komponente, diese sind aus der atdf-Datei abgeleitet und somit sind auch die Attribute des Typs gewählt (Schreibschutz, Größe ....). Die Variablen Deklarationen sind in der Register Struktur vorhanden um die legacy Funktionen "getBaseAddress" aus der BareMetal-CPP Library zu ermöglichen, in der eigentlichen Library finden sie keine Anwendung. Die Registertypen sind als Pair angegeben und habe noch den Offset-Wert mit angegeben für eine spezielle Funktion innerhalb der Port Abstraktion.
-
-NOTE: Das Attribut Packed muss nicht für die einzelnen Strukturen gesetzt werden, dem Compiler wird das Flag 'fpack-struct' übergeben.
+NOTE: Das Attribut `packed` muss nicht für die einzelnen Strukturen gesetzt werden, dem Compiler wird das Flag `fpack-struct` übergeben.
 
 === Die Instanzen
 
-[source,C++]
+Der letzte Teil der HW Dateien besteht aus der `spis` Struktur, 
+diese ist eine Sammlung an Ressourcen-Instanzen der Komponente (z.B. USART0, USART1 ...). 
+Die `value` Funktion wird in der Library an verschiedenen Stellen verwendet, 
+z.B. in der Port Klasse um dann auf die verschiedenen Register des Ports zuzugreifen.
+Hier werden zunächst die Instanzen aufgelistet, auf die verschiedenen Instanzen kann 
+dann mit der entsprechenden Nummer zugegriffen werden (z.B. USART0 -> usarts::template inst<0>). 
+Innerhalb der verschiedenen Instanzen befinden sich dann noch die Mappings für die unterschiedlichen Portmux alternativen, 
+somit wird es einem Benutzer auch ermöglicht verschiedene Alternativen auszuwählen. 
+Erst innerhalb der Portmux Alternativen finden sich dann die unterschiedlichen Pin-Gruppen und die konkreten Pins. 
+Wenn also auf die Konkreten Pins zugegriffen werden soll geschieht dies mit der Angabe einer konkreten Instanz sowie der Portmux Alternative.
+
+.Auszug aus ATmega4808SPI.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 //lines omitted...
 
 struct spis {
-	template<auto N ,bool dummy = true>
-	struct inst;
-
+	//...
 	template<bool dummy>
 	struct inst<0, dummy> # <1>
 	 {
-		template<auto N ,bool dummy1 = true>
-		struct alt;
-	
+		//...
 		[[nodiscard,gnu::always_inline]] static inline auto& value()  { return SPI0;} # <2> 
 	
 		template<bool dummy1>
@@ -98,15 +115,7 @@ struct spis {
 			struct Miso {
 				using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,1>;
 			};
-		
-			struct Mosi {
-				using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,0>;
-			};
-		
-			struct Sck {
-				using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,2>;
-			};
-		
+			//...
 			struct Ss {
 				using pin0 = AVR::port::details::PortPin<port_details::port<port_details::ports::portc>,3>;
 			}; # <4>
@@ -130,17 +139,32 @@ struct spis {
 <4> die verschiedenen Gruppen innerhalb einer Portmux-Variante 
 <5> Liste von allen Pins die von der Ressource belegt werden können
 
-Der letzte Teil der HW Dateien besteht aus der 'spis' Struktur, diese ist eine Sammlung an Ressourcen-Instanzen der Komponente (z.B. USART0, USART1 ...). Die value Funktion wird in der Library an verschiedenen Stellen verwendet, z.B. in der Port Klasse, die Verwendung dieser Strukturen birgt den Vorteil, dass automatisch Änderungen von Microchip übernommen werden. Die Liste der Pins wird im Ressource Controller benötigt um die Kollisionsfreiheit zwischen den Ressourcen zu überprüfen.
-
-NOTE: Die oben beschriebene Struktur ist nur relevant wenn die Komponente I/O Pins verwendet
+NOTE: Die hier beschriebenen Struktur ist nur relevant wenn die Komponente I/O Pins verwendet
 
 == Die Microcontrollerklassen
 
-In den Microcontrollerklassen werden die HW-files inkludiert, des Weiteren stellen die Klassen die Komponenten und deren Konfigurationen zur Verfügung (für die Top-Level Funktionen im AVR-Namespace). Sollten weitere Controller der Library hinzugefügt werden, so wird empfohlen die 4808 oder 4809 Klasse zu kopieren und entsprechend abzuändern.
+In den Microcontrollerklassen werden die HW-files inkludiert, 
+des Weiteren stellen die Klassen die Komponenten und deren Konfigurationen zur Verfügung (für die Top-Level Funktionen im AVR-Namespace).
+Die Microcontrollerklassen stellen die Konfigurationen für die Library zur Verfügung damit innerhalb der einzelnen Klassen schon vorab spezifische Einstellungen angepasst werden können.
+Somit können innerhalb dieser Familie Spezialfälle in den Microcontrollerklassen behandelt werden.
+Die Microcontrollerklassen können hinzugefügt werden indem eine fertige kopiert und in eine neue Header-Datei hinzugefügt wird. Anschließend müssen nur die entsprechenden namespaces, Port-Mappings und includes angepasst werden.
+Allerdings muss dann auch die entsprechende .atdf Datei hinzugefügt werden und im CMake-File muss die Datei-Generierung ergänzt werden.
 
 === Header
 
-[source,C++]
+Zu Beginn werden in den Microcontrollerklassen die benötigten Include-Dateien und Typdefinitionen vorgenommen. 
+Dies ist zunächst der Typ `mem_width`, dieser bezeichnet die Speicherbreite (z.B. bei den 8-Bit µCs sind das immer 8 Bit), die zweite Typdefinition ist ptr_t und bezeichnet Zeigertyp.
+Der erste Hardware-Include muss der Port sein, der Port besitzt innerhalb der Library eine Sonderfunktion, da dieser verwendet wird um andere Funktionen zu ermöglichen. 
+Daraus folgt dann auch dass der Port eine Vorraussetzung für die anderen Library Funktionen ist. Nach dem Port können die verschiedenen HW-Dateien in beliebiger Reihenfolge inkludiert werden, 
+da diese immer nur in der entsprechenden Abstraktion benötigt werden. 
+.Danach kommen die Feststehenden Abstraktionen:
+* Die CPU: Ermöglicht das auslesen des Statusregister, diese Funktion wird innerhalb der Scoped-Klasse benutzt.
+* Der Resssource-Controller: die dort vorhandene RCComponent-Klasse wird verwendet um qualifizierte Klassen zu identifizieren. 
+* Die AtmegaZero Datei: Hier werden die Enum-Klassen aus den HW-Dateien nochmals in Atomare Einstellungen unterteilt damit die Schnittstelle besser konfiguriert werden kann.
+
+
+.Auszug aus Atmega4808.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 #pragma once
 using mem_width = uint8_t;
@@ -151,9 +175,7 @@ using ptr_t = uintptr_t; # <1>
 #include "hal/ATmega4808PORT.hpp"
 #include "mega4808/hal/Atmega4808EventSystem.hpp"
 #include "hal/ATmega4808SPI.hpp"
-#include "hal/ATmega4808TWI.hpp"
-#include "hal/ATmega4808CPU.hpp"
-#include "hal/ATmega4808USART.hpp"
+//...
 #include "hal/ATmega4808ADC.hpp" # <2>
 #include "../hw_abstractions/CPU.hpp"
 #include "../hw_abstractions/RessourceController.hpp"
@@ -163,27 +185,24 @@ using ptr_t = uintptr_t; # <1>
 <2> Hardware-Includes
 <3> Von der Library benötigte includes
 
-Zu Beginn werden in den Microcontrollerklassen die benötigten Include-Dateien und Typdefinitionen vorgenommen. Zuerst müssen immer die o.g. Typdefinitionen kommen, als erster Hardware-Include kommt immer der Port da dieser noch in den anderen HW-files verwendet wird.
-
 === Klasse
 
-[source,C++]
+Innerhalb der Komponenten der Microcontrollerklassen befinden sich private Elemente, 
+der RessourceController und die Metafunktion benötigen Zugriff auf diese. Wie zuvor schon erwähnt wird die Verwendung des Ressource-Controller mehr oder weniger erzwungen, dies geschieht mit diesen private-Deklarationen, im Prinzip kann sich nur der Ressource-Controller auf die benötigten Elemente Zugriff verschaffen. 
+Umgehen kann man den Ressource-Controller entweder mit den ungeprüften Ressourcen (siehe <<RessourceController>>) oder durch die Verwendung der HW-Klassen in den entsprechenden namespaces.
+
+.Auszug aus Atmega4808.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 template<auto frequency>
 class Atmega4808 {
 
 	template<typename Alias>
 	friend struct AVR::rc::details::resolveComponent; # <1>
-	
-	template<typename MCU,typename FIRST,typename... PINS>
-	friend class AVR::rc::ResController;
-	
+//...
 	public:
-
 	struct isZero{}; # <2>
-
 	static constexpr auto clockFrequency = frequency;
-	
 	template<typename T>
 	static inline constexpr bool is_atomic(){
 		return false;
@@ -193,11 +212,15 @@ class Atmega4808 {
 <2> Typdefinition für ein Concept
 <3> Legacy-Funktion aus BMCPP
 
-Innerhalb der Komponenten der Microcontrollerklassen befinden sich private Elemente, der RessourceController und die Metafunktion benötigen Zugriff auf diese, daher die Friend-Deklaration.
+Damit bestimmte Tools aus BMCPP verwendet werden können müssen dort Spezialisierungen erstellt werden, dies wird ermöglicht durch die Concepts. ein Concept überprüft vor der Spezialisierung ob die `isZero` Struktur vorhanden ist, dies hat dann den Vorteil dass innerhalb der älteren Microcontrollerklassen nichts verändert werden muss.
+Die is_atomic Funktion musste aus kompatibilitätsgründen übernommen werden, diese Funktion wurde z.B. auch in der Scoped-Klasse aufgerufen.
 
 === Spezialfall Port
 
-[source,C++]
+Innerhalb der Microcontrollerklasse ist der Port als Komponente ein Ausnahmefall, weil er nur dazu dient den Portnamen zuzuordnen (und ggf. die legacy BMCPP-Funktion ermöglicht). Der Port als Komponente wird in der Port-Abstraktion genutzt um die Port-Strukturen der Library zu erstellen hierzu wird das gezeigte Mapping angewandt, die daraus entstehenden Strukturen werden in der gesamten Library und vom Benutzer verwendet.
+
+.Auszug aus Atmega4808.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 template<typename p> # <1>
 struct Port {
@@ -222,20 +245,23 @@ struct Port {
 <3> Hilfsvariable für die getBaseAddress Funktion
 <4> Typdeklaration der HW-Komponente
 
-Innerhalb der Microcontrollerklasse ist der Port ein Ausnahmefall, weil er nur dazu dient den Portnamen zuzuordnen (und ggf. die legacy BMCPP-Funktion ermöglicht).
-
 === Komponenten
 
-[source,C++]
+Diese Struktur zeigt den Aufbau einer Microcontrollerklasse mit der Eigenschaft, 
+dass die Komponente vom RessourceController verwaltet wird.
+Die Setting Struktur ermöglich eine einfache und flexible Konfiguration der Schnittstelle, 
+aus dieser werden später dann in den entsprechenden `init` Methoden die Register eingestellt.
+
+.Auszug aus Atmega4808.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 struct USART : public AVR::rc::details::RCComponent<usart_details::usarts, usart_details::usartComponent>, # <1>
 			   public AVR::details::AtmegaZero::template USART_C< usart_details::usartComponent> # <2> 
 			   {
 
 	template<USART::RS485Mode RSMode, USART::ReceiverMode receiverMode,
-			USART::CommunicationMode ComMode, USART::ParityMode parityMode,
-			USART::StopBitMode stopBitMode, USART::CharacterSize CharSize, bool Msb,
-			bool StartFrameDetection, bool OpenDrainMode, bool MultiProcessor , bool LoopBackMode>
+			//...
+			>
 	struct USARTSetting {
 		using AConf = usart_details::usartComponent::CTRLAMasks;
 		using BConf = usart_details::usartComponent::CTRLBMasks;
@@ -244,13 +270,7 @@ struct USART : public AVR::rc::details::RCComponent<usart_details::usarts, usart
 		static constexpr AConf rsmode = static_cast<AConf>(RSMode);
 		static constexpr AConf loopbackmode = LoopBackMode ? AConf::Lbme : static_cast<AConf>(0);
 		static constexpr BConf opendrainmode = OpenDrainMode ? BConf::Odme : static_cast<BConf>(0);
-		static constexpr BConf startframedetection = StartFrameDetection ? BConf::Sfden : static_cast<BConf>(0);
-		static constexpr BConf multiprocessor = MultiProcessor ? BConf::Mpcm : static_cast<BConf>(0);
-		static constexpr BConf receivermode = static_cast<BConf>(receiverMode);
-		static constexpr CConf commode = static_cast<CConf>(ComMode);
-		static constexpr CConf paritymode = static_cast<CConf>(parityMode);
-		static constexpr CConf stopbitmode = static_cast<CConf>(stopBitMode);
-		static constexpr CConf charsize = static_cast<CConf>(CharSize);
+		//...
 		static constexpr CConf msb = !Msb ? CConf::Udord : static_cast<CConf>(0);
 	}; # <3>
 private:
@@ -261,16 +281,23 @@ private:
 <2> Importiert die Enum-Klassen der 0 Familie aus der entsprechenden Komponente
 <3> Konfigurationen der Schnittstelle
 
-Die obige Struktur zeigt den Aufbau einer Microcontrollerklasse, mit der Eigenschaft, dass die Komponente vom RessourceController verwaltet wird. Die Setting Struktur ermöglich eine einfache und flexible Konfiguration der Schnittstelle, aus dieser werden später dann in den entsprechenden 'init' Methoden die Register eingestellt.
+Das Erben von RCComponent ermöglicht es dem Ressource-Controller die verschiedenen Instanzen sowie die Register zu sehen (hier z.B. usarts und usartComponent). Der Ressource Controller braucht Zugriff auf die verschiedenen Instanzen des bestimmten µCs um Zugriff auf die Pin-Liste zu bekommen.
+Die zweite Oberklasse ermöglicht dann die Konfiguration über die Enum Klassen der 0 Serie, somit werden gut lesbare und Atomare Einstellungen für den Benutzer zur Verfügung gestellt. Der Vorteil der Oberklasse besteht hier darin, dass die Enums für die ganze Familie zur Verfügung stehen und nicht nur für einen µC (somit muss der Vorgang nicht für jeden µC einzeln vorgenommen werden).
 
 == AtmegaZero Struktur
 
-[source,C++]
+Diese Struktur dient dazu die verschiedenen Einstellungen aus den HW-Dateien aufzugliedern und in sinnvolle Gruppen zu packen, 
+sodass in den Setting Strukturen vom Benutzer klare Einstellungen möglich sind. 
+In C-Style müssten die Benutzer den entsprechenden Registern per Makros und Bit-Operationen dann die entsprechenden Werte zuweisen, 
+diese Vorgehensweise ist unübersichtlich, fehleranfällig und wird hier ganz klar vermieden.
+
+.Auszug aus ATmegaZero.hpp <<ZLib>>
+[source,cpp,numbered]
 ----         
 namespace AVR {
     namespace details {
         struct AtmegaZero {
-			//lines omitted....
+			//...
 template<typename twiComponent>
 struct TWI_C {
 	enum class SDASetup: mem_width {
@@ -281,27 +308,21 @@ struct TWI_C {
 	};
 
 	enum class SDAHold: mem_width {
-		Setup4Cycles = static_cast<mem_width>(twiComponent::CTRLAMasks::Sdasetup_4cyc),
-		Setup8Cycles = static_cast<mem_width>(twiComponent::CTRLAMasks::Sdasetup_8cyc)
-	};
-
-	enum class MasterTimeout: mem_width {
-		Disabled = static_cast<mem_width>(twiComponent::MCTRLAMasks::Timeout_disabled),
-		T_50us = static_cast<mem_width>(twiComponent::MCTRLAMasks::Timeout_50us),
-		T_100us = static_cast<mem_width>(twiComponent::MCTRLAMasks::Timeout_100us),
-		T_200us = static_cast<mem_width>(twiComponent::MCTRLAMasks::Timeout_200us)
-	};
-
+	//...
 };
 ----
 
-Diese Struktur dient dazu die verschiedenen Einstellungen aus den HW-Dateien aufzugliedern und in sinnvolle Gruppen zu packen, sodass in den Setting Strukturen vom Benutzer klare Einstellungen möglich sind. In C-Style müssten die Benutzer den entsprechenden Registern per Makros und Bit-Operationen dann die entsprechenden Werte zuweisen, diese vorgehensweise ist unübersichtlich, fehleranfällig und wird hier ganz klar vermieden.
-
 == RessourceController
+
+Der Ressourcecontroller hat die Aufgabe die Ressourcen und ihre Pinbelegungen miteinander zu Vergleichen, hierzu verwendet der Ressourcecontroller die in den HW-files enthaltenen Pin-lists, der Parser fügt diese Listen automatisch hinzu, dies hat also den Vorteil dass ohne großen Aufwand während der Compile-Zeit schon Kollisionen ausgeschlossen werden können. Zusätzlich ist der Ressource-Controller so konzipiert, dass bei normaler Verwendung der Library das Verwenden des Ressource-Controller notwendig ist. Die Verwendung des Ressource-Controller kann auch Umgangen werden, diese Funktionalität wurde eingebaut damit man als erfahrener Benutzer sämtliche Möglichkeiten ausschöpfen kann.
 
 === RCComponent
 
-[source,C++]
+Diese Struktur wird im RessourceController genutzt um z.B. auf die HW-Instanzen zuzugreifen um schließlich die IO Pins zu vergleichen. 
+Je nach Komponente ist e möglich dass nicht alle Pins überprüft werden die in den Komponenten verfügbar sind, z.B. der ADC.
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 template<typename instances, typename Component_t, typename instances2 = void>
 class RCComponent {
@@ -336,11 +357,14 @@ public:
 <2> Spezialisierung für eine Vollprüfung der IO Pins
 <3> Realisierung der BCMPP legacy-Funktion getBaseAddress
 
-Diese Struktur wird im RessourceController genutzt um z.B. auf die HW-Instanzen zuzugreifen um schließlich die IO Pins zu vergleichen. Je nach Komponente ist e möglich dass nicht alle Pins überprüft werden die in den Komponenten verfügbar sind, z.B. der ADC.
+Hier wird die Comps-Struktur verwendet um zwischen den verschiedenen Komponenten (alle Pins überprüfen oder nicht) zu unterscheiden, wenn der Typ `void` entspricht so werden die Pins aus den HW-Dateien verwendet. Im zweiten Fall werden nicht die Pins aus den HW-Dateien, sondern die vom Benutzer übergebenen Pins verwendet.
 
 === Die Kernklasse
 
-[source,C++]
+Hier wird als erstes die MCU übergeben (idr. DEFAULT_MCU), danach folgen eine bis beliebig viele Ressourcen (0 Ressourcen macht keinen Sinn). Die beiden Alias Metafunktionen sollen jeweils die erste oder 2. Ebene in der HW-Struktur einer Instanz zurückgeben und eine kürzere und übersichtlichere Schreibweise innerhalb des RC zur Folge haben.
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 template<typename MCU,typename FIRST,typename... INSTANCES>
 class ResController {
@@ -351,9 +375,10 @@ class ResController {
 	using resolveInst = typename details::resolveComponent<Alias>::inst;
 ----
 
-Hier wird als erstes die MCU übergeben (idr. DEFAULT_MCU), danach folgen eine - beliebig viele Ressourcen (0 Ressourcen macht keinen Sinn). Die beiden Alias Metafunktionen sollen jeweils die erste oder 2. Ebene in der HW-Struktur einer Instanz zurückgeben und eine kürzere und übersichtlichere Schreibweise innerhalb des RC zur Folge haben.
+Hier zu sehen sind die einzelnen Prüfungen die der RessourceController durchführt während er die angeforderte Ressource frei gibt.
 
-[source,C++]
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 template<typename N>
 struct getRessource {
@@ -371,11 +396,17 @@ using getRessource = typename getRessource<N>::type;
 <2> Prüfung ob die I/O Pins Kollisionsfrei sind
 <3> Prüfung auf doppelt Belegung einer Instanz durch mehrere Portmux-Varianten
 
-Hier zu sehen sind die einzelnen Prüfungen die der RessourceController durchführt während er die angeforderte Ressource frei gibt.
-
+Diese Prüfungen haben zu Folge dass der Benutzer keine doppelt belegten Pins, keine 2 verschiedenen Portmux-Alternativen aus derselben Instanz und keine nicht existierenden Ressourcen belegen kann.
+Die erste Prüfung wird einen Fehler produzieren wenn der Rückgabetyp der `get_ressource_help` Funktion `void` ist, d.h. die Funktion hat keine Ressource `N` gefunden.
 ==== Zu Punkt 2
 
-[source, C++]
+Dies ist die Startfunktion um zu Prüfen ob die Pins Kollisionsfrei sind, 
+hierzu wird die Liste der Pins innerhalb der konkreten Instanzen benötigt. 
+Falls `pins` 0 Elemente enthält gibt es nur eine Ressource und somit keine Kollision, 
+ansonsten muss die rekursive Hilfsfunktion aufgerufen werden.
+
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 template<typename _first,typename... pins>
 static constexpr bool checkRessource() {
@@ -387,9 +418,10 @@ static constexpr bool checkRessource() {
 }
 ----
 
-Dies ist die Startfunktion um zu Prüfen ob die Pins Kollisionsfrei sind, hierzu wird die Liste der Pins innerhalb der konkreten Instanzen benötigt. Falls 'pins' 0 Elemente enthält gibt es nur eine Ressource und somit keine Kollision, ansonsten muss die rekursive Hilfsfunktion aufgerufen werden.
+Die Prüfung auf Kollisionsfreiheit Funktioniert so, dass auf der aktuellen Stufe immer überprüft wird ob irgendein Element der aktuellen Pinliste in der nächsten enthalten ist, danach wird die aktuelle Liste mit der nächsten vereinigt und als erste Liste übergeben, das geht solange bis es in `pins` keine weiteren Listen mehr gibt.
 
-[source,C++]
+.Auszug aus RessourceController.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 template<Meta::concepts::List first,typename _second, typename... pins>
 static constexpr bool checkRessourceHelper(){
@@ -410,15 +442,14 @@ static constexpr bool checkRessourceHelper(){
 <2> Nächste Rekursionsstufe
 <3> Rekursionsende
 
-Die Prüfung auf Kollisionsfreiheit Funktioniert so, dass auf der aktuellen Stufe immer überprüft wird ob irgendein Element der aktuellen Pinliste in der nächsten enthalten ist, danach wird die aktuelle Liste mit der nächsten vereinigt und als erste Liste übergeben, das geht solange bis es in 'pins' keine weiteren Listen mehr gibt.
-
 NOTE: Die CheckInstance Methode funktioniert Analog (bloß das die Pinlisten nicht überprüft werden sondern die HW-Instanzen)
 
-TWI Command und Callback Aufbau
+== TWI Command und Callback Aufbau
 
 Die TWI Schnittstelle ist grundsätzlich so Aufgebaut dass sie (wenn mit Fifos benutzt) genauso verwendet werden kann wie die anderen Kommunikationsschnittstellen, die einzige Besonderheit ist das Callback beim lesen. Damit diese einfache Bedienung der Schnittstelle möglich ist, müssen Intern die Command Strukturen gespeichert werden.
 
-[source,C++]
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 static inline auto noop = []{}; # <1>
 
@@ -443,11 +474,14 @@ struct Command {
 <4> Lesen oder Schreiben
 <5> Callback für lesen
 
-Die Command Struktur wird benötigt um gewisse Informationen zur Laufzeit zu speichern und auszuwerten. Diese Struktur wiederum wird in einer Fifo gespeichert, wenn z.B. Bytes gelesen werden sollen so wird eine entsprechende Command Struktur erzeugt und in der Fifo abgelegt. 
+Die Command Struktur wird benötigt um gewisse Informationen zur Laufzeit zu speichern und auszuwerten. 
+Diese Struktur wiederum wird in einer Fifo gespeichert, wenn z.B. Bytes gelesen werden sollen so wird eine entsprechende 
+Command Struktur erzeugt und in der Fifo abgelegt. Eine statische Callback Funktion wäre hier nicht sinnvoll, da auch zur Laufzeit entschieden wird ob das aktuelle Kommando ein Lese-oder Schreibvorgang ist.
  
-NOTE: Die oben gezeigte Command Struktur besitzt noch einige Spezialisierungen um bei verschiedenen Condtionen nicht benötigte Member auszulassen (z.B bei einem WriteOnly wird weder das Callback- noch das Accessmember benötigt).
+NOTE: Die oben gezeigte Command Struktur besitzt noch einige Spezialisierungen um bei verschiedenen Konditionen nicht benötigte Member auszulassen (z.B bei einem WriteOnly wird weder das Callback- noch das Accessmember benötigt).
 
-[source,C++]
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
 static inline void put(bit_width *data, uint8_t size) {
 
@@ -462,24 +496,69 @@ static inline void put(bit_width *data, uint8_t size) {
 <1> Command Konstruktor für WriteOnly 
 <2> Command Konstruktor für ReadWrite
 
-In diesem Beispiel wird gezeigt wie die Command Struktur genutzt wird um Befehle in eine Fifo zu legen, während dem Periodic Aufruf oder der Interrupt Routine können die Befehle dann aus der Fifo entnommen und verarbeitet werden.
+In diesem Beispiel wird gezeigt wie die Command Struktur genutzt wird um Befehle in eine Fifo zu legen, 
+während dem Periodic Aufruf oder der Interrupt Routine können die Befehle dann aus der Fifo entnommen und verarbeitet werden. 
+Das Kommando wird hier erzeugt mit dem Konstruktor: uint8_t Adresse und uint8_t Größe, wenn die Schnittstelle als ReadWrite konfiguriert ist, muss noch die Information hinzugefügt werden, dass es ein Schreibvorgang ist.
+Beim Lesen verhält es sich Analog, jedoch mit dem Zusatz, dass als letztes Member noch ein Callback in die Command-Struktur gelegt wird.
 
-[source,C++]
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
 ----
-if(TWIMaster::current.access == read){ # <1>
-	if ( TWIMaster::current.bytes > 1) { # <2>
+//RW Branch
+bool newCommand = false; # <1>
+
+if(TWIMaster::current.access == read){ # <2>
+	if ( TWIMaster::current.bytes > 1) {
 		TWIMaster::_TWI::receive();
 	} else if( TWIMaster::current.bytes == 1) {
 		stopTransactionNack();
 		TWIMaster::_TWI::receive();
 		TWIMaster::current.bytes = 0;
 		TWIMaster::current.Callback();
-	}
-} else {
-	if ( TWIMaster::current.bytes > 0) {
-		TWIMaster::_TWI::transfer();
-	} else {
-		stopTransaction();
+		typename TWIMaster::command tmp;
+		if (TWIMaster::CommandStack.pop_front(tmp)) {
+			TWIMaster::current = tmp;
+			newCommand = true;
+		}
 	}
 }
 ----
+<1> Boolsche Variable zur Feststellung ob ein neues Kommando folgt
+<2> Prüfung auf Zugriffsart
+
+Zunächst wird im IH unterschieden ob es sich beim aktuellen Element um ein Lese- oder Schreibvorgang handelt, je nachdem wird dann die receive() oder die transfer() Methode aufgerufen, diese Methoden führen dann noch Aktionen auf dem `current` Member der Oberklasse aus (dekrementieren der bytes Variable). Im Lesevorgang muss speziell geprüft werden ob noch ein Element zu versenden ist, wenn ja muss vor der receive() Methode ein Nack mit einer Stop-Condition gesendet und abschließend der Callback ausgeführt werden, alle anderen Vorgehensweisen führen zu Buskollisionen oder anderen ungewünschten Verhaltensweisen. Der nächste Schritt ist das herausnehmen des neuen Kommandos aus der Fifo, nebenbei wird die Variable newCommand auf `true` gesetzt, diese wird anschließend genutzt um zu prüfen ob noch auf die Stop-Condition gewartet werden muss.
+
+.Auszug aus TWI.hpp <<ZLib>>
+[source,cpp,numbered]
+----
+if(newCommand){
+	while(! (alt::Scl::pin0::isOn() && alt::Sda::pin0::isOn())); # <1>
+	if(TWIMaster::current.access == read){
+		readCondition(); 
+	} else {
+		writeCondition();
+	} # <2>
+}
+---- 
+<1> Warten auf die Beendigung der Stop-Condition
+<2> Auslösen der neuen Read oder Write Start-Condition
+
+Nachdem das neue Kommando übernommen wurde ist es notwendig auf das Beenden der Stop-Condition zu warten, direkt danach kann dann die neue Start-Condition gesendet werden, ansonsten wird der IH nicht wieder aufgerufen und das nächste Element nicht gesendet.
+
+[bibliography]
+== Quellen
+
+- [[[ZLib]]] Keven Klöckner. Atmega 0 Series Lib:
+https://github.com/Keven1994/Atmega0SeriesLib
+- [[[libcpp]]] Free Software Foundation, Inc. Libstdc++:
+https://gcc.gnu.org/
+- [[[BMCPP]]] Prof. Dr.-Ing Wilhelm Meier. BmCPP
+https://sourceforge.net/projects/wmucpp/
+- [[[MDok]]] Microchip. Atmega 0-series Family Data Sheet
+http://ww1.microchip.com/downloads/en/DeviceDoc/megaAVR0-series-Family-Data-Sheet-DS40002015B.pdf
+- [[[ASF]]] Microchip. Advanced Software Framework:
+http://ww1.microchip.com/downloads/en/DeviceDoc/asf-standalone-archive-3.46.0.94.zip
+- [[[PUGI]]] Arseny Kapoulkine. Pugi XML-Parser:
+https://pugixml.org/
+- [[[STM]]] STMicroelectronics. STM Hal Dokumentation:
+https://www.st.com/content/ccc/resource/technical/document/user_manual/2f/71/ba/b8/75/54/47/cf/DM00105879.pdf/files/DM00105879.pdf/jcr:content/translations/en.DM00105879.pdf
